@@ -141,7 +141,7 @@ module {
   public class Ec() {
     private var x_:Nat  = 0;
     private var y_:Nat  = 0;
-    private var isZero_ : Bool = true;
+    private var isZero_:Bool = true;
     public func get() : (Nat, Nat) { (x_, y_) };
     public func set(x:Nat, y:Nat) : Bool {
       if (not _is_valid(x, y)) return false;
@@ -150,10 +150,32 @@ module {
       isZero_ := false;
       true
     };
+    public func set_nocheck(x:Nat, y:Nat) {
+      x_ := x;
+      y_ := y;
+      isZero_ := false;
+    };
     public func is_zero() : Bool { isZero_ };
     public func is_valid() : Bool {
       if (isZero_) return true;
       _is_valid(x_, y_)
     };
+    public func neg() : Ec {
+      if (is_zero()) return Ec();
+      newEc_nocheck(x_, fp_neg(y_))
+    };
+//    public func add(rhs:Ec) Ec {
+ //   };
+  };
+  public func newEc(x:Nat, y:Nat) : Ec {
+    let P = Ec();
+    if (P.set(x, y)) return P;
+    assert(false);
+    Ec()
+  };
+  public func newEc_nocheck(x:Nat, y:Nat) : Ec {
+    let P = Ec();
+    P.set_nocheck(x, y);
+    P
   };
 };
