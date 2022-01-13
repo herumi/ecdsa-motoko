@@ -10,15 +10,16 @@
 import Int "mo:base/Int";
 
 module {
+  // secp256k1
   // Ec/Fp : y^2 = x^3 + ax + b
   // (gx, gy) in Ec
   // #Ec = r
-  private let p_ : Nat = 65537;
-  private let a_ = 3;
-  private let b_ = 5;
-  private let r_ : Nat = 0;
-  private let gx_ : Nat = 0;
-  private let gy_ : Nat = 0;
+  public let p_:Nat = 0xfffffffffffffffffffffffffffffffffffffffffffffffffffffffefffffc2f;
+  public let a_:Nat = 0;
+  public let b_:Nat = 7;
+  public let r_:Nat = 0xfffffffffffffffffffffffffffffffebaaedce6af48a03bbfd25e8cd0364141;
+  public let gx_:Nat = 0x79be667ef9dcbbac55a06295ce870b07029bfcdb2dce28d959f2815b16f81798;
+  public let gy_:Nat = 0x483ada7726a3c4655da4fbfc0e1108a8fd17b448a68554199c47d08ffb10d4b8;
 
   public func get_p() : Nat {
     p_
@@ -35,14 +36,14 @@ module {
   public func add_mod(x:Nat, y:Nat, p:Nat) : Nat {
     let v = x + y;
     if (v < p) return v;
-    return v - p;
+    v - p
   };
   public func sub_mod(x:Nat, y:Nat, p:Nat) : Nat {
     if (x >= y) return x - y;
-    x + p - y;
+    x + p - y
   };
   public func mul_mod(x:Nat, y:Nat, p:Nat) : Nat {
-    (x * y) % p;
+    (x * y) % p
   };
   // return rev such that x * rev mod p = 1 if success else 0
   public func inv_mod(x:Nat, p:Nat) : Nat {
@@ -53,9 +54,12 @@ module {
     assert(0 <= v and v < p);
     Int.abs(v)
   };
+  public func div_mod(x:Nat, y:Nat, p:Nat) : Nat {
+    mul_mod(x, inv_mod(y, p), p)
+  };
   public func neg_mod(x:Nat, p:Nat) : Nat {
     if (x == 0) return 0;
-    p - x;
+    p - x
   };
 
   public class Fp() {
@@ -110,20 +114,46 @@ module {
     ret.set_nomod(x);
     ret
   };
-  // return y^2 == x^3 + ax + b
-  public func is_valid(x:Fp, y:Fp) : Bool {
-    y.mul(y).get() == (x.mul(x).add(newFp_nomod(a_))).mul(x).add(newFp_nomod(b_)).get()
+  public func fp_add(x:Nat, y:Nat) : Nat {
+    add_mod(x, y, p_)
+  };
+  public func fp_sub(x:Nat, y:Nat) : Nat {
+    sub_mod(x, y, p_)
+  };
+  public func fp_mul(x:Nat, y:Nat) : Nat {
+    mul_mod(x, y, p_)
+  };
+  public func fp_div(x:Nat, y:Nat) : Nat {
+    div_mod(x, y, p_)
+  };
+  public func fp_neg(x:Nat) : Nat {
+    neg_mod(x, p_)
+  };
+  public func fp_inv(x:Nat) : Nat {
+    inv_mod(x, p_)
+  };
+  func _is_valid(x:Nat, y:Nat) : Bool {
+    // return y^2 == (x^2 + a)x + b
+    let lhs = fp_mul(y, y);
+    let rhs = fp_add(fp_mul(fp_add(fp_mul(x, x), a_), x), b_);
+    lhs == rhs
   };
   public class Ec() {
-    private var x_  = 0;
-    private var y_  = 0;
+    private var x_:Nat  = 0;
+    private var y_:Nat  = 0;
     private var isZero_ : Bool = true;
     public func get() : (Nat, Nat) { (x_, y_) };
+    public func set(x:Nat, y:Nat) : Bool {
+      if (not _is_valid(x, y)) return false;
+      x_ := x;
+      y_ := y;
+      isZero_ := false;
+      true
+    };
     public func is_zero() : Bool { isZero_ };
     public func is_valid() : Bool {
       if (isZero_) return true;
-//      return is_valid(x_, y_);
-      false
+      _is_valid(x_, y_)
     };
   };
 };

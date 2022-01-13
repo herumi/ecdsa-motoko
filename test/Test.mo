@@ -47,7 +47,6 @@ func inv_test() {
   let inv123 = M.inv_mod(123, 65537);
   assert(inv123 == 14919);
   let x2 = M.newFp(123).inv();
-  assert(x2.get() == 14919);
   var i = 1;
   while (i < 20) {
     let x1 = M.newFp(i);
@@ -57,7 +56,13 @@ func inv_test() {
   };
 };
 
+func ec_test() {
+  let P = M.Ec();
+  assert(P.set(M.gx_, M.gy_));
+};
+
 cstr_test();
 arith_test();
 gcd_test();
 inv_test();
+ec_test();
