@@ -56,13 +56,24 @@ func inv_test() {
   };
 };
 
-func ec_test() {
+func ec1_test() {
   let P = M.Ec();
+  assert(P.is_zero());
+  assert(P.neg().is_zero());
+
+  assert(P.add(P).is_zero());
+
   assert(P.set(M.gx_, M.gy_));
+  assert(not P.is_zero());
+  let Q = P.neg();
+  assert(not Q.is_zero());
+  assert(P.get_x() == Q.get_x());
+  assert(P.get_y() == M.fp_neg(Q.get_y()));
+  assert(P.add(Q).is_zero());
 };
 
 cstr_test();
 arith_test();
 gcd_test();
 inv_test();
-ec_test();
+ec1_test();

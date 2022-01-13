@@ -143,6 +143,8 @@ module {
     private var y_:Nat  = 0;
     private var isZero_:Bool = true;
     public func get() : (Nat, Nat) { (x_, y_) };
+    public func get_x() : Nat { x_ };
+    public func get_y() : Nat { y_ };
     public func set(x:Nat, y:Nat) : Bool {
       if (not _is_valid(x, y)) return false;
       x_ := x;
@@ -164,8 +166,31 @@ module {
       if (is_zero()) return Ec();
       newEc_nocheck(x_, fp_neg(y_))
     };
-//    public func add(rhs:Ec) Ec {
- //   };
+    public func add(rhs : Ec) : Ec {
+      if (is_zero()) return rhs;
+      // QQQ : how can I return *this?
+      if (rhs.is_zero()) return newEc_nocheck(x_, y_);
+      var nume = 0;
+      var deno = 0;
+      let x2 = rhs.get_x();
+      let y2 = rhs.get_y();
+      if (x_ == x2) {
+        // P + (-P) = 0
+        if (y_ == fp_neg(y2)) return Ec();
+        // dbl
+        let xx = fp_mul(x_, x_);
+        let xx3 = fp_add(fp_add(xx, xx), xx);
+        nume := fp_add(xx3, a_);
+        deno := fp_add(y_, y_);
+      } else {
+        nume := fp_sub(y_, y2);
+        deno := fp_sub(x_, x2);
+      };
+      let L = fp_div(nume, deno);
+      let x3 = fp_sub(fp_mul(L, L), fp_add(x_, x2));
+      let y3 = fp_sub(fp_mul(L, fp_sub(x_, x3)), y_);
+      newEc_nocheck(x3, y3)
+    };
   };
   public func newEc(x:Nat, y:Nat) : Ec {
     let P = Ec();
