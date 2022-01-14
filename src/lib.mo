@@ -82,7 +82,7 @@ module {
       v_ := v % p_;
     };
     // set v without modulo
-    public func set_nomod(v:Nat) {
+    public func set_nocheck(v:Nat) {
       v_ := v;
     };
     public func is_zero() : Bool {
@@ -90,22 +90,22 @@ module {
     };
     public func add(rhs:Fp) : Fp {
       let ret = Fp();
-      ret.set_nomod(add_mod(v_, rhs.get(), p_));
+      ret.set_nocheck(add_mod(v_, rhs.get(), p_));
       ret
     };
     public func sub(rhs:Fp) : Fp {
       let ret = Fp();
-      ret.set_nomod(sub_mod(v_, rhs.get(), p_));
+      ret.set_nocheck(sub_mod(v_, rhs.get(), p_));
       ret
     };
     public func mul(rhs:Fp) : Fp {
       let ret = Fp();
-      ret.set_nomod(mul_mod(v_, rhs.get(), p_));
+      ret.set_nocheck(mul_mod(v_, rhs.get(), p_));
       ret
     };
     public func inv() : Fp {
       let ret = Fp();
-      ret.set_nomod(inv_mod(v_, p_));
+      ret.set_nocheck(inv_mod(v_, p_));
       ret
     };
     public func div(rhs:Fp) : Fp {
@@ -113,7 +113,7 @@ module {
     };
     public func neg() : Fp {
       let ret = Fp();
-      ret.set_nomod(neg_mod(v_, p_));
+      ret.set_nocheck(neg_mod(v_, p_));
       ret
     };
   };
@@ -124,7 +124,7 @@ module {
   };
   public func newFp_nomod(x:Nat) : Fp {
     let ret = Fp();
-    ret.set_nomod(x);
+    ret.set_nocheck(x);
     ret
   };
   public func fp_add(x:Nat, y:Nat) : Nat {

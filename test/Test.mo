@@ -21,7 +21,7 @@ func cstr_test() {
   var x = M.Fp();
   assert(x.is_zero());
   var v1 = p + 123;
-  x.set_nomod(v1);
+  x.set_nocheck(v1);
   assert(not x.is_zero());
   assert(x.get() == v1);
   x.set(v1);
