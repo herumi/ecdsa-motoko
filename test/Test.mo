@@ -3,6 +3,21 @@ import M "../src";
 
 let p = M.get_p();
 
+func misc_test() {
+  let expect = [true, false, true, true];
+  let tbl = [
+    (0, []:[Bool]),
+    (1, [true]),
+    (2, [false, true]),
+  ];
+  var i = 0;
+  for(i in tbl.keys()) {
+    let (v, a) = tbl[i];
+    let b = M.Nat_to_reverse_bin(v).toArray();
+    assert(b == a);
+  };
+};
+
 func cstr_test() {
   assert(M.Fp().get() == 0);
   var x = M.Fp();
@@ -72,6 +87,7 @@ func ec1_test() {
   assert(P.add(Q).is_zero());
 };
 
+misc_test();
 cstr_test();
 arith_test();
 gcd_test();

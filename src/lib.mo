@@ -8,6 +8,7 @@
  */
 
 import Int "mo:base/Int";
+import B "mo:base/Buffer";
 
 module {
   // secp256k1
@@ -23,6 +24,16 @@ module {
 
   public func get_p() : Nat {
     p_
+  };
+  // 13 = 0b1101 => [true,false,true,ture]
+  public func Nat_to_reverse_bin(x : Nat) : B.Buffer<Bool> {
+    var ret:B.Buffer<Bool> = B.Buffer<Bool>(256);
+    var t = x;
+    while (t > 0) {
+      ret.add((t % 2) == 1);
+      t := t / 2;
+    };
+    ret
   };
 
   // return (gcd, x, y) such that gcd = a * x + b * y
