@@ -4,13 +4,11 @@ import M "../src";
 let p = M.get_p();
 
 func misc_test() {
-  let expect = [true, false, true, true];
   let tbl = [
     (0, []:[Bool]),
     (1, [true]),
     (2, [false, true]),
   ];
-  var i = 0;
   for(i in tbl.keys()) {
     let (v, a) = tbl[i];
     let b = M.Nat_to_reverse_bin(v).toArray();
