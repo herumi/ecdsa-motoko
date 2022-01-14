@@ -22,18 +22,20 @@ module {
   public let gx_:Nat = 0x79be667ef9dcbbac55a06295ce870b07029bfcdb2dce28d959f2815b16f81798;
   public let gy_:Nat = 0x483ada7726a3c4655da4fbfc0e1108a8fd17b448a68554199c47d08ffb10d4b8;
 
-  public func get_p() : Nat {
-    p_
-  };
+  /// return the order of the field where Ec is defined.
+  public func get_p() : Nat { p_ };
+  /// return the order of the generator of Ec.
+  public func get_r() : Nat { r_ };
+
   // 13 = 0b1101 => [true,false,true,ture]
-  public func Nat_to_reverse_bin(x : Nat) : B.Buffer<Bool> {
+  public func Nat_to_reverse_bin(x : Nat) : [Bool] {
     var ret:B.Buffer<Bool> = B.Buffer<Bool>(256);
     var t = x;
     while (t > 0) {
       ret.add((t % 2) == 1);
       t := t / 2;
     };
-    ret
+    ret.toArray()
   };
 
   // return (gcd, x, y) such that gcd = a * x + b * y
@@ -177,10 +179,15 @@ module {
       if (is_zero()) return Ec();
       newEc_nocheck(x_, fp_neg(y_))
     };
+	// QQQ : how can I return *this?
+	public func copy() : Ec {
+		if (is_zero()) return Ec();
+		newEc_nocheck(x_, y_)
+	};
     public func add(rhs : Ec) : Ec {
       if (is_zero()) return rhs;
       // QQQ : how can I return *this?
-      if (rhs.is_zero()) return newEc_nocheck(x_, y_);
+      if (rhs.is_zero()) return copy();
       var nume = 0;
       var deno = 0;
       let x2 = rhs.get_x();
@@ -201,6 +208,26 @@ module {
       let x3 = fp_sub(fp_mul(L, L), fp_add(x_, x2));
       let y3 = fp_sub(fp_mul(L, fp_sub(x_, x3)), y_);
       newEc_nocheck(x3, y3)
+    };
+    public func dbl() : Ec {
+      add(copy())
+    };
+    public func equal(rhs : Ec) : Bool {
+      if (is_zero()) return rhs.is_zero();
+      if (rhs.is_zero()) return false;
+      // both are not zero
+      x_ == rhs.get_x() and y_ == rhs.get_y()
+    };
+    public func mul(x : Nat) : Ec {
+      if (x == 0) return Ec();
+      let bs = Nat_to_reverse_bin(x);
+      let self = copy();
+      var ret = Ec();
+      for (b in bs.vals()) {
+        ret := dbl();
+        if (b) ret := ret.add(self);
+      };
+      ret
     };
   };
   public func newEc(x:Nat, y:Nat) : Ec {

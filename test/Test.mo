@@ -11,7 +11,7 @@ func misc_test() {
   ];
   for(i in tbl.keys()) {
     let (v, a) = tbl[i];
-    let b = M.Nat_to_reverse_bin(v).toArray();
+    let b = M.Nat_to_reverse_bin(v);
     assert(b == a);
   };
 };
@@ -85,9 +85,25 @@ func ec1_test() {
   assert(P.add(Q).is_zero());
 };
 
+func ec2_test() {
+  let P = M.Ec();
+  let P2 = P.add(P);
+  let P3 = P2.add(P);
+  let P4 = P3.add(P);
+  let P5 = P4.add(P);
+  assert(P.dbl().equal(P2));
+  assert(P.mul(2).equal(P2));
+  assert(P.mul(3).equal(P3));
+  assert(P.mul(4).equal(P4));
+  assert(P.mul(5).equal(P5));
+  let Q = P.mul(M.get_r());
+  assert(Q.is_zero());
+};
+
 misc_test();
 cstr_test();
 arith_test();
 gcd_test();
 inv_test();
 ec1_test();
+ec2_test();
