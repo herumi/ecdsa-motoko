@@ -122,6 +122,9 @@ func ec2_test() {
   assert(P.mul(M.get_r()).is_zero());
 };
 
+func ecdsa_test() {
+};
+
 toBigEndianNatTest();
 Nat_to_reverse_bin_test();
 cstr_test();
@@ -130,3 +133,4 @@ gcd_test();
 inv_test();
 ec1_test();
 ec2_test();
+ecdsa_test();

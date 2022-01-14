@@ -299,4 +299,19 @@ module {
     let s = fr_div(fr_add(fr_mul(r, sec), z), rand);
     ?(r, s)
   };
+  // verify hashed and sign by pub
+  public func verifyHashed(pub : Ec, hashed : [Nat8], sig : (Nat, Nat)) : Bool {
+    let (r, s) = sig;
+    if (r == 0 or r >= r_) return false;
+    if (s == 0 or s >= r_) return false;
+    let z = toBigEndianNat(hashed) % r_;
+    let w = fr_inv(s);
+    let u1 = fr_mul(z, w);
+    let u2 = fr_mul(r, w);
+    let P = newEc_P();
+    let Q = P.mul(u1).add(pub.mul(u2));
+    if (Q.is_zero()) return false;
+    let x = Q.get_x() % r_;
+    x == r
+  };
 };
