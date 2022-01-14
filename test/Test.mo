@@ -91,13 +91,16 @@ func ec2_test() {
   let P3 = P2.add(P);
   let P4 = P3.add(P);
   let P5 = P4.add(P);
+  assert(P.add(P.neg()).is_zero());
   assert(P.dbl().equal(P2));
   assert(P.mul(2).equal(P2));
   assert(P.mul(3).equal(P3));
   assert(P.mul(4).equal(P4));
   assert(P.mul(5).equal(P5));
-  let Q = P.mul(M.get_r());
-  assert(Q.is_zero());
+  let Q = P.mul(M.get_r() - 1);
+  assert(Q.equal(P.neg()));
+  assert(Q.add(P).is_zero());
+  assert(P.mul(M.get_r()).is_zero());
 };
 
 misc_test();

@@ -210,7 +210,19 @@ module {
       newEc_nocheck(x3, y3)
     };
     public func dbl() : Ec {
-      add(copy())
+      if (is_zero()) return Ec();
+      var nume = 0;
+      var deno = 0;
+      // P + (-P) = 0
+      if (y_ == 0) return Ec();
+      let xx = fp_mul(x_, x_);
+      let xx3 = fp_add(fp_add(xx, xx), xx);
+      nume := fp_add(xx3, a_);
+      deno := fp_add(y_, y_);
+      let L = fp_div(nume, deno);
+      let x3 = fp_sub(fp_mul(L, L), fp_add(x_, x_));
+      let y3 = fp_sub(fp_mul(L, fp_sub(x_, x3)), y_);
+      newEc_nocheck(x3, y3)
     };
     public func equal(rhs : Ec) : Bool {
       if (is_zero()) return rhs.is_zero();
