@@ -8,6 +8,7 @@
  */
 
 import Int "mo:base/Int";
+import Nat8 "mo:base/Nat8";
 import B "mo:base/Buffer";
 
 module {
@@ -127,6 +128,7 @@ module {
     ret.set_nocheck(x);
     ret
   };
+  // mod fp functions
   public func fp_add(x:Nat, y:Nat) : Nat {
     add_mod(x, y, p_)
   };
@@ -145,6 +147,26 @@ module {
   public func fp_inv(x:Nat) : Nat {
     inv_mod(x, p_)
   };
+  // mod fr functions
+  public func fr_add(x:Nat, y:Nat) : Nat {
+    add_mod(x, y, r_)
+  };
+  public func fr_sub(x:Nat, y:Nat) : Nat {
+    sub_mod(x, y, r_)
+  };
+  public func fr_mul(x:Nat, y:Nat) : Nat {
+    mul_mod(x, y, r_)
+  };
+  public func fr_div(x:Nat, y:Nat) : Nat {
+    div_mod(x, y, r_)
+  };
+  public func fr_neg(x:Nat) : Nat {
+    neg_mod(x, r_)
+  };
+  public func fr_inv(x:Nat) : Nat {
+    inv_mod(x, r_)
+  };
+
   func _is_valid(x:Nat, y:Nat) : Bool {
     // return y^2 == (x^2 + a)x + b
     let lhs = fp_mul(y, y);
@@ -252,5 +274,29 @@ module {
     let P = Ec();
     P.set_nocheck(x, y);
     P
+  };
+  public func newEc_P() : Ec {
+    newEc_nocheck(gx_, gy_)
+  };
+  // [0x12, 0x34]:[Nat] => 0x1234
+  public func toBigEndianNat(b : [Nat8]) : Nat {
+    var v : Nat = 0;
+    for (e in b.vals()) {
+      v := v * 256 + Nat8.toNat(e);
+    };
+    v
+  };
+  /// sign hashed by sec and rand
+  public func signHashed(sec:Nat, hashed:[Nat8], rand:Nat) : ?(Nat, Nat) {
+    if (sec == 0 or sec >= r_) return null;
+    if (rand == 0 or rand >= r_) return null;
+    let P = newEc_P();
+    let Q = P.mul(rand);
+    if (Q.is_zero()) return null;
+    let r = Q.get_x() % r_;
+    if (r == 0) return null;
+    let z = toBigEndianNat(hashed) % r_;
+    let s = fr_div(fr_add(fr_mul(r, sec), z), rand);
+    ?(r, s)
   };
 };

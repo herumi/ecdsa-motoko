@@ -3,7 +3,12 @@ import M "../src";
 
 let p = M.get_p();
 
-func misc_test() {
+func optionFunc(v:Nat) : ?Nat {
+  if (v == 0) return null;
+  ?v
+};
+
+func Nat_to_reverse_bin_test() {
   let tbl = [
     (0, []:[Bool]),
     (1, [true]),
@@ -13,6 +18,20 @@ func misc_test() {
     let (v, a) = tbl[i];
     let b = M.Nat_to_reverse_bin(v);
     assert(b == a);
+  };
+  switch (optionFunc(5)) {
+    case(null) { assert(false); };
+    case(?v) { assert(v == 5); };
+  };
+};
+
+func toBigEndianNatTest() {
+  let tbl = [
+    ([0x12, 0x34]:[Nat8], 0x1234),
+  ];
+  for (i in tbl.keys()) {
+    let (b, v) = tbl[i];
+    assert(M.toBigEndianNat(b) == v);
   };
 };
 
@@ -103,7 +122,8 @@ func ec2_test() {
   assert(P.mul(M.get_r()).is_zero());
 };
 
-misc_test();
+toBigEndianNatTest();
+Nat_to_reverse_bin_test();
 cstr_test();
 arith_test();
 gcd_test();
