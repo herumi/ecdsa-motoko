@@ -100,7 +100,7 @@ func ec1_test() {
   let Q = P.neg();
   assert(not Q.isZero());
   assert(P.x() == Q.x());
-  assert(P.y() == M.fp_neg(Q.y()));
+  assert(P.y() == M.fpNeg(Q.y()));
   assert(P.add(Q).isZero());
 };
 

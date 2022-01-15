@@ -132,55 +132,55 @@ module {
     ret
   };
   // mod fp functions
-  public func fp_add(x : Nat, y : Nat) : Nat {
+  public func fpAdd(x : Nat, y : Nat) : Nat {
     addMod(x, y, p_)
   };
-  public func fp_sub(x : Nat, y : Nat) : Nat {
+  public func fpSub(x : Nat, y : Nat) : Nat {
     subMod(x, y, p_)
   };
-  public func fp_mul(x : Nat, y : Nat) : Nat {
+  public func fpMul(x : Nat, y : Nat) : Nat {
     mulMod(x, y, p_)
   };
-  public func fp_div(x : Nat, y : Nat) : Nat {
+  public func fpDiv(x : Nat, y : Nat) : Nat {
     divMod(x, y, p_)
   };
-  public func fp_neg(x : Nat) : Nat {
+  public func fpNeg(x : Nat) : Nat {
     negMod(x, p_)
   };
-  public func fp_inv(x : Nat) : Nat {
+  public func fpInv(x : Nat) : Nat {
     invMod(x, p_)
   };
   // mod fr functions
-  public func fr_add(x : Nat, y : Nat) : Nat {
+  public func frAdd(x : Nat, y : Nat) : Nat {
     addMod(x, y, r_)
   };
-  public func fr_sub(x : Nat, y : Nat) : Nat {
+  public func frSub(x : Nat, y : Nat) : Nat {
     subMod(x, y, r_)
   };
-  public func fr_mul(x : Nat, y : Nat) : Nat {
+  public func frMul(x : Nat, y : Nat) : Nat {
     mulMod(x, y, r_)
   };
-  public func fr_div(x : Nat, y : Nat) : Nat {
+  public func frDiv(x : Nat, y : Nat) : Nat {
     divMod(x, y, r_)
   };
-  public func fr_neg(x : Nat) : Nat {
+  public func frNeg(x : Nat) : Nat {
     negMod(x, r_)
   };
-  public func fr_inv(x : Nat) : Nat {
+  public func frInv(x : Nat) : Nat {
     invMod(x, r_)
   };
 
   func _isValid(x : Nat, y : Nat) : Bool {
     // return y^2 == (x^2 + a)x + b
-    let lhs = fp_mul(y, y);
-    let rhs = fp_add(fp_mul(fp_add(fp_mul(x, x), a_), x), b_);
+    let lhs = fpMul(y, y);
+    let rhs = fpAdd(fpMul(fpAdd(fpMul(x, x), a_), x), b_);
     lhs == rhs
   };
   public class Ec() {
     private var x_ : Nat  = 0;
     private var y_ : Nat  = 0;
     private var isZero_ : Bool = true;
-    public func val() : (Nat, Nat) { (x_, y_) };
+    public func affine() : (Nat, Nat) { (x_, y_) };
     public func x() : Nat { x_ };
     public func y() : Nat { y_ };
     public func set(x : Nat, y : Nat) : Bool {
@@ -202,7 +202,7 @@ module {
     };
     public func neg() : Ec {
       if (isZero()) return Ec();
-      newEcNoCheck(x_, fp_neg(y_))
+      newEcNoCheck(x_, fpNeg(y_))
     };
 	// QQQ : how can I return *this?
 	public func copy() : Ec {
@@ -219,19 +219,19 @@ module {
       let y2 = rhs.y();
       if (x_ == x2) {
         // P + (-P) = 0
-        if (y_ == fp_neg(y2)) return Ec();
+        if (y_ == fpNeg(y2)) return Ec();
         // dbl
-        let xx = fp_mul(x_, x_);
-        let xx3 = fp_add(fp_add(xx, xx), xx);
-        nume := fp_add(xx3, a_);
-        deno := fp_add(y_, y_);
+        let xx = fpMul(x_, x_);
+        let xx3 = fpAdd(fpAdd(xx, xx), xx);
+        nume := fpAdd(xx3, a_);
+        deno := fpAdd(y_, y_);
       } else {
-        nume := fp_sub(y_, y2);
-        deno := fp_sub(x_, x2);
+        nume := fpSub(y_, y2);
+        deno := fpSub(x_, x2);
       };
-      let L = fp_div(nume, deno);
-      let x3 = fp_sub(fp_mul(L, L), fp_add(x_, x2));
-      let y3 = fp_sub(fp_mul(L, fp_sub(x_, x3)), y_);
+      let L = fpDiv(nume, deno);
+      let x3 = fpSub(fpMul(L, L), fpAdd(x_, x2));
+      let y3 = fpSub(fpMul(L, fpSub(x_, x3)), y_);
       newEcNoCheck(x3, y3)
     };
     public func dbl() : Ec {
@@ -240,13 +240,13 @@ module {
       var deno = 0;
       // P + (-P) = 0
       if (y_ == 0) return Ec();
-      let xx = fp_mul(x_, x_);
-      let xx3 = fp_add(fp_add(xx, xx), xx);
-      nume := fp_add(xx3, a_);
-      deno := fp_add(y_, y_);
-      let L = fp_div(nume, deno);
-      let x3 = fp_sub(fp_mul(L, L), fp_add(x_, x_));
-      let y3 = fp_sub(fp_mul(L, fp_sub(x_, x3)), y_);
+      let xx = fpMul(x_, x_);
+      let xx3 = fpAdd(fpAdd(xx, xx), xx);
+      nume := fpAdd(xx3, a_);
+      deno := fpAdd(y_, y_);
+      let L = fpDiv(nume, deno);
+      let x3 = fpSub(fpMul(L, L), fpAdd(x_, x_));
+      let y3 = fpSub(fpMul(L, fpSub(x_, x3)), y_);
       newEcNoCheck(x3, y3)
     };
     public func equal(rhs : Ec) : Bool {
@@ -314,7 +314,7 @@ module {
     if (r == 0) return null;
     let z = toBigEndianNat(hashed) % r_;
     // s = (r * sec + z) / k
-    let s = fr_div(fr_add(fr_mul(r, sec), z), k);
+    let s = frDiv(frAdd(frMul(r, sec), z), k);
     ?(r, s)
   };
   // verify hashed and sign by pub
@@ -323,9 +323,9 @@ module {
     if (r == 0 or r >= r_) return false;
     if (s == 0 or s >= r_) return false;
     let z = toBigEndianNat(hashed) % r_;
-    let w = fr_inv(s);
-    let u1 = fr_mul(z, w);
-    let u2 = fr_mul(r, w);
+    let w = frInv(s);
+    let u1 = frMul(z, w);
+    let u2 = frMul(r, w);
     let P = newEc_P();
     let (x, y) = pub;
     let Q = newEcNoCheck(x, y);
