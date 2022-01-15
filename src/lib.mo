@@ -89,6 +89,9 @@ module {
     public func is_zero() : Bool {
       v_ == 0
     };
+    public func equal(rhs : Fp) : Bool {
+      v_ == rhs.val()
+    };
     public func add(rhs : Fp) : Fp {
       let ret = Fp();
       ret.set_nocheck(add_mod(v_, rhs.get(), p_));
