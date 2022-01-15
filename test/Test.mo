@@ -1,7 +1,7 @@
 import Int "mo:base/Int";
 import M "../src";
 
-let p = M.get_p();
+let p = M.p();
 
 func optionFunc(v:Nat) : ?Nat {
   if (v == 0) return null;
@@ -99,8 +99,8 @@ func ec1_test() {
   assert(not P.is_zero());
   let Q = P.neg();
   assert(not Q.is_zero());
-  assert(P.get_x() == Q.get_x());
-  assert(P.get_y() == M.fp_neg(Q.get_y()));
+  assert(P.x() == Q.x());
+  assert(P.y() == M.fp_neg(Q.y()));
   assert(P.add(Q).is_zero());
 };
 
@@ -116,10 +116,10 @@ func ec2_test() {
   assert(P.mul(3).equal(P3));
   assert(P.mul(4).equal(P4));
   assert(P.mul(5).equal(P5));
-  let Q = P.mul(M.get_r() - 1);
+  let Q = P.mul(M.r() - 1);
   assert(Q.equal(P.neg()));
   assert(Q.add(P).is_zero());
-  assert(P.mul(M.get_r()).is_zero());
+  assert(P.mul(M.r()).is_zero());
 };
 
 func ecdsa_test() {

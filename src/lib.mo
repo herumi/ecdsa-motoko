@@ -24,9 +24,9 @@ module {
   public let gy_:Nat = 0x483ada7726a3c4655da4fbfc0e1108a8fd17b448a68554199c47d08ffb10d4b8;
 
   /// return the order of the field where Ec is defined.
-  public func get_p() : Nat { p_ };
+  public func p() : Nat { p_ };
   /// return the order of the generator of Ec.
-  public func get_r() : Nat { r_ };
+  public func r() : Nat { r_ };
 
   // 13 = 0b1101 => [true,false,true,ture]
   public func Nat_to_reverse_bin(x : Nat) : [Bool] {
@@ -178,8 +178,8 @@ module {
     private var y_:Nat  = 0;
     private var isZero_:Bool = true;
     public func get() : (Nat, Nat) { (x_, y_) };
-    public func get_x() : Nat { x_ };
-    public func get_y() : Nat { y_ };
+    public func x() : Nat { x_ };
+    public func y() : Nat { y_ };
     public func set(x:Nat, y:Nat) : Bool {
       if (not _is_valid(x, y)) return false;
       x_ := x;
@@ -212,8 +212,8 @@ module {
       if (rhs.is_zero()) return copy();
       var nume = 0;
       var deno = 0;
-      let x2 = rhs.get_x();
-      let y2 = rhs.get_y();
+      let x2 = rhs.x();
+      let y2 = rhs.y();
       if (x_ == x2) {
         // P + (-P) = 0
         if (y_ == fp_neg(y2)) return Ec();
@@ -250,7 +250,7 @@ module {
       if (is_zero()) return rhs.is_zero();
       if (rhs.is_zero()) return false;
       // both are not zero
-      x_ == rhs.get_x() and y_ == rhs.get_y()
+      x_ == rhs.x() and y_ == rhs.y()
     };
     public func mul(x : Nat) : Ec {
       if (x == 0) return Ec();
@@ -297,7 +297,7 @@ module {
     let P = newEc_P();
     let Q = P.mul(sec);
     if (Q.is_zero()) return null;
-    ?(Q.get_x(), Q.get_y())
+    ?(Q.x(), Q.y())
   };
   /// sign hashed by sec and rand
   public func signHashed(sec:Nat, hashed:[Nat8], rand:[Nat8]) : ?(Nat, Nat) {
@@ -307,7 +307,7 @@ module {
     let P = newEc_P();
     let Q = P.mul(k);
     if (Q.is_zero()) return null;
-    let r = Q.get_x() % r_;
+    let r = Q.x() % r_;
     if (r == 0) return null;
     let z = toBigEndianNat(hashed) % r_;
     // s = (r * sec + z) / k
@@ -329,6 +329,6 @@ module {
     if (not Q.is_valid()) return false;
     let R = P.mul(u1).add(Q.mul(u2));
     if (R.is_zero()) return false;
-    (R.get_x() % r_) == r
+    (R.x() % r_) == r
   };
 };
