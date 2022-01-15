@@ -36,15 +36,15 @@ func toBigEndianNatTest() {
 };
 
 func cstr_test() {
-  assert(M.Fp().get() == 0);
+  assert(M.Fp().val() == 0);
   var x = M.Fp();
   assert(x.is_zero());
   var v1 = p + 123;
   x.set_nocheck(v1);
   assert(not x.is_zero());
-  assert(x.get() == v1);
+  assert(x.val() == v1);
   x.set(v1);
-  assert(x.get() == v1 % p);
+  assert(x.val() == v1 % p);
 };
 
 func arith_test() {
@@ -52,16 +52,16 @@ func arith_test() {
   let m2 = 60000;
   var x1 = M.newFp(m1);
   var x2 = M.newFp(m2);
-  assert(x1.add(x2).get() == (m1 + m2) % p);
-  assert(x1.sub(x2).get() == (m1 + p - m2) % p);
-  assert(x2.sub(x1).get() == (m2 - m1) % p);
+  assert(x1.add(x2).val() == (m1 + m2) % p);
+  assert(x1.sub(x2).val() == (m1 + p - m2) % p);
+  assert(x2.sub(x1).val() == (m2 - m1) % p);
   assert(M.Fp().neg().is_zero());
   var x3 = M.newFp(m1).neg();
-  assert(x3.get() == p - m1);
+  assert(x3.val() == p - m1);
   x1.set(m1);
   x2.set(m2);
   x3 := x1.mul(x2);
-  assert(x3.get() == (m1 * m2) % p);
+  assert(x3.val() == (m1 * m2) % p);
 };
 
 func gcd_test() {
@@ -82,8 +82,8 @@ func inv_test() {
   var i = 1;
   while (i < 20) {
     let x1 = M.newFp(i);
-    assert(x1.mul(x1.inv()).get() == 1);
-    assert(x2.div(x1).mul(x1).get() == x2.get());
+    assert(x1.mul(x1.inv()).val() == 1);
+    assert(x2.div(x1).mul(x1).val() == x2.val());
     i += 1;
   };
 };

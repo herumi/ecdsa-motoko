@@ -78,7 +78,7 @@ module {
 
   public class Fp() {
     private var v_ : Nat = 0;
-    public func get() : Nat { v_ };
+    public func val() : Nat { v_ };
     public func set(v : Nat) {
       v_ := v % p_;
     };
@@ -94,17 +94,17 @@ module {
     };
     public func add(rhs : Fp) : Fp {
       let ret = Fp();
-      ret.set_nocheck(add_mod(v_, rhs.get(), p_));
+      ret.set_nocheck(add_mod(v_, rhs.val(), p_));
       ret
     };
     public func sub(rhs : Fp) : Fp {
       let ret = Fp();
-      ret.set_nocheck(sub_mod(v_, rhs.get(), p_));
+      ret.set_nocheck(sub_mod(v_, rhs.val(), p_));
       ret
     };
     public func mul(rhs : Fp) : Fp {
       let ret = Fp();
-      ret.set_nocheck(mul_mod(v_, rhs.get(), p_));
+      ret.set_nocheck(mul_mod(v_, rhs.val(), p_));
       ret
     };
     public func inv() : Fp {
@@ -180,7 +180,7 @@ module {
     private var x_ : Nat  = 0;
     private var y_ : Nat  = 0;
     private var isZero_ : Bool = true;
-    public func get() : (Nat, Nat) { (x_, y_) };
+    public func val() : (Nat, Nat) { (x_, y_) };
     public func x() : Nat { x_ };
     public func y() : Nat { y_ };
     public func set(x : Nat, y : Nat) : Bool {
