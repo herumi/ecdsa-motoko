@@ -83,7 +83,7 @@ module {
       v_ := v % p_;
     };
     // set v without modulo
-    public func set_nocheck(v : Nat) {
+    public func setNoCheck(v : Nat) {
       v_ := v;
     };
     public func is_zero() : Bool {
@@ -94,22 +94,22 @@ module {
     };
     public func add(rhs : Fp) : Fp {
       let ret = Fp();
-      ret.set_nocheck(addMod(v_, rhs.val(), p_));
+      ret.setNoCheck(addMod(v_, rhs.val(), p_));
       ret
     };
     public func sub(rhs : Fp) : Fp {
       let ret = Fp();
-      ret.set_nocheck(subMod(v_, rhs.val(), p_));
+      ret.setNoCheck(subMod(v_, rhs.val(), p_));
       ret
     };
     public func mul(rhs : Fp) : Fp {
       let ret = Fp();
-      ret.set_nocheck(mulMod(v_, rhs.val(), p_));
+      ret.setNoCheck(mulMod(v_, rhs.val(), p_));
       ret
     };
     public func inv() : Fp {
       let ret = Fp();
-      ret.set_nocheck(invMod(v_, p_));
+      ret.setNoCheck(invMod(v_, p_));
       ret
     };
     public func div(rhs : Fp) : Fp {
@@ -117,7 +117,7 @@ module {
     };
     public func neg() : Fp {
       let ret = Fp();
-      ret.set_nocheck(negMod(v_, p_));
+      ret.setNoCheck(negMod(v_, p_));
       ret
     };
   };
@@ -128,7 +128,7 @@ module {
   };
   public func newFp_nomod(x : Nat) : Fp {
     let ret = Fp();
-    ret.set_nocheck(x);
+    ret.setNoCheck(x);
     ret
   };
   // mod fp functions
@@ -190,7 +190,7 @@ module {
       isZero_ := false;
       true
     };
-    public func set_nocheck(x : Nat, y : Nat) {
+    public func setNoCheck(x : Nat, y : Nat) {
       x_ := x;
       y_ := y;
       isZero_ := false;
@@ -202,12 +202,12 @@ module {
     };
     public func neg() : Ec {
       if (is_zero()) return Ec();
-      newEc_nocheck(x_, fp_neg(y_))
+      newEcNoCheck(x_, fp_neg(y_))
     };
 	// QQQ : how can I return *this?
 	public func copy() : Ec {
 		if (is_zero()) return Ec();
-		newEc_nocheck(x_, y_)
+		newEcNoCheck(x_, y_)
 	};
     public func add(rhs : Ec) : Ec {
       if (is_zero()) return rhs;
@@ -232,7 +232,7 @@ module {
       let L = fp_div(nume, deno);
       let x3 = fp_sub(fp_mul(L, L), fp_add(x_, x2));
       let y3 = fp_sub(fp_mul(L, fp_sub(x_, x3)), y_);
-      newEc_nocheck(x3, y3)
+      newEcNoCheck(x3, y3)
     };
     public func dbl() : Ec {
       if (is_zero()) return Ec();
@@ -247,7 +247,7 @@ module {
       let L = fp_div(nume, deno);
       let x3 = fp_sub(fp_mul(L, L), fp_add(x_, x_));
       let y3 = fp_sub(fp_mul(L, fp_sub(x_, x3)), y_);
-      newEc_nocheck(x3, y3)
+      newEcNoCheck(x3, y3)
     };
     public func equal(rhs : Ec) : Bool {
       if (is_zero()) return rhs.is_zero();
@@ -273,13 +273,13 @@ module {
     assert(false);
     Ec()
   };
-  public func newEc_nocheck(x : Nat, y : Nat) : Ec {
+  public func newEcNoCheck(x : Nat, y : Nat) : Ec {
     let P = Ec();
-    P.set_nocheck(x, y);
+    P.setNoCheck(x, y);
     P
   };
   public func newEc_P() : Ec {
-    newEc_nocheck(gx_, gy_)
+    newEcNoCheck(gx_, gy_)
   };
   // [0x12, 0x34] : [Nat] => 0x1234
   public func toBigEndianNat(b : [Nat8]) : Nat {
@@ -328,7 +328,7 @@ module {
     let u2 = fr_mul(r, w);
     let P = newEc_P();
     let (x, y) = pub;
-    let Q = newEc_nocheck(x, y);
+    let Q = newEcNoCheck(x, y);
     if (not Q.is_valid()) return false;
     let R = P.mul(u1).add(Q.mul(u2));
     if (R.is_zero()) return false;
