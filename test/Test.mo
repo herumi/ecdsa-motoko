@@ -16,7 +16,7 @@ func Nat_to_reverse_bin_test() {
   ];
   for(i in tbl.keys()) {
     let (v, a) = tbl[i];
-    let b = M.Nat_to_reverse_bin(v);
+    let b = M.fromNatToReverseBin(v);
     assert(b == a);
   };
   switch (optionFunc(5)) {
@@ -65,11 +65,11 @@ func arith_test() {
 };
 
 func gcd_test() {
-  let (gcd1, gcd2, gcd3) = M.ext_gcd(100, 37);
+  let (gcd1, gcd2, gcd3) = M.extGcd(100, 37);
   assert(gcd1 == 1);
   assert(gcd2 == 10);
   assert(gcd3 == -27);
-  let (a, b, c) = M.ext_gcd(0, 37);
+  let (a, b, c) = M.extGcd(0, 37);
   assert(a == 37);
   assert(b == 0);
   assert(c == 1);

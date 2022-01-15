@@ -29,7 +29,7 @@ module {
   public func r() : Nat { r_ };
 
   // 13 = 0b1101 => [true,false,true,ture]
-  public func Nat_to_reverse_bin(x : Nat) : [Bool] {
+  public func fromNatToReverseBin(x : Nat) : [Bool] {
     var ret : B.Buffer<Bool> = B.Buffer<Bool>(256);
     var t = x;
     while (t > 0) {
@@ -40,11 +40,11 @@ module {
   };
 
   // return (gcd, x, y) such that gcd = a * x + b * y
-  public func ext_gcd(a : Int, b : Int) : (Int, Int, Int) {
+  public func extGcd(a : Int, b : Int) : (Int, Int, Int) {
     if (a == 0) return (b, 0, 1);
     let q = b / a;
     let r = b % a;
-    let (gcd, x, y) = ext_gcd(r, a);
+    let (gcd, x, y) = extGcd(r, a);
     (gcd, y - q * x, x)
   };
   public func add_mod(x : Nat, y : Nat, p : Nat) : Nat {
@@ -61,7 +61,7 @@ module {
   };
   // return rev such that x * rev mod p = 1 if success else 0
   public func inv_mod(x : Nat, p : Nat) : Nat {
-    let (gcd, rev, dummy) = ext_gcd(x, p);
+    let (gcd, rev, dummy) = extGcd(x, p);
     assert(gcd == 1);
     var v = rev;
     if (rev < 0) v := rev + p;
@@ -257,7 +257,7 @@ module {
     };
     public func mul(x : Nat) : Ec {
       if (x == 0) return Ec();
-      let bs = Nat_to_reverse_bin(x);
+      let bs = fromNatToReverseBin(x);
       let self = copy();
       var ret = Ec();
       for (b in bs.vals()) {
