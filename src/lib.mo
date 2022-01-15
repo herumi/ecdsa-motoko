@@ -278,7 +278,8 @@ module {
     P.setNoCheck(x, y);
     P
   };
-  public func newEc_P() : Ec {
+  /// return the generator of Ec
+  public func newEcGenerator() : Ec {
     newEcNoCheck(gx_, gy_)
   };
   // [0x12, 0x34] : [Nat] => 0x1234
@@ -297,7 +298,7 @@ module {
   };
   /// get public key from sec
   public func getPublicKey(sec : Nat) : ?(Nat, Nat) {
-    let P = newEc_P();
+    let P = newEcGenerator();
     let Q = P.mul(sec);
     if (Q.isZero()) return null;
     ?(Q.x(), Q.y())
@@ -307,7 +308,7 @@ module {
     if (sec == 0 or sec >= r_) return null;
     let k = toBigEndianNat(rand) % r_;
     if (k == 0) return null;
-    let P = newEc_P();
+    let P = newEcGenerator();
     let Q = P.mul(k);
     if (Q.isZero()) return null;
     let r = Q.x() % r_;
@@ -326,7 +327,7 @@ module {
     let w = frInv(s);
     let u1 = frMul(z, w);
     let u2 = frMul(r, w);
-    let P = newEc_P();
+    let P = newEcGenerator();
     let (x, y) = pub;
     let Q = newEcNoCheck(x, y);
     if (not Q.isValid()) return false;
