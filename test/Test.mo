@@ -76,7 +76,7 @@ func gcd_test() {
 };
 
 func inv_test() {
-  let inv123 = M.inv_mod(123, 65537);
+  let inv123 = M.invMod(123, 65537);
   assert(inv123 == 14919);
   let x2 = M.newFp(123).inv();
   var i = 1;
