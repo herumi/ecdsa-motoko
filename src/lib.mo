@@ -170,7 +170,7 @@ module {
     invMod(x, r_)
   };
 
-  func _is_valid(x : Nat, y : Nat) : Bool {
+  func _isValid(x : Nat, y : Nat) : Bool {
     // return y^2 == (x^2 + a)x + b
     let lhs = fp_mul(y, y);
     let rhs = fp_add(fp_mul(fp_add(fp_mul(x, x), a_), x), b_);
@@ -184,7 +184,7 @@ module {
     public func x() : Nat { x_ };
     public func y() : Nat { y_ };
     public func set(x : Nat, y : Nat) : Bool {
-      if (not _is_valid(x, y)) return false;
+      if (not _isValid(x, y)) return false;
       x_ := x;
       y_ := y;
       isZero_ := false;
@@ -196,9 +196,9 @@ module {
       isZero_ := false;
     };
     public func isZero() : Bool { isZero_ };
-    public func is_valid() : Bool {
+    public func isValid() : Bool {
       if (isZero_) return true;
-      _is_valid(x_, y_)
+      _isValid(x_, y_)
     };
     public func neg() : Ec {
       if (isZero()) return Ec();
@@ -329,7 +329,7 @@ module {
     let P = newEc_P();
     let (x, y) = pub;
     let Q = newEcNoCheck(x, y);
-    if (not Q.is_valid()) return false;
+    if (not Q.isValid()) return false;
     let R = P.mul(u1).add(Q.mul(u2));
     if (R.isZero()) return false;
     (R.x() % r_) == r
