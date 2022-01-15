@@ -126,7 +126,7 @@ module {
     ret.set(x);
     ret
   };
-  public func newFp_nomod(x : Nat) : Fp {
+  public func newFpNoCheck(x : Nat) : Fp {
     let ret = Fp();
     ret.setNoCheck(x);
     ret
