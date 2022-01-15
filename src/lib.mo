@@ -286,17 +286,32 @@ module {
     };
     v
   };
-  /// sign hashed by sec and rand
-  public func signHashed(sec:Nat, hashed:[Nat8], rand:Nat) : ?(Nat, Nat) {
-    if (sec == 0 or sec >= r_) return null;
-    if (rand == 0 or rand >= r_) return null;
+  /// get secret key from [Nat8]
+  public func getSecretKey(rand : [Nat8]) : ?Nat {
+    let sec = toBigEndianNat(rand) % r_;
+    if (sec == 0) return null;
+    ?sec
+  };
+  /// get public key from sec
+  public func getPublicKey(sec : Nat) : ?(Nat, Nat) {
     let P = newEc_P();
-    let Q = P.mul(rand);
+    let Q = P.mul(sec);
+    if (Q.is_zero()) return null;
+    ?(Q.get_x(), Q.get_y())
+  };
+  /// sign hashed by sec and rand
+  public func signHashed(sec:Nat, hashed:[Nat8], rand:[Nat8]) : ?(Nat, Nat) {
+    if (sec == 0 or sec >= r_) return null;
+    let k = toBigEndianNat(rand) % r_;
+    if (k == 0) return null;
+    let P = newEc_P();
+    let Q = P.mul(k);
     if (Q.is_zero()) return null;
     let r = Q.get_x() % r_;
     if (r == 0) return null;
     let z = toBigEndianNat(hashed) % r_;
-    let s = fr_div(fr_add(fr_mul(r, sec), z), rand);
+    // s = (r * sec + z) / k
+    let s = fr_div(fr_add(fr_mul(r, sec), z), k);
     ?(r, s)
   };
   // verify hashed and sign by pub
