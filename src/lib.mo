@@ -86,7 +86,7 @@ module {
     public func setNoCheck(v : Nat) {
       v_ := v;
     };
-    public func is_zero() : Bool {
+    public func isZero() : Bool {
       v_ == 0
     };
     public func equal(rhs : Fp) : Bool {
@@ -195,24 +195,24 @@ module {
       y_ := y;
       isZero_ := false;
     };
-    public func is_zero() : Bool { isZero_ };
+    public func isZero() : Bool { isZero_ };
     public func is_valid() : Bool {
       if (isZero_) return true;
       _is_valid(x_, y_)
     };
     public func neg() : Ec {
-      if (is_zero()) return Ec();
+      if (isZero()) return Ec();
       newEcNoCheck(x_, fp_neg(y_))
     };
 	// QQQ : how can I return *this?
 	public func copy() : Ec {
-		if (is_zero()) return Ec();
+		if (isZero()) return Ec();
 		newEcNoCheck(x_, y_)
 	};
     public func add(rhs : Ec) : Ec {
-      if (is_zero()) return rhs;
+      if (isZero()) return rhs;
       // QQQ : how can I return *this?
-      if (rhs.is_zero()) return copy();
+      if (rhs.isZero()) return copy();
       var nume = 0;
       var deno = 0;
       let x2 = rhs.x();
@@ -235,7 +235,7 @@ module {
       newEcNoCheck(x3, y3)
     };
     public func dbl() : Ec {
-      if (is_zero()) return Ec();
+      if (isZero()) return Ec();
       var nume = 0;
       var deno = 0;
       // P + (-P) = 0
@@ -250,8 +250,8 @@ module {
       newEcNoCheck(x3, y3)
     };
     public func equal(rhs : Ec) : Bool {
-      if (is_zero()) return rhs.is_zero();
-      if (rhs.is_zero()) return false;
+      if (isZero()) return rhs.isZero();
+      if (rhs.isZero()) return false;
       // both are not zero
       x_ == rhs.x() and y_ == rhs.y()
     };
@@ -299,7 +299,7 @@ module {
   public func getPublicKey(sec : Nat) : ?(Nat, Nat) {
     let P = newEc_P();
     let Q = P.mul(sec);
-    if (Q.is_zero()) return null;
+    if (Q.isZero()) return null;
     ?(Q.x(), Q.y())
   };
   /// sign hashed by sec and rand
@@ -309,7 +309,7 @@ module {
     if (k == 0) return null;
     let P = newEc_P();
     let Q = P.mul(k);
-    if (Q.is_zero()) return null;
+    if (Q.isZero()) return null;
     let r = Q.x() % r_;
     if (r == 0) return null;
     let z = toBigEndianNat(hashed) % r_;
@@ -331,7 +331,7 @@ module {
     let Q = newEcNoCheck(x, y);
     if (not Q.is_valid()) return false;
     let R = P.mul(u1).add(Q.mul(u2));
-    if (R.is_zero()) return false;
+    if (R.isZero()) return false;
     (R.x() % r_) == r
   };
 };

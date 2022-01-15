@@ -38,10 +38,10 @@ func toBigEndianNatTest() {
 func cstr_test() {
   assert(M.Fp().val() == 0);
   var x = M.Fp();
-  assert(x.is_zero());
+  assert(x.isZero());
   var v1 = p + 123;
   x.setNoCheck(v1);
-  assert(not x.is_zero());
+  assert(not x.isZero());
   assert(x.val() == v1);
   x.set(v1);
   assert(x.val() == v1 % p);
@@ -55,7 +55,7 @@ func arith_test() {
   assert(x1.add(x2).val() == (m1 + m2) % p);
   assert(x1.sub(x2).val() == (m1 + p - m2) % p);
   assert(x2.sub(x1).val() == (m2 - m1) % p);
-  assert(M.Fp().neg().is_zero());
+  assert(M.Fp().neg().isZero());
   var x3 = M.newFp(m1).neg();
   assert(x3.val() == p - m1);
   x1.set(m1);
@@ -90,18 +90,18 @@ func inv_test() {
 
 func ec1_test() {
   let P = M.Ec();
-  assert(P.is_zero());
-  assert(P.neg().is_zero());
+  assert(P.isZero());
+  assert(P.neg().isZero());
 
-  assert(P.add(P).is_zero());
+  assert(P.add(P).isZero());
 
   assert(P.set(M.gx_, M.gy_));
-  assert(not P.is_zero());
+  assert(not P.isZero());
   let Q = P.neg();
-  assert(not Q.is_zero());
+  assert(not Q.isZero());
   assert(P.x() == Q.x());
   assert(P.y() == M.fp_neg(Q.y()));
-  assert(P.add(Q).is_zero());
+  assert(P.add(Q).isZero());
 };
 
 func ec2_test() {
@@ -110,7 +110,7 @@ func ec2_test() {
   let P3 = P2.add(P);
   let P4 = P3.add(P);
   let P5 = P4.add(P);
-  assert(P.add(P.neg()).is_zero());
+  assert(P.add(P.neg()).isZero());
   assert(P.dbl().equal(P2));
   assert(P.mul(2).equal(P2));
   assert(P.mul(3).equal(P3));
@@ -118,8 +118,8 @@ func ec2_test() {
   assert(P.mul(5).equal(P5));
   let Q = P.mul(M.r() - 1);
   assert(Q.equal(P.neg()));
-  assert(Q.add(P).is_zero());
-  assert(P.mul(M.r()).is_zero());
+  assert(Q.add(P).isZero());
+  assert(P.mul(M.r()).isZero());
 };
 
 func ecdsa_test() {
