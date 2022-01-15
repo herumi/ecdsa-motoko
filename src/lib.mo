@@ -315,7 +315,7 @@ module {
     ?(r, s)
   };
   // verify hashed and sign by pub
-  public func verifyHashed(pub : Ec, hashed : [Nat8], sig : (Nat, Nat)) : Bool {
+  public func verifyHashed(pub : (Nat, Nat), hashed : [Nat8], sig : (Nat, Nat)) : Bool {
     let (r, s) = sig;
     if (r == 0 or r >= r_) return false;
     if (s == 0 or s >= r_) return false;
@@ -324,9 +324,11 @@ module {
     let u1 = fr_mul(z, w);
     let u2 = fr_mul(r, w);
     let P = newEc_P();
-    let Q = P.mul(u1).add(pub.mul(u2));
-    if (Q.is_zero()) return false;
-    let x = Q.get_x() % r_;
-    x == r
+    let (x, y) = pub;
+    let Q = newEc_nocheck(x, y);
+    if (not Q.is_valid()) return false;
+    let R = P.mul(u1).add(Q.mul(u2));
+    if (R.is_zero()) return false;
+    (R.get_x() % r_) == r
   };
 };
