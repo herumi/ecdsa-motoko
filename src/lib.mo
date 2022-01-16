@@ -9,7 +9,8 @@
 
 import Int "mo:base/Int";
 import Nat8 "mo:base/Nat8";
-import B "mo:base/Buffer";
+import Buffer "mo:base/Buffer";
+import Debug "mo:base/Debug";
 
 module {
   // secp256k1
@@ -28,9 +29,37 @@ module {
   /// return the order of the generator of Ec.
   public func r() : Nat { r_ };
 
+  public func toHex(x : Nat) : Text {
+    if (x == 0) return "0";
+    var ret = "";
+    var t = x;
+    while (t > 0) {
+       ret := (switch (t % 16) {
+         case 0 { "0" };
+         case 1 { "1" };
+         case 2 { "2" };
+         case 3 { "3" };
+         case 4 { "4" };
+         case 5 { "5" };
+         case 6 { "6" };
+         case 7 { "7" };
+         case 8 { "8" };
+         case 9 { "9" };
+         case 10 { "a" };
+         case 11 { "b" };
+         case 12 { "c" };
+         case 13 { "d" };
+         case 14 { "e" };
+         case 15 { "f" };
+         case _ { "*" };
+       }) # ret;
+      t /= 16;
+    };
+    ret
+  };
   // 13 = 0b1101 => [true,false,true,ture]
   public func fromNatToReverseBin(x : Nat) : [Bool] {
-    var ret : B.Buffer<Bool> = B.Buffer<Bool>(256);
+    var ret : Buffer.Buffer<Bool> = Buffer.Buffer<Bool>(256);
     var t = x;
     while (t > 0) {
       ret.add((t % 2) == 1);
@@ -260,11 +289,25 @@ module {
       let bs = fromNatToReverseBin(x);
       let self = copy();
       var ret = Ec();
-      for (b in bs.vals()) {
-        ret := dbl();
-        if (b) ret := ret.add(self);
+      let n = bs.size();
+      var i = 0;
+      while (i < n) {
+        let b = bs[n - 1 - i];
+        ret := ret.dbl();
+        if (b) {
+          ret := ret.add(self);
+        };
+        i += 1;
       };
       ret
+    };
+    public func put() {
+      if (isZero()) {
+        Debug.print("0");
+      } else {
+        Debug.print("x=" # toHex(x_));
+        Debug.print("y=" # toHex(y_));
+      };
     };
   };
   public func newEc(x : Nat, y : Nat) : Ec {

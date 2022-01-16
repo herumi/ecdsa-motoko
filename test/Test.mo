@@ -1,6 +1,6 @@
 import M "../src";
-import Debug "mo:base/Debug";
 import Nat "mo:base/Nat";
+import Debug "mo:base/Debug";
 
 let p = M.p();
 
@@ -106,13 +106,24 @@ func ec1_test() {
 };
 
 func ec2_test() {
-  let P = M.Ec();
+  let okP = (0x79be667ef9dcbbac55a06295ce870b07029bfcdb2dce28d959f2815b16f81798, 0x483ada7726a3c4655da4fbfc0e1108a8fd17b448a68554199c47d08ffb10d4b8);
+  let okP2 = (0xc6047f9441ed7d6d3045406e95c07cd85c778e4b8cef3ca7abac09b95c709ee5, 0x1ae168fea63dc339a3c58419466ceaeef7f632653266d0e1236431a950cfe52a);
+  let okP3 = (0xf9308a019258c31049344f85f89d5229b531c845836f99b08601f113bce036f9, 0x388f7b0f632de8140fe337e62a37f3566500a99934c2231b6cb9fd7584b8e672);
+
+  let P = M.newEcGenerator();
+  assert(P.x() == okP.0);
+  assert(P.y() == okP.1);
   let P2 = P.add(P);
+  assert(P2.x() == okP2.0);
+  assert(P2.y() == okP2.1);
   let P3 = P2.add(P);
+  assert(P3.x() == okP3.0);
+  assert(P3.y() == okP3.1);
   let P4 = P3.add(P);
   let P5 = P4.add(P);
   assert(P.add(P.neg()).isZero());
   assert(P.dbl().equal(P2));
+  assert(P.mul(1).equal(P));
   assert(P.mul(2).equal(P2));
   assert(P.mul(3).equal(P3));
   assert(P.mul(4).equal(P4));
@@ -141,10 +152,8 @@ func ecdsa_test() {
     case(null) { (0, 0) };
     case(?v) { v };
   };
-  Debug.print("x=" # Nat.toText(x));
-//  assert(x == pubx);
-//  assert(y == puby);
-
+  assert(x == pubx);
+  assert(y == puby);
 };
 
 toBigEndianNatTest();
