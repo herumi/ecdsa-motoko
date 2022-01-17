@@ -333,12 +333,15 @@ module {
     v
   };
   /// get secret key from [Nat8]
+  /// rand : 32-byte
+  /// return secret key in [1, r_-1]
   public func getSecretKey(rand : [Nat8]) : ?Nat {
     let sec = toBigEndianNat(rand) % r_;
     if (sec == 0) return null;
     ?sec
   };
   /// get public key from sec
+  /// public key (x, y) is a point of elliptic curve
   public func getPublicKey(sec : Nat) : ?(Nat, Nat) {
     let P = newEcGenerator();
     let Q = P.mul(sec);
@@ -346,6 +349,8 @@ module {
     ?(Q.x(), Q.y())
   };
   /// sign hashed by sec and rand
+  /// hashed : 32-byte SHA-256 value of a message
+  /// rand : 32-byte random value
   public func signHashed(sec : Nat, hashed : [Nat8], rand : [Nat8]) : ?(Nat, Nat) {
     if (sec == 0 or sec >= r_) return null;
     let k = toBigEndianNat(rand) % r_;
