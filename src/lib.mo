@@ -365,7 +365,7 @@ module {
     let s = frDiv(frAdd(frMul(r, sec), z), k);
     ?(r, s)
   };
-  // verify hashed and sign by pub
+  // verify a tuple of pub, hashed, and sig
   public func verifyHashed(pub : (Nat, Nat), hashed : [Nat8], sig : (Nat, Nat)) : Bool {
     let (r, s) = sig;
     if (r == 0 or r >= r_) return false;
