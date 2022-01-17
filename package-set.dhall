@@ -8,13 +8,7 @@ let upstream = [] : List Package
 
 let
   -- This is where you can add your own packages to the package-set
-  additions = [
-       { name = "iterext"
-        , version = "v2.0.0"
-        , repo = "https://github.com/timohanke/motoko-iterext.git"
-        , dependencies = [ "base" ] : List Text
-        }
-    ]
+  additions = [ ]
 
 let
   -- This is where you can override existing packages in the package-set
