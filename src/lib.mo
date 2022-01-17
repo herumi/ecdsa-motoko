@@ -58,7 +58,7 @@ module {
     ret
   };
   // 13 = 0b1101 => [true,false,true,ture]
-  public func fromNatToReverseBin(x : Nat) : [Bool] {
+  public func toReverseBin(x : Nat) : [Bool] {
     var ret : Buffer.Buffer<Bool> = Buffer.Buffer<Bool>(256);
     var t = x;
     while (t > 0) {
@@ -240,7 +240,6 @@ module {
 	};
     public func add(rhs : Ec) : Ec {
       if (isZero()) return rhs;
-      // QQQ : how can I return *this?
       if (rhs.isZero()) return copy();
       var nume = 0;
       var deno = 0;
@@ -286,7 +285,7 @@ module {
     };
     public func mul(x : Nat) : Ec {
       if (x == 0) return Ec();
-      let bs = fromNatToReverseBin(x);
+      let bs = toReverseBin(x);
       let self = copy();
       var ret = Ec();
       let n = bs.size();

@@ -1,6 +1,5 @@
 import M "../src";
 import Nat "mo:base/Nat";
-import Debug "mo:base/Debug";
 
 let p = M.p();
 
@@ -9,7 +8,7 @@ func optionFunc(v:Nat) : ?Nat {
   ?v
 };
 
-func Nat_to_reverse_bin_test() {
+func toReverseBinTest() {
   let tbl = [
     (0, []:[Bool]),
     (1, [true]),
@@ -17,7 +16,7 @@ func Nat_to_reverse_bin_test() {
   ];
   for(i in tbl.keys()) {
     let (v, a) = tbl[i];
-    let b = M.fromNatToReverseBin(v);
+    let b = M.toReverseBin(v);
     assert(b == a);
   };
   switch (optionFunc(5)) {
@@ -36,7 +35,7 @@ func toBigEndianNatTest() {
   };
 };
 
-func cstr_test() {
+func cstrTest() {
   assert(M.Fp().val() == 0);
   var x = M.Fp();
   assert(x.isZero());
@@ -48,7 +47,7 @@ func cstr_test() {
   assert(x.val() == v1 % p);
 };
 
-func arith_test() {
+func arithTest() {
   let m1 = 50000;
   let m2 = 60000;
   var x1 = M.newFp(m1);
@@ -65,7 +64,7 @@ func arith_test() {
   assert(x3.val() == (m1 * m2) % p);
 };
 
-func gcd_test() {
+func gcdTest() {
   let (gcd1, gcd2, gcd3) = M.extGcd(100, 37);
   assert(gcd1 == 1);
   assert(gcd2 == 10);
@@ -76,7 +75,7 @@ func gcd_test() {
   assert(c == 1);
 };
 
-func inv_test() {
+func invTest() {
   let inv123 = M.invMod(123, 65537);
   assert(inv123 == 14919);
   let x2 = M.newFp(123).inv();
@@ -89,7 +88,7 @@ func inv_test() {
   };
 };
 
-func ec1_test() {
+func ec1Test() {
   let P = M.Ec();
   assert(P.isZero());
   assert(P.neg().isZero());
@@ -105,7 +104,7 @@ func ec1_test() {
   assert(P.add(Q).isZero());
 };
 
-func ec2_test() {
+func ec2Teset() {
   let okP = (0x79be667ef9dcbbac55a06295ce870b07029bfcdb2dce28d959f2815b16f81798, 0x483ada7726a3c4655da4fbfc0e1108a8fd17b448a68554199c47d08ffb10d4b8);
   let okP2 = (0xc6047f9441ed7d6d3045406e95c07cd85c778e4b8cef3ca7abac09b95c709ee5, 0x1ae168fea63dc339a3c58419466ceaeef7f632653266d0e1236431a950cfe52a);
   let okP3 = (0xf9308a019258c31049344f85f89d5229b531c845836f99b08601f113bce036f9, 0x388f7b0f632de8140fe337e62a37f3566500a99934c2231b6cb9fd7584b8e672);
@@ -135,17 +134,16 @@ func ec2_test() {
 };
 
 func getPair(v : ?(Nat, Nat)) : (Nat, Nat) {
+  // QQQ : How can I write better?
   switch (v) {
     case(null) { (0, 0) };
     case(?x) { x };
   }
 };
 
-func ecdsa_test() {
+func ecdsaTest() {
   let secRand : [Nat8] = [ 0x83, 0xec, 0xb3, 0x98, 0x4a, 0x4f, 0x9f, 0xf0, 0x3e, 0x84, 0xd5, 0xf9, 0xc0, 0xd7, 0xf8, 0x88, 0xa8, 0x18, 0x33, 0x64, 0x30, 0x47, 0xac, 0xc5, 0x8e, 0xb6, 0x43, 0x1e, 0x01, 0xd9, 0xba, 0xc8 ];
 
-  let pubx = 0x653bd02ba1367e5d4cd695b6f857d1cd90d4d8d42bc155d85377b7d2d0ed2e71;
-  let puby = 0x04e8f5da403ab78decec1f19e2396739ea544e2b14159beb5091b30b418b813a;
   let signRand : [Nat8] = [ 0x8a, 0xfa, 0x4a, 0x16, 0x2b, 0x7b, 0xad, 0x6c, 0x92, 0xff, 0x14, 0xf3, 0xa8, 0xbf, 0x4d, 0xb0, 0xf3, 0xc3, 0x9e, 0x90, 0xc0, 0x6f, 0x93, 0x78, 0x61, 0xf8, 0x23, 0xd2, 0x99, 0x5c, 0x74, 0xf0 ];
 //  let hello : [Nat8] = [ 0x68, 0x65, 0x6c, 0x6c, 0x6f ];
   // sha256('hello')
@@ -157,15 +155,16 @@ func ecdsa_test() {
   };
   assert(sec == 0x83ecb3984a4f9ff03e84d5f9c0d7f888a81833643047acc58eb6431e01d9bac8);
   var pub = getPair(M.getPublicKey(sec));
-  assert(pub.0 == pubx);
-  assert(pub.1 == puby);
+  assert(pub == (0x653bd02ba1367e5d4cd695b6f857d1cd90d4d8d42bc155d85377b7d2d0ed2e71, 0x04e8f5da403ab78decec1f19e2396739ea544e2b14159beb5091b30b418b813a));
   var sig = getPair(M.signHashed(sec, hashed, signRand));
   assert(M.verifyHashed(pub, hashed, sig));
   assert(not M.verifyHashed((pub.0, pub.1 + 1), hashed, sig));
-  assert(not M.verifyHashed(pub, hashed, (sig.0, sig.1 + 1)));
+  assert(not M.verifyHashed((pub.0, pub.1 + 1), hashed, sig));
+  assert(not M.verifyHashed(pub, [0x1, 0x2], sig));
   sig := (0xa598a8030da6d86c6bc7f2f5144ea549d28211ea58faa70ebf4c1e665c1fe9b5, 0xde5d79a2ba44e311d04fdca263639283965780bce9169822be9cc81756e95a24);
   assert(M.verifyHashed(pub, hashed, sig));
 
+  // generated values by Python:ecdsa
   sec := 0xb1aa6282b14e5ffbf6d12f783612f804e6a20d1a9734ffbb6c9923c670ee8da2;
   pub := getPair(M.getPublicKey(sec));
   assert(pub == (0x0a09ff142d94bc3f56c5c81b75ea3b06b082c5263fbb5bd88c619fc6393dda3d, 0xa53e0e930892cdb7799eea8fd45b9fff377d838f4106454289ae8a080b111f8d));
@@ -174,11 +173,11 @@ func ecdsa_test() {
 };
 
 toBigEndianNatTest();
-Nat_to_reverse_bin_test();
-cstr_test();
-arith_test();
-gcd_test();
-inv_test();
-ec1_test();
-ec2_test();
-ecdsa_test();
+toReverseBinTest();
+cstrTest();
+arithTest();
+gcdTest();
+invTest();
+ec1Test();
+ec2Teset();
+ecdsaTest();
