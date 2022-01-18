@@ -82,11 +82,6 @@ module {
     let (gcd, x, y) = extGcd(r, a);
     (gcd, y - q * x, x)
   };
-  public func addMod(x : Nat, y : Nat, p : Nat) : Nat {
-    let v = x + y;
-    if (v < p) return v;
-    v - p
-  };
   public func subMod(x : Nat, y : Nat, p : Nat) : Nat {
     if (x >= y) return x - y;
     x + p - y
@@ -129,7 +124,7 @@ module {
     };
     public func add(rhs : Fp) : Fp {
       let ret = Fp();
-      ret.setNoCheck(addMod(v_, rhs.val(), p_));
+      ret.setNoCheck((v_ + rhs.val()) % p_);
       ret
     };
     public func sub(rhs : Fp) : Fp {
@@ -168,7 +163,7 @@ module {
   };
   // mod fp functions
   public func fpAdd(x : Nat, y : Nat) : Nat {
-    addMod(x, y, p_)
+    (x + y) % p_
   };
   public func fpSub(x : Nat, y : Nat) : Nat {
     subMod(x, y, p_)
@@ -187,7 +182,7 @@ module {
   };
   // mod fr functions
   public func frAdd(x : Nat, y : Nat) : Nat {
-    addMod(x, y, r_)
+    (x + y) % r_
   };
   public func frSub(x : Nat, y : Nat) : Nat {
     subMod(x, y, r_)
