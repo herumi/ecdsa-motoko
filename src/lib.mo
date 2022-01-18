@@ -141,17 +141,10 @@ module {
       isZero_ := false;
     };
     public func isZero() : Bool = isZero_;
-    public func isValid() : Bool {
-      // TODO: can we make this an or statement?
-      if (isZero_) true else _isValid(x_, y_)
-    };
-    public func neg() : Ec {
-      if (isZero()) Ec() else newEcNoCheck(x_, fpNeg(y_))
-    };
+    public func isValid() : Bool = isZero_ or _isValid(x_, y_);
+    public func neg() : Ec = if (isZero()) Ec() else newEcNoCheck(x_, fpNeg(y_));
   	// QQQ : how can I return *this?
-	  public func copy() : Ec {
-		  if (isZero()) Ec() else newEcNoCheck(x_, y_);
-	  };
+	  public func copy() : Ec = if (isZero()) Ec() else newEcNoCheck(x_, y_);
     public func add(rhs : Ec) : Ec {
       if (isZero()) return rhs;
       if (rhs.isZero()) return copy();
