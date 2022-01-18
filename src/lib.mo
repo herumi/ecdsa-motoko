@@ -89,72 +89,26 @@ module {
     assert(0 <= v and v < p);
     Int.abs(v)
   };
+  func addMod(x : Nat, y : Nat, p : Nat) : Nat {
+    let z = x+y;
+    if (z < p) z else z-p;
+  };
+  func mulMod(x : Nat, y : Nat, p : Nat) : Nat = (x * y) % p;
   func subMod(x : Nat, y : Nat, p : Nat) : Nat = if (x >= y) x-y else x+p-y;
   func divMod(x : Nat, y : Nat, p : Nat) : Nat = (x * invMod(y, p)) % p;
   func negMod(x : Nat, p : Nat) : Nat = if (x == 0) 0 else p - x;
 
-  public class Fp() {
-    var v_ : Nat = 0;
-    public func val() : Nat = v_;
-    public func set(v : Nat) {
-      v_ := v % p_;
-    };
-    // set v without modulo
-    public func setNoCheck(v : Nat) {
-      v_ := v;
-    };
-    public func isZero() : Bool = v_ == 0;
-    public func equal(rhs : Fp) : Bool = v_ == rhs.val();
-    public func add(rhs : Fp) : Fp {
-      let ret = Fp();
-      ret.setNoCheck((v_ + rhs.val()) % p_);
-      ret
-    };
-    public func sub(rhs : Fp) : Fp {
-      let ret = Fp();
-      ret.setNoCheck(subMod(v_, rhs.val(), p_));
-      ret
-    };
-    public func mul(rhs : Fp) : Fp {
-      let ret = Fp();
-      ret.setNoCheck((v_ * rhs.val()) % p_);
-      ret
-    };
-    public func inv() : Fp {
-      let ret = Fp();
-      ret.setNoCheck(invMod(v_, p_));
-      ret
-    };
-    public func div(rhs : Fp) : Fp {
-      mul(rhs.inv())
-    };
-    public func neg() : Fp {
-      let ret = Fp();
-      ret.setNoCheck(negMod(v_, p_));
-      ret
-    };
-  }; // class Fp
-  public func newFp(x : Nat) : Fp {
-    let ret = Fp();
-    ret.set(x);
-    ret
-  };
-  public func newFpNoCheck(x : Nat) : Fp {
-    let ret = Fp();
-    ret.setNoCheck(x);
-    ret
-  };
   // mod fp functions
-  public func fpAdd(x : Nat, y : Nat) : Nat = (x + y) % p_;
+  public func fpAdd(x : Nat, y : Nat) : Nat = addMod(x, y, p_);
+  public func fpMul(x : Nat, y : Nat) : Nat = mulMod(x, y, p_);
   public func fpSub(x : Nat, y : Nat) : Nat = subMod(x, y, p_);
-  public func fpMul(x : Nat, y : Nat) : Nat = (x * y) % p_;
   public func fpDiv(x : Nat, y : Nat) : Nat = divMod(x, y, p_);
   public func fpNeg(x : Nat) : Nat = negMod(x, p_);
   public func fpInv(x : Nat) : Nat = invMod(x, p_);
 
   // mod fr functions
-  public func frAdd(x : Nat, y : Nat) : Nat = (x + y) % r_;
-  public func frMul(x : Nat, y : Nat) : Nat = (x * y) % r_;
+  public func frAdd(x : Nat, y : Nat) : Nat = addMod(x, y, r_);
+  public func frMul(x : Nat, y : Nat) : Nat = mulMod(x, y, r_);
   public func frSub(x : Nat, y : Nat) : Nat = subMod(x, y, r_);
   public func frDiv(x : Nat, y : Nat) : Nat = divMod(x, y, r_);
   public func frNeg(x : Nat) : Nat = negMod(x, r_);

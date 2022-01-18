@@ -1,5 +1,6 @@
 import M "../src";
 import Nat "mo:base/Nat";
+import FP "../src/fp";
 
 let p = M.p();
 
@@ -36,8 +37,8 @@ func toBigEndianNatTest() {
 };
 
 func cstrTest() {
-  assert(M.Fp().val() == 0);
-  var x = M.Fp();
+  assert(FP.Fp().val() == 0);
+  var x = FP.Fp();
   assert(x.isZero());
   var v1 = p + 123;
   x.setNoCheck(v1);
@@ -50,18 +51,31 @@ func cstrTest() {
 func arithTest() {
   let m1 = 50000;
   let m2 = 60000;
-  var x1 = M.newFp(m1);
-  var x2 = M.newFp(m2);
+  var x1 = FP.newFp(m1);
+  var x2 = FP.newFp(m2);
   assert(x1.add(x2).val() == (m1 + m2) % p);
-  assert(x1.sub(x2).val() == (m1 + p - m2) % p);
-  assert(x2.sub(x1).val() == (m2 - m1) % p);
-  assert(M.Fp().neg().isZero());
-  var x3 = M.newFp(m1).neg();
-  assert(x3.val() == p - m1);
+  assert(x1.sub(x2).val() == (m1 + p - m2 : Nat) % p);
+  assert(x2.sub(x1).val() == (m2 - m1 : Nat) % p);
+  assert(FP.Fp().neg().isZero());
+  var x3 = FP.newFp(m1).neg();
+  assert(x3.val() == (p - m1 : Nat));
   x1.set(m1);
   x2.set(m2);
   x3 := x1.mul(x2);
   assert(x3.val() == (m1 * m2) % p);
+};
+
+func invTest() {
+  let inv123 = FP.invMod(123, 65537);
+  assert(inv123 == 14919);
+  let x2 = FP.newFp(123).inv();
+  var i = 1;
+  while (i < 20) {
+    let x1 = FP.newFp(i);
+    assert(x1.mul(x1.inv()).val() == 1);
+    assert(x2.div(x1).mul(x1).val() == x2.val());
+    i += 1;
+  };
 };
 
 func gcdTest() {
@@ -73,19 +87,6 @@ func gcdTest() {
   assert(a == 37);
   assert(b == 0);
   assert(c == 1);
-};
-
-func invTest() {
-  let inv123 = M.invMod(123, 65537);
-  assert(inv123 == 14919);
-  let x2 = M.newFp(123).inv();
-  var i = 1;
-  while (i < 20) {
-    let x1 = M.newFp(i);
-    assert(x1.mul(x1.inv()).val() == 1);
-    assert(x2.div(x1).mul(x1).val() == x2.val());
-    i += 1;
-  };
 };
 
 func ec1Test() {
@@ -175,10 +176,14 @@ func ecdsaTest() {
 
 toBigEndianNatTest();
 toReverseBinTest();
+
+// test fp.mo
 cstrTest();
 arithTest();
-gcdTest();
 invTest();
+
+// test lib.mo
+gcdTest();
 ec1Test();
 ec2Teset();
 ecdsaTest();
