@@ -88,7 +88,7 @@ module {
   };
   // return rev such that x * rev mod p = 1 if success else 0
   public func invMod(x : Nat, p : Nat) : Nat {
-    let (gcd, rev, dummy) = extGcd(x, p);
+    let (gcd, rev, _) = extGcd(x, p);
     assert(gcd == 1);
     var v = rev;
     if (rev < 0) v := rev + p;
