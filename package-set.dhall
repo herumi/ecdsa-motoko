@@ -1,5 +1,5 @@
-let upstream =
-    https://github.com/dfinity/vessel-package-set/releases/download/mo-0.6.18-20220107/package-set.dhall
+-- let upstream = https://github.com/dfinity/vessel-package-set/releases/download/mo-0.6.18-20220107/package-set.dhall
+let upstream = https://github.com/timohanke/vessel-package-set/releases/download/mo-0.6.18-20220117/package-set.dhall
 
 let Package =
     { name : Text, version : Text, repo : Text, dependencies : List Text }
