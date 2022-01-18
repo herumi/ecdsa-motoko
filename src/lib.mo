@@ -86,9 +86,6 @@ module {
     if (x >= y) return x - y;
     x + p - y
   };
-  public func mulMod(x : Nat, y : Nat, p : Nat) : Nat {
-    (x * y) % p
-  };
   // return rev such that x * rev mod p = 1 if success else 0
   public func invMod(x : Nat, p : Nat) : Nat {
     let (gcd, rev, dummy) = extGcd(x, p);
@@ -99,7 +96,7 @@ module {
     Int.abs(v)
   };
   public func divMod(x : Nat, y : Nat, p : Nat) : Nat {
-    mulMod(x, invMod(y, p), p)
+    (x * invMod(y, p)) % p
   };
   public func negMod(x : Nat, p : Nat) : Nat {
     if (x == 0) return 0;
@@ -134,7 +131,7 @@ module {
     };
     public func mul(rhs : Fp) : Fp {
       let ret = Fp();
-      ret.setNoCheck(mulMod(v_, rhs.val(), p_));
+      ret.setNoCheck((v_ * rhs.val()) % p_);
       ret
     };
     public func inv() : Fp {
@@ -169,7 +166,7 @@ module {
     subMod(x, y, p_)
   };
   public func fpMul(x : Nat, y : Nat) : Nat {
-    mulMod(x, y, p_)
+    (x * y) % p_
   };
   public func fpDiv(x : Nat, y : Nat) : Nat {
     divMod(x, y, p_)
@@ -188,7 +185,7 @@ module {
     subMod(x, y, r_)
   };
   public func frMul(x : Nat, y : Nat) : Nat {
-    mulMod(x, y, r_)
+    (x * y) % r_
   };
   public func frDiv(x : Nat, y : Nat) : Nat {
     divMod(x, y, r_)
