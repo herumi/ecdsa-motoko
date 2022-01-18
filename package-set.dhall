@@ -6,11 +6,11 @@ let Package =
 
 let
   -- This is where you can add your own packages to the package-set
-  additions = [] : List Package 
+  additions = [] : List Package
 
 let
   -- This is where you can override existing packages in the package-set
-  overrides = [] : List Package 
+  overrides = [] : List Package
 
 -- in  upstream # additions # overrides
 in upstream # additions # overrides
