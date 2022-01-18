@@ -10,6 +10,7 @@
 import Int "mo:base/Int";
 import Nat8 "mo:base/Nat8";
 import Buffer "mo:base/Buffer";
+import Blob "mo:base/Blob";
 import Debug "mo:base/Debug";
 import SHA2 "mo:sha2";
 
@@ -30,8 +31,8 @@ module {
   /// return the order of the generator of Ec.
   public func r() : Nat { r_ };
 
-  public func test_sha2(b : Blob) : Blob {
-    SHA2.fromBlob(#sha256,b)
+  public func test_sha2(b : [Nat8]) : [Nat8] {
+    Blob.toArray(SHA2.fromBlob(#sha256, Blob.fromArray(b)))
   };
 
   public func toHex(x : Nat) : Text {
