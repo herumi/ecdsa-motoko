@@ -27,9 +27,9 @@ module {
   public let gy_ : Nat = 0x483ada7726a3c4655da4fbfc0e1108a8fd17b448a68554199c47d08ffb10d4b8;
 
   /// return the order of the field where Ec is defined.
-  public func p() : Nat { p_ };
+  public func p() : Nat = p_;
   /// return the order of the generator of Ec.
-  public func r() : Nat { r_ };
+  public func r() : Nat = r_;
 
   public func test_sha2(b : [Nat8]) : [Nat8] {
     Blob.toArray(SHA2.fromIter(#sha256, b.vals()))
@@ -133,7 +133,7 @@ module {
       ret.setNoCheck(negMod(v_, p_));
       ret
     };
-  };
+  }; // class Fp
   public func newFp(x : Nat) : Fp {
     let ret = Fp();
     ret.set(x);
@@ -166,39 +166,38 @@ module {
     let rhs = fpAdd(fpMul(fpAdd(fpMul(x, x), a_), x), b_);
     lhs == rhs
   };
+
   public class Ec() {
-    var x_ : Nat  = 0;
-    var y_ : Nat  = 0;
+    var x_ : Nat = 0;
+    var y_ : Nat = 0;
     var isZero_ : Bool = true;
-    public func affine() : (Nat, Nat) { (x_, y_) };
-    public func x() : Nat { x_ };
-    public func y() : Nat { y_ };
+    public func affine() : (Nat, Nat) = (x_, y_);
+    public func x() : Nat = x_;
+    public func y() : Nat = y_;
     public func set(x : Nat, y : Nat) : Bool {
       if (not _isValid(x, y)) return false;
       x_ := x;
       y_ := y;
       isZero_ := false;
-      true
+      return true
     };
     public func setNoCheck(x : Nat, y : Nat) {
       x_ := x;
       y_ := y;
       isZero_ := false;
     };
-    public func isZero() : Bool { isZero_ };
+    public func isZero() : Bool = isZero_;
     public func isValid() : Bool {
-      if (isZero_) return true;
-      _isValid(x_, y_)
+      // TODO: can we make this an or statement?
+      if (isZero_) true else _isValid(x_, y_)
     };
     public func neg() : Ec {
-      if (isZero()) return Ec();
-      newEcNoCheck(x_, fpNeg(y_))
+      if (isZero()) Ec() else newEcNoCheck(x_, fpNeg(y_))
     };
-	// QQQ : how can I return *this?
-	public func copy() : Ec {
-		if (isZero()) return Ec();
-		newEcNoCheck(x_, y_)
-	};
+  	// QQQ : how can I return *this?
+	  public func copy() : Ec {
+		  if (isZero()) Ec() else newEcNoCheck(x_, y_);
+	  };
     public func add(rhs : Ec) : Ec {
       if (isZero()) return rhs;
       if (rhs.isZero()) return copy();
@@ -221,7 +220,7 @@ module {
       let L = fpDiv(nume, deno);
       let x3 = fpSub(fpMul(L, L), fpAdd(x_, x2));
       let y3 = fpSub(fpMul(L, fpSub(x_, x3)), y_);
-      newEcNoCheck(x3, y3)
+      return newEcNoCheck(x3, y3)
     };
     public func dbl() : Ec {
       if (isZero()) return Ec();
@@ -236,13 +235,13 @@ module {
       let L = fpDiv(nume, deno);
       let x3 = fpSub(fpMul(L, L), fpAdd(x_, x_));
       let y3 = fpSub(fpMul(L, fpSub(x_, x3)), y_);
-      newEcNoCheck(x3, y3)
+      return newEcNoCheck(x3, y3)
     };
     public func equal(rhs : Ec) : Bool {
       if (isZero()) return rhs.isZero();
       if (rhs.isZero()) return false;
       // both are not zero
-      x_ == rhs.x() and y_ == rhs.y()
+      return x_ == rhs.x() and y_ == rhs.y()
     };
     public func mul(x : Nat) : Ec {
       if (x == 0) return Ec();
@@ -259,7 +258,7 @@ module {
         };
         i += 1;
       };
-      ret
+      return ret
     };
     public func put() {
       if (isZero()) {
@@ -272,9 +271,8 @@ module {
   };
   public func newEc(x : Nat, y : Nat) : Ec {
     let P = Ec();
-    if (P.set(x, y)) return P;
-    assert(false);
-    Ec()
+    assert(P.set(x, y));
+    P
   };
   public func newEcNoCheck(x : Nat, y : Nat) : Ec {
     let P = Ec();
@@ -282,12 +280,10 @@ module {
     P
   };
   /// return the generator of Ec
-  public func newEcGenerator() : Ec {
-    newEcNoCheck(gx_, gy_)
-  };
+  public func newEcGenerator() : Ec = newEcNoCheck(gx_, gy_);
   // [0x12, 0x34] : [Nat] => 0x1234
   public func toBigEndianNat(b : [Nat8]) : Nat {
-    var v : Nat = 0;
+    var v = 0;
     for (e in b.vals()) {
       v := v * 256 + Nat8.toNat(e);
     };
@@ -298,16 +294,14 @@ module {
   /// return secret key in [1, r_-1]
   public func getSecretKey(rand : [Nat8]) : ?Nat {
     let sec = toBigEndianNat(rand) % r_;
-    if (sec == 0) return null;
-    ?sec
+    if (sec == 0) null else ?sec
   };
   /// get public key from sec
   /// public key (x, y) is a point of elliptic curve
   public func getPublicKey(sec : Nat) : ?(Nat, Nat) {
     let P = newEcGenerator();
     let Q = P.mul(sec);
-    if (Q.isZero()) return null;
-    ?(Q.x(), Q.y())
+    if (Q.isZero()) null else ?(Q.x(), Q.y())
   };
   /// sign hashed by sec and rand
   /// hashed : 32-byte SHA-256 value of a message
@@ -324,7 +318,7 @@ module {
     let z = toBigEndianNat(hashed) % r_;
     // s = (r * sec + z) / k
     let s = frDiv(frAdd(frMul(r, sec), z), k);
-    ?(r, s)
+    return ?(r, s)
   };
   // verify a tuple of pub, hashed, and sig
   public func verifyHashed(pub : (Nat, Nat), hashed : [Nat8], sig : (Nat, Nat)) : Bool {
@@ -341,6 +335,6 @@ module {
     if (not Q.isValid()) return false;
     let R = P.mul(u1).add(Q.mul(u2));
     if (R.isZero()) return false;
-    (R.x() % r_) == r
+    return (R.x() % r_) == r
   };
 };
