@@ -32,7 +32,7 @@ module {
   public func r() : Nat { r_ };
 
   public func test_sha2(b : [Nat8]) : [Nat8] {
-    Blob.toArray(SHA2.fromBlob(#sha256, Blob.fromArray(b)))
+    Blob.toArray(SHA2.fromIter(#sha256, b.vals()))
   };
 
   public func toHex(x : Nat) : Text {
@@ -77,35 +77,25 @@ module {
   // return (gcd, x, y) such that gcd = a * x + b * y
   public func extGcd(a : Int, b : Int) : (Int, Int, Int) {
     if (a == 0) return (b, 0, 1);
-    let q = b / a;
-    let r = b % a;
+    let (q, r) = (b/a, b%a);
     let (gcd, x, y) = extGcd(r, a);
-    (gcd, y - q * x, x)
-  };
-  public func subMod(x : Nat, y : Nat, p : Nat) : Nat {
-    if (x >= y) return x - y;
-    x + p - y
+    return (gcd, y - q * x, x)
   };
   // return rev such that x * rev mod p = 1 if success else 0
   public func invMod(x : Nat, p : Nat) : Nat {
     let (gcd, rev, _) = extGcd(x, p);
     assert(gcd == 1);
-    var v = rev;
-    if (rev < 0) v := rev + p;
+    let v = if (rev < 0) rev+p else rev;
     assert(0 <= v and v < p);
     Int.abs(v)
   };
-  public func divMod(x : Nat, y : Nat, p : Nat) : Nat {
-    (x * invMod(y, p)) % p
-  };
-  public func negMod(x : Nat, p : Nat) : Nat {
-    if (x == 0) return 0;
-    p - x
-  };
+  func subMod(x : Nat, y : Nat, p : Nat) : Nat = if (x >= y) x-y else x+p-y;
+  func divMod(x : Nat, y : Nat, p : Nat) : Nat = (x * invMod(y, p)) % p;
+  func negMod(x : Nat, p : Nat) : Nat = if (x == 0) 0 else p - x;
 
   public class Fp() {
-    private var v_ : Nat = 0;
-    public func val() : Nat { v_ };
+    var v_ : Nat = 0;
+    public func val() : Nat = v_;
     public func set(v : Nat) {
       v_ := v % p_;
     };
@@ -113,12 +103,8 @@ module {
     public func setNoCheck(v : Nat) {
       v_ := v;
     };
-    public func isZero() : Bool {
-      v_ == 0
-    };
-    public func equal(rhs : Fp) : Bool {
-      v_ == rhs.val()
-    };
+    public func isZero() : Bool = v_ == 0;
+    public func equal(rhs : Fp) : Bool = v_ == rhs.val();
     public func add(rhs : Fp) : Fp {
       let ret = Fp();
       ret.setNoCheck((v_ + rhs.val()) % p_);
@@ -159,43 +145,20 @@ module {
     ret
   };
   // mod fp functions
-  public func fpAdd(x : Nat, y : Nat) : Nat {
-    (x + y) % p_
-  };
-  public func fpSub(x : Nat, y : Nat) : Nat {
-    subMod(x, y, p_)
-  };
-  public func fpMul(x : Nat, y : Nat) : Nat {
-    (x * y) % p_
-  };
-  public func fpDiv(x : Nat, y : Nat) : Nat {
-    divMod(x, y, p_)
-  };
-  public func fpNeg(x : Nat) : Nat {
-    negMod(x, p_)
-  };
-  public func fpInv(x : Nat) : Nat {
-    invMod(x, p_)
-  };
+  public func fpAdd(x : Nat, y : Nat) : Nat = (x + y) % p_;
+  public func fpSub(x : Nat, y : Nat) : Nat = subMod(x, y, p_);
+  public func fpMul(x : Nat, y : Nat) : Nat = (x * y) % p_;
+  public func fpDiv(x : Nat, y : Nat) : Nat = divMod(x, y, p_);
+  public func fpNeg(x : Nat) : Nat = negMod(x, p_);
+  public func fpInv(x : Nat) : Nat = invMod(x, p_);
+
   // mod fr functions
-  public func frAdd(x : Nat, y : Nat) : Nat {
-    (x + y) % r_
-  };
-  public func frSub(x : Nat, y : Nat) : Nat {
-    subMod(x, y, r_)
-  };
-  public func frMul(x : Nat, y : Nat) : Nat {
-    (x * y) % r_
-  };
-  public func frDiv(x : Nat, y : Nat) : Nat {
-    divMod(x, y, r_)
-  };
-  public func frNeg(x : Nat) : Nat {
-    negMod(x, r_)
-  };
-  public func frInv(x : Nat) : Nat {
-    invMod(x, r_)
-  };
+  public func frAdd(x : Nat, y : Nat) : Nat = (x + y) % r_;
+  public func frMul(x : Nat, y : Nat) : Nat = (x * y) % r_;
+  public func frSub(x : Nat, y : Nat) : Nat = subMod(x, y, r_);
+  public func frDiv(x : Nat, y : Nat) : Nat = divMod(x, y, r_);
+  public func frNeg(x : Nat) : Nat = negMod(x, r_);
+  public func frInv(x : Nat) : Nat = invMod(x, r_);
 
   func _isValid(x : Nat, y : Nat) : Bool {
     // return y^2 == (x^2 + a)x + b
@@ -204,9 +167,9 @@ module {
     lhs == rhs
   };
   public class Ec() {
-    private var x_ : Nat  = 0;
-    private var y_ : Nat  = 0;
-    private var isZero_ : Bool = true;
+    var x_ : Nat  = 0;
+    var y_ : Nat  = 0;
+    var isZero_ : Bool = true;
     public func affine() : (Nat, Nat) { (x_, y_) };
     public func x() : Nat { x_ };
     public func y() : Nat { y_ };
