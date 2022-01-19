@@ -216,15 +216,14 @@ module {
       };
     };
   };
-  public func newEc(x : Nat, y : Nat) : Ec {
+  public func newEc(x : Nat, y : Nat) : ?Ec {
     let P = Ec();
-    assert(P.set(x, y));
-    P
+    if P.set(x, y) ?P else null
   };
   public func newEcNoCheck(x : Nat, y : Nat) : Ec {
     let P = Ec();
     P.setNoCheck(x, y);
-    P
+    return P
   };
   /// return the generator of Ec
   public func newEcGenerator() : Ec = newEcNoCheck(gx_, gy_);
@@ -234,7 +233,7 @@ module {
     for (e in b.vals()) {
       v := v * 256 + Nat8.toNat(e);
     };
-    v
+    return v
   };
   /// get secret key from [Nat8]
   /// rand : 32-byte
