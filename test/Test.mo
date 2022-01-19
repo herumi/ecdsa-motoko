@@ -53,11 +53,11 @@ func arithTest() {
   var x1 = M.newFp(m1);
   var x2 = M.newFp(m2);
   assert(x1.add(x2).val() == (m1 + m2) % p);
-  assert(x1.sub(x2).val() == (m1 + p - m2) % p);
-  assert(x2.sub(x1).val() == (m2 - m1) % p);
+  assert(x1.sub(x2).val() == (m1 + p - m2 : Nat) % p);
+  assert(x2.sub(x1).val() == (m2 - m1 : Nat) % p);
   assert(M.Fp().neg().isZero());
   var x3 = M.newFp(m1).neg();
-  assert(x3.val() == p - m1);
+  assert(x3.val() == (p - m1 : Nat));
   x1.set(m1);
   x2.set(m2);
   x3 := x1.mul(x2);
