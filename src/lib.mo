@@ -218,7 +218,7 @@ module {
   };
   public func newEc(x : Nat, y : Nat) : ?Ec {
     let P = Ec();
-    if P.set(x, y) ?P else null
+    if (P.set(x, y)) ?P else null
   };
   public func newEcNoCheck(x : Nat, y : Nat) : Ec {
     let P = Ec();
