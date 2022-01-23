@@ -2,7 +2,7 @@
 import M "../src";
 import Nat "mo:base/Nat";
 
-func benchGen(n : Nat) {
+func bench(n : Nat) {
   let sec = 0x83ecb3984a4f9ff03e84d5f9c0d7f888a81833643047acc58eb6431e01d9bac8;
   var i : Nat = 0;
   while (i < n) {
@@ -11,6 +11,4 @@ func benchGen(n : Nat) {
   };
 };
 
-// about 1.7 sec @Xeon Platinum 8280 CPU 2.70GHz(turbo-off) 2021/01/22
-let loopN = @@@;
-benchGen(loopN);
+bench(@@@);

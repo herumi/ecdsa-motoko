@@ -5,6 +5,8 @@ all: Test.wasm
 test: Test.wasm
 	wasmtime Test.wasm
 
+Test.wasm: Test.mo
+
 %.wasm: %.mo
 	$(shell vessel bin)/moc $(shell vessel sources) --release -wasi-system-api -o $@ $<
 
@@ -38,7 +40,7 @@ bench-sign:
 	$(MAKE) bench-sign10
 	$(MAKE) bench-sign20
 
-clear:
-	rm -rf $*.wasm
+clean:
+	rm -rf *.wasm
 
 .PHONY: test

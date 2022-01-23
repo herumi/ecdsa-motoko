@@ -21,3 +21,6 @@ bench-sign:
 bench:
 	$(MAKE) bench-gen
 	$(MAKE) bench-sign
+
+clean:
+	$(MAKE) -C test clean
