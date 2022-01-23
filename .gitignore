@@ -1,4 +1,6 @@
 CVS
 test/.vessel
+test/*.wasm
+test/bench-gen*.mo
 .vessel
 docs/

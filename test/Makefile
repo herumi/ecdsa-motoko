@@ -1,12 +1,29 @@
-default:
-	$(shell vessel bin)/moc $(shell vessel sources) -wasi-system-api -o Test.wasm Test.mo && wasmtime Test.wasm
-	rm -f Test.wasm
+all: Test.wasm
 
-bench-gen.wasm: bench-gen.mo
-	$(shell vessel bin)/moc $(shell vessel sources) --release -wasi-system-api -o bench-gen.wasm bench-gen.mo
+.SUFFIXES: .wasm .mo
 
-bench-gen: bench-gen.wasm
-	time -f %U wasmtime bench-gen.wasm
-	time -f %U wasmtime bench-gen.wasm
-	time -f %U wasmtime bench-gen.wasm
-#	rm -f bench-gen.wasm
+test: Test.wasm
+	wasmtime Test.wasm
+
+%.wasm: %.mo
+	$(shell vessel bin)/moc $(shell vessel sources) --release -wasi-system-api -o $@ $<
+
+bench-gen10.mo: bench-gen.tmpl
+	sed 's/@@@/10/' < bench-gen.tmpl > bench-gen10.mo
+
+bench-gen20.mo: bench-gen.tmpl
+	sed 's/@@@/20/' < bench-gen.tmpl > bench-gen20.mo
+
+bench-gen10: bench-gen10.wasm
+	time -f %U wasmtime $<
+bench-gen20: bench-gen20.wasm
+	time -f %U wasmtime $<
+
+bench-gen:
+	$(MAKE) bench-gen10
+	$(MAKE) bench-gen20
+
+clear:
+	rm -rf $*.wasm
+
+.PHONY: test

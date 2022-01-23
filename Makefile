@@ -10,7 +10,7 @@ check-strict:
 docs:
 	$(shell vessel bin)/mo-doc
 test:
-	make -C test
+	make -C test test
 
 bench:
 	make -C test bench-gen

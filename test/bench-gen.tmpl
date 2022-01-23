@@ -1,3 +1,4 @@
+// This file is generated from bench-gen.tmpl
 import M "../src";
 import Nat "mo:base/Nat";
 
@@ -10,6 +11,6 @@ func benchGen(n : Nat) {
   };
 };
 
-// 1.7 sec @Xeon Platinum 8280 CPU 2.70GHz 2021/01/22
-let loopN = 10;
+// about 1.7 sec @Xeon Platinum 8280 CPU 2.70GHz(turbo-off) 2021/01/22
+let loopN = @@@;
 benchGen(loopN);
