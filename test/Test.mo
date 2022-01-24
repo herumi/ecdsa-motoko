@@ -1,5 +1,7 @@
 import M "../src";
 import Nat "mo:base/Nat";
+import Debug "mo:base/Debug";
+import Option "mo:base/Option";
 
 let p = M.p();
 
@@ -72,6 +74,21 @@ func invTest() {
     assert(M.fpMul(x1, M.fpInv(x1)) == 1);
     assert(M.fpMul(M.fpDiv(x2, x1), x1) == x2);
     x1 += 1;
+  };
+};
+
+func sqrRootTest() {
+  var i = 0;
+  while (i < 30) {
+//    Debug.print("i=" # M.toHex(i));
+    switch (M.fpSqrRoot(i)) {
+      case(null) { };
+      case(?sq) {
+//        Debug.print("sq=" # M.toHex(sq));
+        assert(M.fpSqr(sq) == i);
+      };
+    };
+    i += 1;
   };
 };
 
@@ -184,6 +201,7 @@ toReverseBinTest();
 // test lib.mo
 arithTest();
 invTest();
+sqrRootTest();
 gcdTest();
 ec1Test();
 ec2Teset();

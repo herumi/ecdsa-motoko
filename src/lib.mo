@@ -116,8 +116,9 @@ module {
   };
   func mulMod(x : Nat, y : Nat, p : Nat) : Nat = (x * y) % p;
   func subMod(x : Nat, y : Nat, p : Nat) : Nat = if (x >= y) x-y else x+p-y;
-  func divMod(x : Nat, y : Nat, p : Nat) : Nat = (x * invMod(y, p)) % p;
+  func divMod(x : Nat, y : Nat, p : Nat) : Nat = mulMod(x, invMod(y, p), p);
   func negMod(x : Nat, p : Nat) : Nat = if (x == 0) 0 else p - x;
+  func sqrMod(x : Nat, p : Nat) : Nat = mulMod(x, x, p);
 
   // mod fp functions
   public func fpAdd(x : Nat, y : Nat) : Nat = addMod(x, y, p_);
@@ -127,6 +128,11 @@ module {
   public func fpPow(x : Nat, y : Nat) : Nat = powMod(x, y, p_);
   public func fpNeg(x : Nat) : Nat = negMod(x, p_);
   public func fpInv(x : Nat) : Nat = invMod(x, p_);
+  public func fpSqr(x : Nat) : Nat = sqrMod(x, p_);
+  public func fpSqrRoot(x : Nat) : ?Nat {
+    let sq = powMod(x, pSqrRoot_, p_);
+    if (fpSqr(sq) == x) ?sq else null
+  };
 
   // mod fr functions
   public func frAdd(x : Nat, y : Nat) : Nat = addMod(x, y, r_);
@@ -136,6 +142,7 @@ module {
   public func frPow(x : Nat, y : Nat) : Nat = powMod(x, y, r_);
   public func frNeg(x : Nat) : Nat = negMod(x, r_);
   public func frInv(x : Nat) : Nat = invMod(x, r_);
+  public func frSqr(x : Nat) : Nat = sqrMod(x, r_);
 
   func _isValid(x : Nat, y : Nat) : Bool {
     // return y^2 == (x^2 + a)x + b
