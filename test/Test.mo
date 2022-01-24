@@ -25,13 +25,13 @@ func toReverseBinTest() {
   };
 };
 
-func toBigEndianNatTest() {
+func toNatAsBigEndianTest() {
   let tbl = [
     ([0x12, 0x34]:[Nat8], 0x1234),
   ];
   for (i in tbl.keys()) {
     let (b, v) = tbl[i];
-    assert(M.toBigEndianNat(b) == v);
+    assert(M.toNatAsBigEndian(b) == v);
   };
 };
 
@@ -156,7 +156,7 @@ func ecdsaTest() {
   assert(M.verifyHashed(pub, hashed, sig));
 };
 
-toBigEndianNatTest();
+toNatAsBigEndianTest();
 toReverseBinTest();
 
 // test lib.mo
