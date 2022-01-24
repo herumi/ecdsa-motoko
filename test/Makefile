@@ -5,9 +5,7 @@ all: Test.wasm
 test: Test.wasm
 	wasmtime Test.wasm
 
-Test.wasm: Test.mo
-
-%.wasm: %.mo
+%.wasm: %.mo ../src/lib.mo
 	$(shell vessel bin)/moc $(shell vessel sources) --release -wasi-system-api -o $@ $<
 
 bench-gen10.mo: bench-gen.tmpl
