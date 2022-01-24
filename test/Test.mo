@@ -27,12 +27,19 @@ func toReverseBinTest() {
 
 func toNatAsBigEndianTest() {
   let tbl = [
-    ([0x12, 0x34]:[Nat8], 0x1234),
+    ([] : [Nat8], 0x0),
+    ([0x12] : [Nat8], 0x12),
+    ([0x12, 0x34] : [Nat8], 0x1234),
+    ([0x12, 0x34, 0x56, 0x78, 0x9a, 0xbc, 0xde, 0xf0] : [Nat8], 0x123456789abcdef0),
+    ([0x12, 0x34, 0x56, 0x78, 0x9a, 0xbc, 0xde, 0xf0, 0x12] : [Nat8], 0x123456789abcdef012),
   ];
   for (i in tbl.keys()) {
     let (b, v) = tbl[i];
     assert(M.toNatAsBigEndian(b) == v);
+    assert(M.fromNatToBigEndian(b.size(), v) == b);
   };
+  assert(M.fromNatToBigEndian(1, 0) == ([0x00] : [Nat8]));
+  assert(M.fromNatToBigEndian(5, 0x1234) == ([0x00, 0x00, 0x00, 0x12, 0x34] : [Nat8]));
 };
 
 func arithTest() {

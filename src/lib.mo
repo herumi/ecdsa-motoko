@@ -10,6 +10,7 @@
 import Int "mo:base/Int";
 import Nat8 "mo:base/Nat8";
 import Buffer "mo:base/Buffer";
+import Array "mo:base/Array";
 import Blob "mo:base/Blob";
 import Debug "mo:base/Debug";
 import SHA2 "mo:sha2";
@@ -65,7 +66,7 @@ module {
   };
   // 13 = 0b1101 => [true,false,true,ture]
   public func toReverseBin(x : Nat) : [Bool] {
-    var ret : Buffer.Buffer<Bool> = Buffer.Buffer<Bool>(256);
+    var ret = Buffer.Buffer<Bool>(256);
     var t = x;
     while (t > 0) {
       ret.add((t % 2) == 1);
@@ -235,6 +236,21 @@ module {
     };
     return v
   };
+  /// (5, 0x1234) => [0x00, 0x00, 0x00, 0x12, 0x34]
+  public func fromNatToBigEndian(n : Nat, x : Nat) : [Nat8] {
+    var buf = Buffer.Buffer<Nat8>(n);
+    var t = x;
+    var i = 0;
+    while (i < n) {
+      buf.add(Nat8.fromNat(t % 256));
+      t /= 256;
+      i += 1;
+    };
+    let ith = func(i : Nat) : Nat8 {
+      buf.get(n - 1 - i)
+    };
+    Array.tabulate<Nat8>(n, ith)
+  };
   /// get secret key from [Nat8]
   /// rand : 32-byte
   /// return secret key in [1, r_-1]
@@ -283,4 +299,6 @@ module {
     if (R.isZero()) return false;
     return (R.x() % r_) == r
   };
+//  public func serializeUncompressed(pub : (Nat, Nat)) : Blob {
+//  };
 };
