@@ -27,6 +27,9 @@ module {
   public let gx_ : Nat = 0x79be667ef9dcbbac55a06295ce870b07029bfcdb2dce28d959f2815b16f81798;
   public let gy_ : Nat = 0x483ada7726a3c4655da4fbfc0e1108a8fd17b448a68554199c47d08ffb10d4b8;
 
+  // pSqrRoot_ = (p_ + 1) / 4;
+  let pSqrRoot_ : Nat = 0x3fffffffffffffffffffffffffffffffffffffffffffffffffffffffbfffff0c;
+
   /// return the order of the field where Ec is defined.
   public func p() : Nat = p_;
   /// return the order of the generator of Ec.
@@ -94,6 +97,23 @@ module {
     let z = x+y;
     if (z < p) z else z-p;
   };
+  // return x^y mod p
+  func powMod(x : Nat, y : Nat, p : Nat) : Nat {
+    if (y == 0) return 1;
+    let bs = toReverseBin(y);
+    let n = bs.size();
+    var ret = 1;
+    var i = 0;
+    while (i < n) {
+      let b = bs[n - 1 - i];
+      ret := mulMod(ret, ret, p);
+      if (b) {
+        ret := mulMod(ret, x, p);
+      };
+      i += 1;
+    };
+    ret
+  };
   func mulMod(x : Nat, y : Nat, p : Nat) : Nat = (x * y) % p;
   func subMod(x : Nat, y : Nat, p : Nat) : Nat = if (x >= y) x-y else x+p-y;
   func divMod(x : Nat, y : Nat, p : Nat) : Nat = (x * invMod(y, p)) % p;
@@ -104,6 +124,7 @@ module {
   public func fpMul(x : Nat, y : Nat) : Nat = mulMod(x, y, p_);
   public func fpSub(x : Nat, y : Nat) : Nat = subMod(x, y, p_);
   public func fpDiv(x : Nat, y : Nat) : Nat = divMod(x, y, p_);
+  public func fpPow(x : Nat, y : Nat) : Nat = powMod(x, y, p_);
   public func fpNeg(x : Nat) : Nat = negMod(x, p_);
   public func fpInv(x : Nat) : Nat = invMod(x, p_);
 
@@ -112,6 +133,7 @@ module {
   public func frMul(x : Nat, y : Nat) : Nat = mulMod(x, y, r_);
   public func frSub(x : Nat, y : Nat) : Nat = subMod(x, y, r_);
   public func frDiv(x : Nat, y : Nat) : Nat = divMod(x, y, r_);
+  public func frPow(x : Nat, y : Nat) : Nat = powMod(x, y, r_);
   public func frNeg(x : Nat) : Nat = negMod(x, r_);
   public func frInv(x : Nat) : Nat = invMod(x, r_);
 

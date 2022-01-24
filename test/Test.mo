@@ -53,6 +53,14 @@ func arithTest() {
   assert(M.fpNeg(0) == 0);
   assert(M.fpNeg(x1) == (p - m1 : Nat));
   assert(M.fpMul(x1, x2) == (m1 * m2) % p);
+
+  var i = 0;
+  x2 := 1;
+  while (i < 30) {
+    assert(x2 == M.fpPow(x1, i));
+    x2 := M.fpMul(x2, x1);
+    i += 1;
+  };
 };
 
 func invTest() {
