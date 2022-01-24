@@ -299,6 +299,36 @@ module {
     if (R.isZero()) return false;
     return (R.x() % r_) == r
   };
-//  public func serializeUncompressed(pub : (Nat, Nat)) : Blob {
-//  };
+  /// return 0x04 + bigEndian(x) + bigEndian(y)
+  public func serializeUncompressed(pub : (Nat, Nat)) : [Nat8] {
+    let prefix = 0x04 : Nat8;
+    let n = 32;
+    let x = fromNatToBigEndian(n, pub.0);
+    let y = fromNatToBigEndian(n, pub.1);
+    let ith = func(i : Nat) : Nat8 {
+      if (i == 0) {
+        prefix
+      } else if (i <= n) {
+        x[i - 1]
+      } else {
+        y[i - 1 - n]
+      }
+    };
+    Array.tabulate<Nat8>(1+n*2, ith)
+  };
+  /// return 0x02 + bigEndian(x) if y is even
+  /// return 0x03 + bigEndian(x) if y is odd
+  public func serializeCompressed(pub : (Nat, Nat)) : [Nat8] {
+    let prefix : Nat8 = if ((pub.1 % 2) == 0) 0x02 else 0x03;
+    let n = 32;
+    let x = fromNatToBigEndian(n, pub.0);
+    let ith = func(i : Nat) : Nat8 {
+      if (i == 0) {
+        prefix
+      } else {
+        x[i - 1]
+      }
+    };
+    Array.tabulate<Nat8>(1+n, ith)
+  };
 };
