@@ -301,7 +301,7 @@ module {
   /// sign hashed by sec and rand
   /// hashed : 32-byte SHA-256 value of a message
   /// rand : 32-byte random value
-  public func signHashed(sec : Nat, hashed : [Nat8], rand : [Nat8]) : ?(Nat, Nat) {
+  public func signHashed(sec : Nat, hashed : Iter.Iter<Nat8>, rand : [Nat8]) : ?(Nat, Nat) {
     if (sec == 0 or sec >= r_) return null;
     let k = toNatAsBigEndian(rand.vals()) % r_;
     if (k == 0) return null;
@@ -310,7 +310,7 @@ module {
     if (Q.isZero()) return null;
     let r = Q.x() % r_;
     if (r == 0) return null;
-    let z = toNatAsBigEndian(hashed.vals()) % r_;
+    let z = toNatAsBigEndian(hashed) % r_;
     // s = (r * sec + z) / k
     let s = frDiv(frAdd(frMul(r, sec), z), k);
     return ?(r, s)

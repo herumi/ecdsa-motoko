@@ -164,7 +164,7 @@ func ecdsaTest() {
   assert(sec == 0x83ecb3984a4f9ff03e84d5f9c0d7f888a81833643047acc58eb6431e01d9bac8);
   var pub = Option.get(M.getPublicKey(sec), (0, 0));
   assert(pub == (0x653bd02ba1367e5d4cd695b6f857d1cd90d4d8d42bc155d85377b7d2d0ed2e71, 0x04e8f5da403ab78decec1f19e2396739ea544e2b14159beb5091b30b418b813a));
-  var sig = Option.get(M.signHashed(sec, hashed, signRand), (0, 0));
+  var sig = Option.get(M.signHashed(sec, hashed.vals(), signRand), (0, 0));
   assert(M.verifyHashed(pub, hashed, sig));
   assert(not M.verifyHashed((pub.0, pub.1 + 1), hashed, sig));
   assert(not M.verifyHashed((pub.0, pub.1 + 1), hashed, sig));
