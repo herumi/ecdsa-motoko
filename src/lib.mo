@@ -284,11 +284,11 @@ module {
     };
     Array.tabulate<Nat8>(n, ith)
   };
-  /// get secret key from [Nat8]
-  /// rand : 32-byte
+  /// get secret key from rand
+  /// rand : Nat8 values
   /// return secret key in [1, r_-1]
-  public func getSecretKey(rand : [Nat8]) : ?Nat {
-    let sec = toNatAsBigEndian(rand.vals()) % r_;
+  public func getSecretKey(rand : Iter.Iter<Nat8>) : ?Nat {
+    let sec = toNatAsBigEndian(rand) % r_;
     if (sec == 0) null else ?sec
   };
   /// get public key from sec

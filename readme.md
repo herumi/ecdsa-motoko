@@ -6,7 +6,7 @@ Under construction
 
 # API
 
-- `getSecretKey(rand : [Nat8]) : ?Nat`
+- `getSecretKey(rand : Iter.Iter<Nat8>) : ?Nat`
   - return a secret key from random data `rand`.
 - `getPublicKey(sec : Nat) : ?(Nat, Nat)`
   - return a public key `(x, y)` from a secret key `sec`.
