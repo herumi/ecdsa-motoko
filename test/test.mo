@@ -37,7 +37,7 @@ func toNatAsBigEndianTest() {
   ];
   for (i in tbl.keys()) {
     let (b, v) = tbl[i];
-    assert(M.toNatAsBigEndian(b) == v);
+    assert(M.toNatAsBigEndian(b.vals()) == v);
     assert(M.fromNatToBigEndian(b.size(), v) == b);
   };
   assert(M.fromNatToBigEndian(1, 0) == ([0x00] : [Nat8]));

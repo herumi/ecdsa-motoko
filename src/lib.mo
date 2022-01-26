@@ -8,6 +8,7 @@
  */
 
 import Int "mo:base/Int";
+import Iter "mo:base/Iter";
 import Nat8 "mo:base/Nat8";
 import Buffer "mo:base/Buffer";
 import Array "mo:base/Array";
@@ -258,10 +259,13 @@ module {
   /// return the generator of Ec
   public func newEcGenerator() : Ec = newEcNoCheck(gx_, gy_);
   // [0x12, 0x34] : [Nat] => 0x1234
-  public func toNatAsBigEndian(b : [Nat8]) : Nat {
+  public func toNatAsBigEndian(iter : Iter.Iter<Nat8>) : Nat {
     var v = 0;
-    for (e in b.vals()) {
-      v := v * 256 + Nat8.toNat(e);
+    label l loop {
+      switch (iter.next()) {
+        case (null) break l;
+        case (?e) v := v * 256 + Nat8.toNat(e);
+      };
     };
     return v
   };
@@ -284,7 +288,7 @@ module {
   /// rand : 32-byte
   /// return secret key in [1, r_-1]
   public func getSecretKey(rand : [Nat8]) : ?Nat {
-    let sec = toNatAsBigEndian(rand) % r_;
+    let sec = toNatAsBigEndian(rand.vals()) % r_;
     if (sec == 0) null else ?sec
   };
   /// get public key from sec
@@ -299,14 +303,14 @@ module {
   /// rand : 32-byte random value
   public func signHashed(sec : Nat, hashed : [Nat8], rand : [Nat8]) : ?(Nat, Nat) {
     if (sec == 0 or sec >= r_) return null;
-    let k = toNatAsBigEndian(rand) % r_;
+    let k = toNatAsBigEndian(rand.vals()) % r_;
     if (k == 0) return null;
     let P = newEcGenerator();
     let Q = P.mul(k);
     if (Q.isZero()) return null;
     let r = Q.x() % r_;
     if (r == 0) return null;
-    let z = toNatAsBigEndian(hashed) % r_;
+    let z = toNatAsBigEndian(hashed.vals()) % r_;
     // s = (r * sec + z) / k
     let s = frDiv(frAdd(frMul(r, sec), z), k);
     return ?(r, s)
@@ -316,7 +320,7 @@ module {
     let (r, s) = sig;
     if (r == 0 or r >= r_) return false;
     if (s == 0 or s >= r_) return false;
-    let z = toNatAsBigEndian(hashed) % r_;
+    let z = toNatAsBigEndian(hashed.vals()) % r_;
     let w = frInv(s);
     let u1 = frMul(z, w);
     let u2 = frMul(r, w);
