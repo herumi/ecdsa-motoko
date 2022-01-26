@@ -1,9 +1,9 @@
-all: Test.wasm
+all: test.wasm
 
 .SUFFIXES: .wasm .mo
 
-test: Test.wasm
-	wasmtime Test.wasm
+test: test.wasm
+	wasmtime test.wasm
 
 %.wasm: %.mo ../src/lib.mo
 	$(shell vessel bin)/moc $(shell vessel sources) --release -wasi-system-api -o $@ $<
