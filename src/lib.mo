@@ -301,9 +301,9 @@ module {
   /// sign hashed by sec and rand
   /// hashed : 32-byte SHA-256 value of a message
   /// rand : 32-byte random value
-  public func signHashed(sec : Nat, hashed : Iter.Iter<Nat8>, rand : [Nat8]) : ?(Nat, Nat) {
+  public func signHashed(sec : Nat, hashed : Iter.Iter<Nat8>, rand : Iter.Iter<Nat8>) : ?(Nat, Nat) {
     if (sec == 0 or sec >= r_) return null;
-    let k = toNatAsBigEndian(rand.vals()) % r_;
+    let k = toNatAsBigEndian(rand) % r_;
     if (k == 0) return null;
     let P = newEcGenerator();
     let Q = P.mul(k);

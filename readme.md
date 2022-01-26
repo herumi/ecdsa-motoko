@@ -10,7 +10,7 @@ Under construction
   - return a secret key from random data `rand`.
 - `getPublicKey(sec : Nat) : ?(Nat, Nat)`
   - return a public key `(x, y)` from a secret key `sec`.
-- `signHashed(sec : Nat, hashed : Iter.Iter<Nat8>, rand : [Nat8]) : ?(Nat, Nat)`
+- `signHashed(sec : Nat, hashed : Iter.Iter<Nat8>, rand : Iter.Iter<Nat8>) : ?(Nat, Nat)`
   - return a signature `(r, s)` from a secret key `sec`, a hashed value `hashed`, and a random data `rand`.
 - `verifyHashed(pub : (Nat, Nat), hashed : Iter.Iter<Nat8>, sig : (Nat, Nat)) : Bool`
   - return true if a tuple of a public key `pub` and a hashed data `hashed`, and a signature `sig` is valid.
