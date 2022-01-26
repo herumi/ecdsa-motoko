@@ -286,23 +286,23 @@ module {
     };
     Array.tabulate<Nat8>(n, ith)
   };
-  /// get secret key from rand
+  /// Get secret key from rand.
   /// rand : Nat8 values
   /// return secret key in [1, r_-1]
   public func getSecretKey(rand : Iter.Iter<Nat8>) : ?Nat {
     let sec = toNatAsBigEndian(rand) % r_;
     if (sec == 0) null else ?sec
   };
-  /// get public key from sec
+  /// Get public key from sec.
   /// public key (x, y) is a point of elliptic curve
   public func getPublicKey(sec : Nat) : ?(Nat, Nat) {
     let P = newEcGenerator();
     let Q = P.mul(sec);
     if (Q.isZero()) null else ?(Q.x(), Q.y())
   };
-  /// sign hashed by sec and rand
-  /// hashed : 32-byte SHA-256 value of a message
-  /// rand : 32-byte random value
+  /// Sign hashed by sec and rand.
+  /// hashed : 32-byte SHA-256 value of a message.
+  /// rand : 32-byte random value.
   public func signHashed(sec : Nat, hashed : Iter.Iter<Nat8>, rand : Iter.Iter<Nat8>) : ?(Nat, Nat) {
     if (sec == 0 or sec >= r_) return null;
     let k = toNatAsBigEndian(rand) % r_;
@@ -335,7 +335,7 @@ module {
     return (R.x() % r_) == r
   };
   /// return 0x04 + bigEndian(x) + bigEndian(y)
-  public func serializeUncompressed(pub : (Nat, Nat)) : [Nat8] {
+  public func serializeUncompressed(pub : (Nat, Nat)) : Blob {
     let prefix = 0x04 : Nat8;
     let n = 32;
     let x = fromNatToBigEndian(n, pub.0);
@@ -349,11 +349,12 @@ module {
         y[i - 1 - n]
       }
     };
-    Array.tabulate<Nat8>(1+n*2, ith)
+    let ar = Array.tabulate<Nat8>(1+n*2, ith);
+    Blob.fromArray(ar)
   };
   /// return 0x02 + bigEndian(x) if y is even
   /// return 0x03 + bigEndian(x) if y is odd
-  public func serializeCompressed(pub : (Nat, Nat)) : [Nat8] {
+  public func serializeCompressed(pub : (Nat, Nat)) : Blob {
     let prefix : Nat8 = if ((pub.1 % 2) == 0) 0x02 else 0x03;
     let n = 32;
     let x = fromNatToBigEndian(n, pub.0);
@@ -364,10 +365,11 @@ module {
         x[i - 1]
       }
     };
-    Array.tabulate<Nat8>(1+n, ith)
+    let ar = Array.tabulate<Nat8>(1+n, ith);
+    Blob.fromArray(ar)
   };
-  /// get y corresponding to x such that y^2 = x^ + ax + b
-  /// return even y if even is true
+  /// Get y corresponding to x such that y^2 = x^ + ax + b.
+  /// Return even y if `even` is true.
   public func getYfromX(x : Nat, even : Bool) : ?Nat {
     let y2 = getYsqrFromX(x);
     switch (fpSqrRoot(y2)) {
@@ -377,20 +379,18 @@ module {
       };
     }
   };
-  /// deserialize compressed public key
-  public func deserializeCompressed(buf : Iter.Iter<Nat8>) : ?(Nat, Nat) {
-   var even = true;
-    switch (buf.next()) {
-      case (null) return null;
-      case (?prefix) {
-        switch (prefix) {
-          case 0x02 { even := true; };
-          case 0x03 { even := false; };
-          case _ { return null; };
-        };
-      };
+  /// Deserialize a compressed public key.
+  public func deserializeCompressed(b : Blob) : ?(Nat, Nat) {
+    let n = 32;
+    if (b.size() != n + 1) return null;
+    let iter = b.vals();
+    var even = true;
+    switch (iter.next()) {
+      case (?0x02) { even := true; };
+      case (?0x03) { even := false; };
+      case _ { return null; };
     };
-    let x = toNatAsBigEndian(buf);
+    let x = toNatAsBigEndian(iter);
     if (x >= p_) return null;
     switch (getYfromX(x, even)) {
       case (null) return null;
