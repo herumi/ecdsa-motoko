@@ -316,11 +316,11 @@ module {
     return ?(r, s)
   };
   // verify a tuple of pub, hashed, and sig
-  public func verifyHashed(pub : (Nat, Nat), hashed : [Nat8], sig : (Nat, Nat)) : Bool {
+  public func verifyHashed(pub : (Nat, Nat), hashed : Iter.Iter<Nat8>, sig : (Nat, Nat)) : Bool {
     let (r, s) = sig;
     if (r == 0 or r >= r_) return false;
     if (s == 0 or s >= r_) return false;
-    let z = toNatAsBigEndian(hashed.vals()) % r_;
+    let z = toNatAsBigEndian(hashed) % r_;
     let w = frInv(s);
     let u1 = frMul(z, w);
     let u2 = frMul(r, w);
