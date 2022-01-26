@@ -14,6 +14,7 @@ import Buffer "mo:base/Buffer";
 import Array "mo:base/Array";
 import Blob "mo:base/Blob";
 import Debug "mo:base/Debug";
+import Option "mo:base/Option";
 import SHA2 "mo:sha2";
 
 module {
@@ -145,11 +146,12 @@ module {
   public func frInv(x : Nat) : Nat = invMod(x, r_);
   public func frSqr(x : Nat) : Nat = sqrMod(x, r_);
 
+  // return x^3 + ax + b
+  func getYsqrFromX(x : Nat) : Nat {
+    fpAdd(fpMul(fpAdd(fpMul(x, x), a_), x), b_)
+  };
   func _isValid(x : Nat, y : Nat) : Bool {
-    // return y^2 == (x^2 + a)x + b
-    let lhs = fpMul(y, y);
-    let rhs = fpAdd(fpMul(fpAdd(fpMul(x, x), a_), x), b_);
-    lhs == rhs
+    fpMul(y, y) == getYsqrFromX(x)
   };
 
   public class Ec() {
@@ -363,5 +365,36 @@ module {
       }
     };
     Array.tabulate<Nat8>(1+n, ith)
+  };
+  /// get y corresponding to x such that y^2 = x^ + ax + b
+  /// return even y if even is true
+  public func getYfromX(x : Nat, even : Bool) : ?Nat {
+    let y2 = getYsqrFromX(x);
+    switch (fpSqrRoot(y2)) {
+      case (null) { return null };
+      case (?y) {
+        return if (even == ((y % 2) == 0)) ?y else ?fpNeg(y)
+      };
+    }
+  };
+  /// deserialize compressed public key
+  public func deserializeCompressed(buf : Iter.Iter<Nat8>) : ?(Nat, Nat) {
+   var even = true;
+    switch (buf.next()) {
+      case (null) return null;
+      case (?prefix) {
+        switch (prefix) {
+          case 0x02 { even := true; };
+          case 0x03 { even := false; };
+          case _ { return null; };
+        };
+      };
+    };
+    let x = toNatAsBigEndian(buf);
+    if (x >= p_) return null;
+    switch (getYfromX(x, even)) {
+      case (null) return null;
+      case (?y) return ?(x, y);
+    };
   };
 };
