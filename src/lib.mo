@@ -285,20 +285,35 @@ module {
     };
     return v
   };
+  /// 0x1234 => [0x12, 0x34], 0 => [0]
+  public func toBigEndian(x : Nat) : [Nat8] {
+    if (x == 0) return [0];
+    var buf = Buffer.Buffer<Nat8>(64);
+    var t = x;
+    while (t > 0) {
+      buf.add(Nat8.fromNat(t % 256));
+      t /= 256;
+    };
+    let n = buf.size();
+    let ith = func(i : Nat) : Nat8 {
+      buf.get(n - 1 - i)
+    };
+    Array.tabulate<Nat8>(n, ith)
+  };
   /// (5, 0x1234) => [0x00, 0x00, 0x00, 0x12, 0x34]
-  public func toBigEndianPad(n : Nat, x : Nat) : [Nat8] {
-    var buf = Buffer.Buffer<Nat8>(n);
+  public func toBigEndianPad(len : Nat, x : Nat) : [Nat8] {
+    var buf = Buffer.Buffer<Nat8>(len);
     var t = x;
     var i = 0;
-    while (i < n) {
+    while (i < len) {
       buf.add(Nat8.fromNat(t % 256));
       t /= 256;
       i += 1;
     };
     let ith = func(i : Nat) : Nat8 {
-      buf.get(n - 1 - i)
+      buf.get(len - 1 - i)
     };
-    Array.tabulate<Nat8>(n, ith)
+    Array.tabulate<Nat8>(len, ith)
   };
   /// Get secret key from rand.
   /// rand : Nat8 values
@@ -429,23 +444,21 @@ module {
   public func serializeToDER((r, s) : (Nat, Nat)) : Blob {
     var buf = Buffer.Buffer<Nat8>(80);
     buf.add(0x30); // top marker
-    var len : Nat8 = 32 * 2 + 4;
-    let ra = toBigEndianPad(32, r);
-    let sa = toBigEndianPad(32, s);
-    let rAdj : Nat8 = if (ra[0] >= 0x80) 1 else 0;
-    let sAdj : Nat8 = if (sa[0] >= 0x80) 1 else 0;
-    buf.add(len + rAdj + sAdj);
-
-    let append = func(a : [Nat8], adj : Nat8) {
+    buf.add(0); // modify later
+    let append = func(x : Nat) {
       buf.add(0x02); // marker
-      buf.add(32 + adj); // len(a)
+      let a = toBigEndian(x);
+      let adj = if (a[0] >= 0x80) 1 else 0;
+      buf.add(Nat8.fromNat(a.size() + adj));
       if (adj == 1) buf.add(0x00);
       for (e in a.vals()) {
         buf.add(e);
       };
     };
-    append(ra, rAdj);
-    append(sa, sAdj);
-    Blob.fromArray(buf.toArray())
+    append(r);
+    append(s);
+    let va = buf.toVarArray();
+    va[1] := Nat8.fromNat(va.size()) - 2;
+    Blob.fromArrayMut(va)
   };
 };
