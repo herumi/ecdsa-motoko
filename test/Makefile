@@ -3,9 +3,12 @@ all: test.wasm
 .SUFFIXES: .wasm .mo
 
 test: test.wasm
-	wasmtime test.wasm
+	wasmtime $<
 
-%.wasm: %.mo ../src/lib.mo
+test-hmac: hmac-test.wasm
+	wasmtime $<
+
+%.wasm: %.mo ../src/lib.mo ../src/hmac.mo
 	$(shell vessel bin)/moc $(shell vessel sources) --release -wasi-system-api -o $@ $<
 
 bench-gen10.mo: bench-gen.tmpl

@@ -1,6 +1,6 @@
 /**
- * Module      : fp.mo
- * Description : finite field
+ * Module      : lib.mo
+ * Description : ECDSA-SHA-256
  * Copyright   : 2022 Mitsunari Shigeo
  * License     : Apache 2.0 with LLVM Exception
  * Maintainer  : herumi <herumi@nifty.com>

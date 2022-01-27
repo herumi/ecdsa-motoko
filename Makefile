@@ -22,5 +22,8 @@ bench:
 	$(MAKE) bench-gen
 	$(MAKE) bench-sign
 
+test-hmac:
+	$(MAKE) -C test test-hmac
+
 clean:
 	$(MAKE) -C test clean
