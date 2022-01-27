@@ -32,6 +32,9 @@ module {
   // pSqrRoot_ = (p_ + 1) / 4;
   let pSqrRoot_ : Nat = 0x3fffffffffffffffffffffffffffffffffffffffffffffffffffffffbfffff0c;
 
+  // rHalf_ = (r_ + 1) / 2;
+  let rHalf_ : Nat = 0x7fffffffffffffffffffffffffffffff5d576e7357a4501ddfe92f46681b20a1;
+
   /// return the order of the field where Ec is defined.
   public func p() : Nat = p_;
   /// return the order of the generator of Ec.
@@ -303,7 +306,7 @@ module {
     let Q = P.mul(sec);
     if (Q.isZero()) null else ?(Q.x(), Q.y())
   };
-  /// Sign hashed by sec and rand.
+  /// Sign hashed by sec and rand return (r, s) such that s < rHalf_
   /// hashed : 32-byte SHA-256 value of a message.
   /// rand : 32-byte random value.
   public func signHashed(sec : Nat, hashed : Iter.Iter<Nat8>, rand : Iter.Iter<Nat8>) : ?(Nat, Nat) {
@@ -317,8 +320,9 @@ module {
     if (r == 0) return null;
     let z = toNatAsBigEndian(hashed) % r_;
     // s = (r * sec + z) / k
-    let s = frDiv(frAdd(frMul(r, sec), z), k);
-    return ?(r, s)
+    var s = frDiv(frAdd(frMul(r, sec), z), k);
+    if (s >= rHalf_) s := frNeg(s);
+    ?(r, s)
   };
   // verify a tuple of pub, hashed, and sig
   public func verifyHashed(pub : (Nat, Nat), hashed : Iter.Iter<Nat8>, sig : (Nat, Nat)) : Bool {
