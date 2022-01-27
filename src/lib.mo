@@ -26,8 +26,8 @@ module {
   let a_ : Nat = 0;
   let b_ : Nat = 7;
   let r_ : Nat = 0xfffffffffffffffffffffffffffffffebaaedce6af48a03bbfd25e8cd0364141;
-  public let gx_ : Nat = 0x79be667ef9dcbbac55a06295ce870b07029bfcdb2dce28d959f2815b16f81798;
-  public let gy_ : Nat = 0x483ada7726a3c4655da4fbfc0e1108a8fd17b448a68554199c47d08ffb10d4b8;
+  let gx_ : Nat = 0x79be667ef9dcbbac55a06295ce870b07029bfcdb2dce28d959f2815b16f81798;
+  let gy_ : Nat = 0x483ada7726a3c4655da4fbfc0e1108a8fd17b448a68554199c47d08ffb10d4b8;
 
   // pSqrRoot_ = (p_ + 1) / 4;
   let pSqrRoot_ : Nat = 0x3fffffffffffffffffffffffffffffffffffffffffffffffffffffffbfffff0c;
@@ -36,6 +36,9 @@ module {
   public func p() : Nat = p_;
   /// return the order of the generator of Ec.
   public func r() : Nat = r_;
+
+  /// return the generator of Ec.
+  public func generator() : (Nat, Nat) = (gx_, gy_);
 
   public func test_sha2(b : [Nat8]) : [Nat8] {
     Blob.toArray(SHA2.fromIter(#sha256, b.vals()))

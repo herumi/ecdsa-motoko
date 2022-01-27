@@ -127,7 +127,8 @@ func ec1Test() {
 
   assert(P.add(P).isZero());
 
-  assert(P.set(M.gx_, M.gy_));
+  let (x, y) = M.generator();
+  assert(P.set(x, y));
   assert(not P.isZero());
   let Q = P.neg();
   assert(not Q.isZero());
