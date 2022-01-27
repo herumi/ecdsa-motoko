@@ -56,10 +56,10 @@ func toNatAsBigEndianTest() {
   for (i in tbl.keys()) {
     let (b, v) = tbl[i];
     assert(M.toNatAsBigEndian(b.vals()) == v);
-    assert(M.fromNatToBigEndian(b.size(), v) == b);
+    assert(M.toBigEndianPad(b.size(), v) == b);
   };
-  assert(M.fromNatToBigEndian(1, 0) == ([0x00] : [Nat8]));
-  assert(M.fromNatToBigEndian(5, 0x1234) == ([0x00, 0x00, 0x00, 0x12, 0x34] : [Nat8]));
+  assert(M.toBigEndianPad(1, 0) == ([0x00] : [Nat8]));
+  assert(M.toBigEndianPad(5, 0x1234) == ([0x00, 0x00, 0x00, 0x12, 0x34] : [Nat8]));
 };
 
 func arithTest() {

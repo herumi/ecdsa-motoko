@@ -286,7 +286,7 @@ module {
     return v
   };
   /// (5, 0x1234) => [0x00, 0x00, 0x00, 0x12, 0x34]
-  public func fromNatToBigEndian(n : Nat, x : Nat) : [Nat8] {
+  public func toBigEndianPad(n : Nat, x : Nat) : [Nat8] {
     var buf = Buffer.Buffer<Nat8>(n);
     var t = x;
     var i = 0;
@@ -365,8 +365,8 @@ module {
   public func serializeUncompressed(pub : (Nat, Nat)) : Blob {
     let prefix = 0x04 : Nat8;
     let n = 32;
-    let x = fromNatToBigEndian(n, pub.0);
-    let y = fromNatToBigEndian(n, pub.1);
+    let x = toBigEndianPad(n, pub.0);
+    let y = toBigEndianPad(n, pub.1);
     let ith = func(i : Nat) : Nat8 {
       if (i == 0) {
         prefix
@@ -384,7 +384,7 @@ module {
   public func serializeCompressed(pub : (Nat, Nat)) : Blob {
     let prefix : Nat8 = if ((pub.1 % 2) == 0) 0x02 else 0x03;
     let n = 32;
-    let x = fromNatToBigEndian(n, pub.0);
+    let x = toBigEndianPad(n, pub.0);
     let ith = func(i : Nat) : Nat8 {
       if (i == 0) {
         prefix
@@ -430,8 +430,8 @@ module {
     var buf = Buffer.Buffer<Nat8>(80);
     buf.add(0x30); // top marker
     var len : Nat8 = 32 * 2 + 4;
-    let ra = fromNatToBigEndian(32, r);
-    let sa = fromNatToBigEndian(32, s);
+    let ra = toBigEndianPad(32, r);
+    let sa = toBigEndianPad(32, s);
     let rAdj : Nat8 = if (ra[0] >= 0x80) 1 else 0;
     let sAdj : Nat8 = if (sa[0] >= 0x80) 1 else 0;
     buf.add(len + rAdj + sAdj);
