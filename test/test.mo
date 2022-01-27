@@ -173,7 +173,7 @@ func ecdsaTest() {
   let hello : [Nat8] = [ 0x68, 0x65, 0x6c, 0x6c, 0x6f ];
   // sha256('hello')
   let hashed : [Nat8] = [ 0x2c, 0xf2, 0x4d, 0xba, 0x5f, 0xb0, 0xa3, 0x0e, 0x26, 0xe8, 0x3b, 0x2a, 0xc5, 0xb9, 0xe2, 0x9e, 0x1b, 0x16, 0x1e, 0x5c, 0x1f, 0xa7, 0x42, 0x5e, 0x73, 0x04, 0x33, 0x62, 0x93, 0x8b, 0x98, 0x24 ];
-  assert(M.test_sha2(hello) == hashed);
+  assert(Blob.toArray(M.sha2(hello.vals())) == hashed);
 
   var sec = switch (M.getSecretKey(secRand.vals())) {
     case(null) { 0 };
@@ -187,8 +187,11 @@ func ecdsaTest() {
   assert(not M.verifyHashed((pub.0, pub.1 + 1), hashed.vals(), sig));
   assert(not M.verifyHashed((pub.0, pub.1 + 1), hashed.vals(), sig));
   assert(not M.verifyHashed(pub, ([0x1, 0x2] : [Nat8]).vals(), sig));
-  sig := (0xa598a8030da6d86c6bc7f2f5144ea549d28211ea58faa70ebf4c1e665c1fe9b5, 0xde5d79a2ba44e311d04fdca263639283965780bce9169822be9cc81756e95a24);
+  assert(M.sign(sec, hello.vals(), signRand.vals()) == ?sig);
   assert(M.verifyHashed(pub, hashed.vals(), sig));
+
+  sig := (0xa598a8030da6d86c6bc7f2f5144ea549d28211ea58faa70ebf4c1e665c1fe9b5, 0xde5d79a2ba44e311d04fdca263639283965780bce9169822be9cc81756e95a24);
+  assert(M.verify(pub, hello.vals(), sig));
 
   // generated values by Python:ecdsa
   sec := 0xb1aa6282b14e5ffbf6d12f783612f804e6a20d1a9734ffbb6c9923c670ee8da2;

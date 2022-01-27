@@ -40,8 +40,8 @@ module {
   /// return the generator of Ec.
   public func generator() : (Nat, Nat) = (gx_, gy_);
 
-  public func test_sha2(b : [Nat8]) : [Nat8] {
-    Blob.toArray(SHA2.fromIter(#sha256, b.vals()))
+  public func sha2(iter : Iter.Iter<Nat8>) : Blob {
+    SHA2.fromIter(#sha256, iter)
   };
 
   public func toHex(x : Nat) : Text {
@@ -336,6 +336,14 @@ module {
     let R = P.mul(u1).add(Q.mul(u2));
     if (R.isZero()) return false;
     return (R.x() % r_) == r
+  };
+  /// Sign a message by sec and rand with SHA-256
+  public func sign(sec : Nat, msg : Iter.Iter<Nat8>, rand : Iter.Iter<Nat8>) : ?(Nat, Nat) {
+    signHashed(sec, sha2(msg).vals(), rand)
+  };
+  // verify a tuple of pub, msg, and sig
+  public func verify(pub : (Nat, Nat), msg : Iter.Iter<Nat8>, sig : (Nat, Nat)) : Bool {
+    verifyHashed(pub, sha2(msg).vals(), sig)
   };
   /// return 0x04 + bigEndian(x) + bigEndian(y)
   public func serializeUncompressed(pub : (Nat, Nat)) : Blob {
