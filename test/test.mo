@@ -190,14 +190,14 @@ func ecdsaTest() {
   assert(M.sign(sec, hello.vals(), signRand.vals()) == ?sig);
   assert(M.verifyHashed(pub, hashed.vals(), sig));
 
-  sig := (0xa598a8030da6d86c6bc7f2f5144ea549d28211ea58faa70ebf4c1e665c1fe9b5, 0xde5d79a2ba44e311d04fdca263639283965780bce9169822be9cc81756e95a24);
+  sig := M.normalizeSignature(0xa598a8030da6d86c6bc7f2f5144ea549d28211ea58faa70ebf4c1e665c1fe9b5, 0xde5d79a2ba44e311d04fdca263639283965780bce9169822be9cc81756e95a24);
   assert(M.verify(pub, hello.vals(), sig));
 
   // generated values by Python:ecdsa
   sec := 0xb1aa6282b14e5ffbf6d12f783612f804e6a20d1a9734ffbb6c9923c670ee8da2;
   pub := Option.get(M.getPublicKey(sec), (0, 0));
   assert(pub == (0x0a09ff142d94bc3f56c5c81b75ea3b06b082c5263fbb5bd88c619fc6393dda3d, 0xa53e0e930892cdb7799eea8fd45b9fff377d838f4106454289ae8a080b111f8d));
-  sig := (0x50839a97404c24ec39455b996e4888477fd61bcf0ffb960c7ffa3bef10450191, 0x9671b8315bb5c1611d422d49cbbe7e80c6b463215bfad1c16ca73172155bf31a);
+  sig := M.normalizeSignature(0x50839a97404c24ec39455b996e4888477fd61bcf0ffb960c7ffa3bef10450191, 0x9671b8315bb5c1611d422d49cbbe7e80c6b463215bfad1c16ca73172155bf31a);
   assert(M.verifyHashed(pub, hashed.vals(), sig));
 };
 

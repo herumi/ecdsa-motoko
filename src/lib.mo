@@ -306,7 +306,7 @@ module {
     let Q = P.mul(sec);
     if (Q.isZero()) null else ?(Q.x(), Q.y())
   };
-  /// Sign hashed by sec and rand return (r, s) such that s < rHalf_
+  /// Sign hashed by sec and rand return lower S signature (r, s) such that s < rHalf_
   /// hashed : 32-byte SHA-256 value of a message.
   /// rand : 32-byte random value.
   public func signHashed(sec : Nat, hashed : Iter.Iter<Nat8>, rand : Iter.Iter<Nat8>) : ?(Nat, Nat) {
@@ -324,11 +324,15 @@ module {
     if (s >= rHalf_) s := frNeg(s);
     ?(r, s)
   };
-  // verify a tuple of pub, hashed, and sig
+  /// convert a signature to lower S signature
+  public func normalizeSignature((r, s) : (Nat, Nat)) : (Nat, Nat) {
+    if (s < rHalf_) (r, s) else (r, frNeg(s))
+  };
+  /// verify a tuple of pub, hashed, and lowerS sig
   public func verifyHashed(pub : (Nat, Nat), hashed : Iter.Iter<Nat8>, sig : (Nat, Nat)) : Bool {
     let (r, s) = sig;
     if (r == 0 or r >= r_) return false;
-    if (s == 0 or s >= r_) return false;
+    if (s == 0 or s >= rHalf_) return false;
     let z = toNatAsBigEndian(hashed) % r_;
     let w = frInv(s);
     let u1 = frMul(z, w);
