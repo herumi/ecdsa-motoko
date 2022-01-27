@@ -461,4 +461,34 @@ module {
     va[1] := Nat8.fromNat(va.size()) - 2;
     Blob.fromArrayMut(va)
   };
+  /// deserialize DER to signature
+  public func deserializeDer(b : Blob) : ?(Nat, Nat) {
+    let a = Blob.toArray(b);
+    if (a[0] != 0x30) return null;
+    if (a.size() != Nat8.toNat(a[1]) + 2) return null;
+    let read = func(a : [Nat8], begin : Nat) : ?(Nat, Nat) {
+      if (a[begin] != 0x02) return null;
+      let n = Nat8.toNat(a[begin + 1]);
+      if (a.size() < begin + 1 + n) return null;
+      var v = 0;
+      var i = 0;
+      while (i < n) {
+        v := v * 256 + Nat8.toNat(a[begin + 2 + i]);
+        i += 1;
+      };
+      ?(n + 2, v)
+    };
+    switch (read(a, 2)) {
+      case (null) { null };
+      case (?(read1, r)) {
+        switch (read(a, 2 + read1)) {
+          case (null) { null };
+          case (?(read2, s)) {
+            if (a.size() != 2 + read1 + read2) return null;
+            ?(r, s)
+          };
+        };
+      };
+    };
+  };
 };
