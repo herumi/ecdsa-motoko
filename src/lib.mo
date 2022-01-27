@@ -75,15 +75,23 @@ module {
     };
     ret
   };
+  public func dump(iter : Iter.Iter<Nat8>) {
+    var text = "";
+    for (e in iter) {
+      let s = toHex(Nat8.toNat(e));
+      text := text # (if (s.size() == 1) "0" else "") # s;
+    };
+    Debug.print(text);
+  };
   // 13 = 0b1101 => [true,false,true,ture]
   public func toReverseBin(x : Nat) : [Bool] {
-    var ret = Buffer.Buffer<Bool>(256);
+    var buf = Buffer.Buffer<Bool>(256);
     var t = x;
     while (t > 0) {
-      ret.add((t % 2) == 1);
+      buf.add((t % 2) == 1);
       t /= 2;
     };
-    ret.toArray()
+    buf.toArray()
   };
 
   // return (gcd, x, y) such that gcd = a * x + b * y
@@ -415,5 +423,29 @@ module {
       case (null) return null;
       case (?y) return ?(x, y);
     };
+  };
+  /// serialize to DER format
+  /// https://www.oreilly.com/library/view/programming-bitcoin/9781492031482/ch04.html
+  public func serializeToDER((r, s) : (Nat, Nat)) : Blob {
+    var buf = Buffer.Buffer<Nat8>(80);
+    buf.add(0x30); // top marker
+    var len : Nat8 = 32 * 2 + 4;
+    let ra = fromNatToBigEndian(32, r);
+    let sa = fromNatToBigEndian(32, s);
+    let rAdj : Nat8 = if (ra[0] >= 0x80) 1 else 0;
+    let sAdj : Nat8 = if (sa[0] >= 0x80) 1 else 0;
+    buf.add(len + rAdj + sAdj);
+
+    let append = func(a : [Nat8], adj : Nat8) {
+      buf.add(0x02); // marker
+      buf.add(32 + adj); // len(a)
+      if (adj == 1) buf.add(0x00);
+      for (e in a.vals()) {
+        buf.add(e);
+      };
+    };
+    append(ra, rAdj);
+    append(sa, sAdj);
+    Blob.fromArray(buf.toArray())
   };
 };
