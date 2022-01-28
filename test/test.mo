@@ -1,4 +1,6 @@
 import M "../src";
+import ModN "../src/modn";
+import IntExt "../src/intext";
 import Nat "mo:base/Nat";
 import Debug "mo:base/Debug";
 import Option "mo:base/Option";
@@ -98,7 +100,7 @@ func arithTest() {
 };
 
 func invTest() {
-  let inv123 = M.invMod(123, 65537);
+  let inv123 = ModN.inv(123, 65537);
   assert(inv123 == 14919);
   let x2 = M.fpInv(123);
   var x1 = 1;
@@ -124,12 +126,12 @@ func sqrRootTest() {
   };
 };
 
-func gcdTest() {
-  let (gcd1, gcd2, gcd3) = M.extGcd(100, 37);
+func gcdTest(f : (Int, Int) -> (Int, Int, Int)) {
+  let (gcd1, gcd2, gcd3) = f(100, 37);
   assert(gcd1 == 1);
   assert(gcd2 == 10);
   assert(gcd3 == -27);
-  let (a, b, c) = M.extGcd(0, 37);
+  let (a, b, c) = f(0, 37);
   assert(a == 37);
   assert(b == 0);
   assert(c == 1);
@@ -249,7 +251,8 @@ iterTest();
 arithTest();
 invTest();
 sqrRootTest();
-gcdTest();
+gcdTest(IntExt.extGcd);
+gcdTest(IntExt.extGcd_nr);
 ec1Test();
 ec2Teset();
 ecdsaTest();

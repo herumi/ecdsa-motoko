@@ -16,6 +16,7 @@ import Blob "mo:base/Blob";
 import Debug "mo:base/Debug";
 import Option "mo:base/Option";
 import SHA2 "mo:sha2";
+import ModN "modn";
 
 module {
   // secp256k1
@@ -94,71 +95,29 @@ module {
     buf.toArray()
   };
 
-  // return (gcd, x, y) such that gcd = a * x + b * y
-  public func extGcd(a : Int, b : Int) : (Int, Int, Int) {
-    if (a == 0) return (b, 0, 1);
-    let (q, r) = (b/a, b%a);
-    let (gcd, x, y) = extGcd(r, a);
-    return (gcd, y - q * x, x)
-  };
-  // return rev such that x * rev mod p = 1 if success else 0
-  public func invMod(x : Nat, p : Nat) : Nat {
-    let (gcd, rev, _) = extGcd(x, p);
-    assert(gcd == 1);
-    let v = if (rev < 0) rev+p else rev;
-    assert(0 <= v and v < p);
-    Int.abs(v)
-  };
-  func addMod(x : Nat, y : Nat, p : Nat) : Nat {
-    let z = x+y;
-    if (z < p) z else z-p;
-  };
-  // return x^y mod p
-  func powMod(x : Nat, y : Nat, p : Nat) : Nat {
-    if (y == 0) return 1;
-    let bs = toReverseBin(y);
-    let n = bs.size();
-    var ret = 1;
-    var i = 0;
-    while (i < n) {
-      let b = bs[n - 1 - i];
-      ret := mulMod(ret, ret, p);
-      if (b) {
-        ret := mulMod(ret, x, p);
-      };
-      i += 1;
-    };
-    ret
-  };
-  func mulMod(x : Nat, y : Nat, p : Nat) : Nat = (x * y) % p;
-  func subMod(x : Nat, y : Nat, p : Nat) : Nat = if (x >= y) x-y else x+p-y;
-  func divMod(x : Nat, y : Nat, p : Nat) : Nat = mulMod(x, invMod(y, p), p);
-  func negMod(x : Nat, p : Nat) : Nat = if (x == 0) 0 else p - x;
-  func sqrMod(x : Nat, p : Nat) : Nat = mulMod(x, x, p);
-
   // mod fp functions
-  public func fpAdd(x : Nat, y : Nat) : Nat = addMod(x, y, p_);
-  public func fpMul(x : Nat, y : Nat) : Nat = mulMod(x, y, p_);
-  public func fpSub(x : Nat, y : Nat) : Nat = subMod(x, y, p_);
-  public func fpDiv(x : Nat, y : Nat) : Nat = divMod(x, y, p_);
-  public func fpPow(x : Nat, y : Nat) : Nat = powMod(x, y, p_);
-  public func fpNeg(x : Nat) : Nat = negMod(x, p_);
-  public func fpInv(x : Nat) : Nat = invMod(x, p_);
-  public func fpSqr(x : Nat) : Nat = sqrMod(x, p_);
+  public func fpAdd(x : Nat, y : Nat) : Nat = ModN.add(x, y, p_);
+  public func fpMul(x : Nat, y : Nat) : Nat = ModN.mul(x, y, p_);
+  public func fpSub(x : Nat, y : Nat) : Nat = ModN.sub(x, y, p_);
+  public func fpDiv(x : Nat, y : Nat) : Nat = ModN.div(x, y, p_);
+  public func fpPow(x : Nat, y : Nat) : Nat = ModN.pow(x, y, p_);
+  public func fpNeg(x : Nat) : Nat = ModN.neg(x, p_);
+  public func fpInv(x : Nat) : Nat = ModN.inv(x, p_);
+  public func fpSqr(x : Nat) : Nat = ModN.sqr(x, p_);
   public func fpSqrRoot(x : Nat) : ?Nat {
-    let sq = powMod(x, pSqrRoot_, p_);
+    let sq = fpPow(x, pSqrRoot_);
     if (fpSqr(sq) == x) ?sq else null
   };
 
   // mod fr functions
-  public func frAdd(x : Nat, y : Nat) : Nat = addMod(x, y, r_);
-  public func frMul(x : Nat, y : Nat) : Nat = mulMod(x, y, r_);
-  public func frSub(x : Nat, y : Nat) : Nat = subMod(x, y, r_);
-  public func frDiv(x : Nat, y : Nat) : Nat = divMod(x, y, r_);
-  public func frPow(x : Nat, y : Nat) : Nat = powMod(x, y, r_);
-  public func frNeg(x : Nat) : Nat = negMod(x, r_);
-  public func frInv(x : Nat) : Nat = invMod(x, r_);
-  public func frSqr(x : Nat) : Nat = sqrMod(x, r_);
+  public func frAdd(x : Nat, y : Nat) : Nat = ModN.add(x, y, r_);
+  public func frMul(x : Nat, y : Nat) : Nat = ModN.mul(x, y, r_);
+  public func frSub(x : Nat, y : Nat) : Nat = ModN.sub(x, y, r_);
+  public func frDiv(x : Nat, y : Nat) : Nat = ModN.div(x, y, r_);
+  public func frPow(x : Nat, y : Nat) : Nat = ModN.pow(x, y, r_);
+  public func frNeg(x : Nat) : Nat = ModN.neg(x, r_);
+  public func frInv(x : Nat) : Nat = ModN.inv(x, r_);
+  public func frSqr(x : Nat) : Nat = ModN.sqr(x, r_);
 
   // return x^3 + ax + b
   func getYsqrFromX(x : Nat) : Nat {
