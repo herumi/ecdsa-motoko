@@ -19,6 +19,6 @@ jobs:
     - name: "check"
       run: make check-strict
     - name: "test"
-      run: make test
+      run: make test test-hmac
     - name: "docs"
       run: make docs
