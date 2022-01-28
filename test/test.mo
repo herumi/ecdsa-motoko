@@ -1,5 +1,5 @@
 import M "../src";
-import ModN "../src/modn";
+import ModN "../src/zn";
 import IntExt "../src/intext";
 import Nat "mo:base/Nat";
 import Debug "mo:base/Debug";
@@ -83,30 +83,30 @@ func arithTest() {
   let m2 = 6 * 2 ** 128;
   var x1 = m1 % p;
   var x2 = m2 % p;
-  assert(M.fpAdd(x1, x2) == (m1 + m2) % p);
-  assert(M.fpSub(x1, x2) == (m1 + p - m2 : Nat) % p);
-  assert(M.fpSub(x2, x1) == (m2 - m1 : Nat) % p);
-  assert(M.fpNeg(0) == 0);
-  assert(M.fpNeg(x1) == (p - m1 : Nat));
-  assert(M.fpMul(x1, x2) == (m1 * m2) % p);
+  assert(M.fp.add(x1, x2) == (m1 + m2) % p);
+  assert(M.fp.sub(x1, x2) == (m1 + p - m2 : Nat) % p);
+  assert(M.fp.sub(x2, x1) == (m2 - m1 : Nat) % p);
+  assert(M.fp.neg(0) == 0);
+  assert(M.fp.neg(x1) == (p - m1 : Nat));
+  assert(M.fp.mul(x1, x2) == (m1 * m2) % p);
 
   var i = 0;
   x2 := 1;
   while (i < 30) {
-    assert(x2 == M.fpPow(x1, i));
-    x2 := M.fpMul(x2, x1);
+    assert(x2 == M.fp.pow(x1, i));
+    x2 := M.fp.mul(x2, x1);
     i += 1;
   };
 };
 
 func invTest() {
-  let inv123 = ModN.inv(123, 65537);
+  let inv123 = ModN.inv_(123, 65537);
   assert(inv123 == 14919);
-  let x2 = M.fpInv(123);
+  let x2 = M.fp.inv(123);
   var x1 = 1;
   while (x1 < 20) {
-    assert(M.fpMul(x1, M.fpInv(x1)) == 1);
-    assert(M.fpMul(M.fpDiv(x2, x1), x1) == x2);
+    assert(M.fp.mul(x1, M.fp.inv(x1)) == 1);
+    assert(M.fp.mul(M.fp.div(x2, x1), x1) == x2);
     x1 += 1;
   };
 };
@@ -119,7 +119,7 @@ func sqrRootTest() {
       case (null) { };
       case (?sq) {
 //        Debug.print("sq=" # M.toHex(sq));
-        assert(M.fpSqr(sq) == i);
+        assert(M.fp.sqr(sq) == i);
       };
     };
     i += 1;
@@ -150,7 +150,7 @@ func ec1Test() {
   let Q = P.neg();
   assert(not Q.isZero());
   assert(P.x() == Q.x());
-  assert(P.y() == M.fpNeg(Q.y()));
+  assert(P.y() == M.fp.neg(Q.y()));
   assert(P.add(Q).isZero());
 };
 
@@ -226,7 +226,7 @@ func serializeTest() {
   v := M.serializeCompressed(pub);
   let (x, y) = Option.get(M.deserializeCompressed(v), (0, 0));
   assert((x, y) == pub);
-  let pub2 = (x, M.fpNeg(y));
+  let pub2 = (x, M.fp.neg(y));
   v := M.serializeCompressed(pub2);
   let pub3 = Option.get(M.deserializeCompressed(v), (0, 0));
   assert(pub3 == pub2);
