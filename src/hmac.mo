@@ -15,6 +15,7 @@ import Blob "mo:base/Blob";
 import Debug "mo:base/Debug";
 import Option "mo:base/Option";
 import SHA2 "mo:sha2";
+import M "../src";
 
 module {
   public func hmac256(key : [Nat8], msg : Iter.Iter<Nat8>) : Blob {
@@ -42,7 +43,19 @@ module {
       k[i] ^= ipad;
       i += 1;
     };
-    let hmac = Blob.toArray(SHA2.fromIter(#sha256, k.vals()));
+    class k_and_msg(k : [var Nat8], msg : Iter.Iter<Nat8>) {
+      var i = 0;
+      public func next() : ?Nat8 {
+        if (i < 64) {
+          let ret = ?k[i];
+          i += 1;
+          ret
+        } else {
+          msg.next()
+        };
+      };
+    };
+    let hmac = Blob.toArray(SHA2.fromIter(#sha256, k_and_msg(k, msg)));
     i := 0;
     while (i < 64) {
       k[i] ^= ipad ^ opad;
