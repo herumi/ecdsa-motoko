@@ -203,8 +203,8 @@ module {
   };
 
   public class Ec() {
-    var x_ : FpElt = #fp(0);
-    var y_ : FpElt = #fp(0);
+    var x_ = #fp(0);
+    var y_ = #fp(0);
     var isZero_ : Bool = true;
     public func affine() : (FpElt, FpElt) = (x_, y_);
     public func x() : FpElt = x_;
@@ -292,10 +292,8 @@ module {
       if (isZero()) {
         Debug.print("0");
       } else {
-        let #fp(x__) = x_;
-        let #fp(y__) = y_;
-        Debug.print("x=" # toHex(x__));
-        Debug.print("y=" # toHex(y__));
+        Debug.print("x=" # toHex(Fp.toNat(x_)));
+        Debug.print("y=" # toHex(Fp.toNat(y_)));
       };
     };
   };

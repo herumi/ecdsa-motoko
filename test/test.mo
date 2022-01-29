@@ -81,14 +81,14 @@ func toBigEndianPadTest() {
 func arithTest() {
   let m1 = 5 * 2 ** 128;
   let m2 = 6 * 2 ** 128;
-  var x1 = #fp(m1 % p);
-  var x2 = #fp(m2 % p);
-  assert(M.Fp.add(x1, x2) == #fp((m1 + m2) % p));
-  assert(M.Fp.sub(x1, x2) == #fp((m1 + p - m2 : Nat) % p));
-  assert(M.Fp.sub(x2, x1) == #fp((m2 - m1 : Nat) % p));
+  var x1 = Fp.fromNat(m1);
+  var x2 = Fp.fromNat(m2);
+  assert(M.Fp.add(x1, x2) == Fp.fromNat(m1 + m2));
+  assert(M.Fp.sub(x1, x2) == Fp.fromNat(m1 + p - m2 : Nat));
+  assert(M.Fp.sub(x2, x1) == Fp.fromNat(m2 - m1 : Nat));
   assert(M.Fp.neg(#fp(0)) == #fp(0));
-  assert(M.Fp.neg(x1) == #fp((p - m1 : Nat)));
-  assert(M.Fp.mul(x1, x2) == #fp((m1 * m2) % p));
+  assert(M.Fp.neg(x1) == Fp.fromNat(p - m1 : Nat));
+  assert(M.Fp.mul(x1, x2) == Fp.fromNat(m1 * m2));
 
   var i = 0;
   x2 := #fp(1);
