@@ -16,6 +16,7 @@ import Blob "mo:base/Blob";
 import Debug "mo:base/Debug";
 import Option "mo:base/Option";
 import SHA2 "mo:sha2";
+import Zn "zn";
 
 module {
   // secp256k1
@@ -94,78 +95,48 @@ module {
     buf.toArray()
   };
 
-  // return (gcd, x, y) such that gcd = a * x + b * y
-  public func extGcd(a : Int, b : Int) : (Int, Int, Int) {
-    if (a == 0) return (b, 0, 1);
-    let (q, r) = (b/a, b%a);
-    let (gcd, x, y) = extGcd(r, a);
-    return (gcd, y - q * x, x)
+  // Static version of 
+  //   let fp = Zn.Zn(p_);
+  // The line above is not static. We can use the type Zn.Zn, but have to 
+  // write out the constructor again with fixed p_ to make it static.
+  public let fp : Zn.Zn = {
+    add = func (x : Nat, y : Nat) : Nat = Zn.add_(x, y, p_);
+    mul = func (x : Nat, y : Nat) : Nat = Zn.mul_(x, y, p_);
+    sub = func (x : Nat, y : Nat) : Nat = Zn.sub_(x, y, p_);
+    div = func (x : Nat, y : Nat) : Nat = Zn.div_(x, y, p_);
+    pow = func (x : Nat, y : Nat) : Nat = Zn.pow_(x, y, p_);
+    neg = func (x : Nat) : Nat = Zn.neg_(x, p_);
+    inv = func (x : Nat) : Nat = Zn.inv_(x, p_);
+    sqr = func (x : Nat) : Nat = Zn.sqr_(x, p_);
   };
-  // return rev such that x * rev mod p = 1 if success else 0
-  public func invMod(x : Nat, p : Nat) : Nat {
-    let (gcd, rev, _) = extGcd(x, p);
-    assert(gcd == 1);
-    let v = if (rev < 0) rev+p else rev;
-    assert(0 <= v and v < p);
-    Int.abs(v)
-  };
-  func addMod(x : Nat, y : Nat, p : Nat) : Nat {
-    let z = x+y;
-    if (z < p) z else z-p;
-  };
-  // return x^y mod p
-  func powMod(x : Nat, y : Nat, p : Nat) : Nat {
-    if (y == 0) return 1;
-    let bs = toReverseBin(y);
-    let n = bs.size();
-    var ret = 1;
-    var i = 0;
-    while (i < n) {
-      let b = bs[n - 1 - i];
-      ret := mulMod(ret, ret, p);
-      if (b) {
-        ret := mulMod(ret, x, p);
-      };
-      i += 1;
-    };
-    ret
-  };
-  func mulMod(x : Nat, y : Nat, p : Nat) : Nat = (x * y) % p;
-  func subMod(x : Nat, y : Nat, p : Nat) : Nat = if (x >= y) x-y else x+p-y;
-  func divMod(x : Nat, y : Nat, p : Nat) : Nat = mulMod(x, invMod(y, p), p);
-  func negMod(x : Nat, p : Nat) : Nat = if (x == 0) 0 else p - x;
-  func sqrMod(x : Nat, p : Nat) : Nat = mulMod(x, x, p);
 
-  // mod fp functions
-  public func fpAdd(x : Nat, y : Nat) : Nat = addMod(x, y, p_);
-  public func fpMul(x : Nat, y : Nat) : Nat = mulMod(x, y, p_);
-  public func fpSub(x : Nat, y : Nat) : Nat = subMod(x, y, p_);
-  public func fpDiv(x : Nat, y : Nat) : Nat = divMod(x, y, p_);
-  public func fpPow(x : Nat, y : Nat) : Nat = powMod(x, y, p_);
-  public func fpNeg(x : Nat) : Nat = negMod(x, p_);
-  public func fpInv(x : Nat) : Nat = invMod(x, p_);
-  public func fpSqr(x : Nat) : Nat = sqrMod(x, p_);
+  // Static version of 
+  //   let fp = Zn.Zn(r_);
+  // The line above is not static. We can use the type Zn.Zn, but have to 
+  // write out the constructor again with fixed r_ to make it static.
+  public let fr : Zn.Zn = {
+    add = func (x : Nat, y : Nat) : Nat = Zn.add_(x, y, r_);
+    mul = func (x : Nat, y : Nat) : Nat = Zn.mul_(x, y, r_);
+    sub = func (x : Nat, y : Nat) : Nat = Zn.sub_(x, y, r_);
+    div = func (x : Nat, y : Nat) : Nat = Zn.div_(x, y, r_);
+    pow = func (x : Nat, y : Nat) : Nat = Zn.pow_(x, y, r_);
+    neg = func (x : Nat) : Nat = Zn.neg_(x, r_);
+    inv = func (x : Nat) : Nat = Zn.inv_(x, r_);
+    sqr = func (x : Nat) : Nat = Zn.sqr_(x, r_);
+  };
+
+  // more mod fp functions
   public func fpSqrRoot(x : Nat) : ?Nat {
-    let sq = powMod(x, pSqrRoot_, p_);
-    if (fpSqr(sq) == x) ?sq else null
+    let sq = fp.pow(x, pSqrRoot_);
+    if (fp.sqr(sq) == x) ?sq else null
   };
-
-  // mod fr functions
-  public func frAdd(x : Nat, y : Nat) : Nat = addMod(x, y, r_);
-  public func frMul(x : Nat, y : Nat) : Nat = mulMod(x, y, r_);
-  public func frSub(x : Nat, y : Nat) : Nat = subMod(x, y, r_);
-  public func frDiv(x : Nat, y : Nat) : Nat = divMod(x, y, r_);
-  public func frPow(x : Nat, y : Nat) : Nat = powMod(x, y, r_);
-  public func frNeg(x : Nat) : Nat = negMod(x, r_);
-  public func frInv(x : Nat) : Nat = invMod(x, r_);
-  public func frSqr(x : Nat) : Nat = sqrMod(x, r_);
 
   // return x^3 + ax + b
   func getYsqrFromX(x : Nat) : Nat {
-    fpAdd(fpMul(fpAdd(fpMul(x, x), a_), x), b_)
+    fp.add(fp.mul(fp.add(fp.sqr(x), a_), x), b_)
   };
   func _isValid(x : Nat, y : Nat) : Bool {
-    fpMul(y, y) == getYsqrFromX(x)
+    fp.sqr(y) == getYsqrFromX(x)
   };
 
   public class Ec() {
@@ -189,7 +160,7 @@ module {
     };
     public func isZero() : Bool = isZero_;
     public func isValid() : Bool = isZero_ or _isValid(x_, y_);
-    public func neg() : Ec = if (isZero()) Ec() else newEcNoCheck(x_, fpNeg(y_));
+    public func neg() : Ec = if (isZero()) Ec() else newEcNoCheck(x_, fp.neg(y_));
     // QQQ : how can I return *this?
     public func copy() : Ec = if (isZero()) Ec() else newEcNoCheck(x_, y_);
     public func add(rhs : Ec) : Ec {
@@ -201,19 +172,19 @@ module {
       let y2 = rhs.y();
       if (x_ == x2) {
         // P + (-P) = 0
-        if (y_ == fpNeg(y2)) return Ec();
+        if (y_ == fp.neg(y2)) return Ec();
         // dbl
-        let xx = fpMul(x_, x_);
-        let xx3 = fpAdd(fpAdd(xx, xx), xx);
-        nume := fpAdd(xx3, a_);
-        deno := fpAdd(y_, y_);
+        let xx = fp.sqr(x_);
+        let xx3 = fp.add(fp.add(xx, xx), xx);
+        nume := fp.add(xx3, a_);
+        deno := fp.add(y_, y_);
       } else {
-        nume := fpSub(y_, y2);
-        deno := fpSub(x_, x2);
+        nume := fp.sub(y_, y2);
+        deno := fp.sub(x_, x2);
       };
-      let L = fpDiv(nume, deno);
-      let x3 = fpSub(fpMul(L, L), fpAdd(x_, x2));
-      let y3 = fpSub(fpMul(L, fpSub(x_, x3)), y_);
+      let L = fp.div(nume, deno);
+      let x3 = fp.sub(fp.sqr(L), fp.add(x_, x2));
+      let y3 = fp.sub(fp.mul(L, fp.sub(x_, x3)), y_);
       return newEcNoCheck(x3, y3)
     };
     public func dbl() : Ec {
@@ -222,13 +193,13 @@ module {
       var deno = 0;
       // P + (-P) = 0
       if (y_ == 0) return Ec();
-      let xx = fpMul(x_, x_);
-      let xx3 = fpAdd(fpAdd(xx, xx), xx);
-      nume := fpAdd(xx3, a_);
-      deno := fpAdd(y_, y_);
-      let L = fpDiv(nume, deno);
-      let x3 = fpSub(fpMul(L, L), fpAdd(x_, x_));
-      let y3 = fpSub(fpMul(L, fpSub(x_, x3)), y_);
+      let xx = fp.sqr(x_);
+      let xx3 = fp.add(fp.add(xx, xx), xx);
+      nume := fp.add(xx3, a_);
+      deno := fp.add(y_, y_);
+      let L = fp.div(nume, deno);
+      let x3 = fp.sub(fp.sqr(L), fp.add(x_, x_));
+      let y3 = fp.sub(fp.mul(L, fp.sub(x_, x3)), y_);
       return newEcNoCheck(x3, y3)
     };
     public func equal(rhs : Ec) : Bool {
@@ -343,13 +314,13 @@ module {
     if (r == 0) return null;
     let z = toNatAsBigEndian(hashed) % r_;
     // s = (r * sec + z) / k
-    var s = frDiv(frAdd(frMul(r, sec), z), k);
-    if (s >= rHalf_) s := frNeg(s);
+    var s = fr.div(fr.add(fr.mul(r, sec), z), k);
+    if (s >= rHalf_) s := fr.neg(s);
     ?(r, s)
   };
   /// convert a signature to lower S signature
   public func normalizeSignature((r, s) : (Nat, Nat)) : (Nat, Nat) {
-    if (s < rHalf_) (r, s) else (r, frNeg(s))
+    if (s < rHalf_) (r, s) else (r, fr.neg(s))
   };
   /// verify a tuple of pub, hashed, and lowerS sig
   public func verifyHashed(pub : (Nat, Nat), hashed : Iter.Iter<Nat8>, sig : (Nat, Nat)) : Bool {
@@ -357,9 +328,9 @@ module {
     if (r == 0 or r >= r_) return false;
     if (s == 0 or s >= rHalf_) return false;
     let z = toNatAsBigEndian(hashed) % r_;
-    let w = frInv(s);
-    let u1 = frMul(z, w);
-    let u2 = frMul(r, w);
+    let w = fr.inv(s);
+    let u1 = fr.mul(z, w);
+    let u2 = fr.mul(r, w);
     let P = newEcGenerator();
     let (x, y) = pub;
     let Q = newEcNoCheck(x, y);
@@ -417,7 +388,7 @@ module {
     switch (fpSqrRoot(y2)) {
       case (null) { return null };
       case (?y) {
-        return if (even == ((y % 2) == 0)) ?y else ?fpNeg(y)
+        return if (even == ((y % 2) == 0)) ?y else ?fp.neg(y)
       };
     }
   };
