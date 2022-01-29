@@ -115,11 +115,11 @@ func sqrRootTest() {
   var i = 0;
   while (i < 30) {
 //    Debug.print("i=" # M.toHex(i));
-    switch (M.fpSqrRoot(i)) {
+    switch (M.fpSqrRoot(#fp(i))) {
       case (null) { };
       case (?sq) {
 //        Debug.print("sq=" # M.toHex(sq));
-        assert(M.fp.sqr(sq) == i);
+        assert(M.Fp.sqr(sq) == #fp(i));
       };
     };
     i += 1;
@@ -150,14 +150,14 @@ func ec1Test() {
   let Q = P.neg();
   assert(not Q.isZero());
   assert(P.x() == Q.x());
-  assert(P.y() == M.fp.neg(Q.y()));
+  assert(P.y() == M.Fp.neg(Q.y()));
   assert(P.add(Q).isZero());
 };
 
 func ec2Teset() {
-  let okP = (0x79be667ef9dcbbac55a06295ce870b07029bfcdb2dce28d959f2815b16f81798, 0x483ada7726a3c4655da4fbfc0e1108a8fd17b448a68554199c47d08ffb10d4b8);
-  let okP2 = (0xc6047f9441ed7d6d3045406e95c07cd85c778e4b8cef3ca7abac09b95c709ee5, 0x1ae168fea63dc339a3c58419466ceaeef7f632653266d0e1236431a950cfe52a);
-  let okP3 = (0xf9308a019258c31049344f85f89d5229b531c845836f99b08601f113bce036f9, 0x388f7b0f632de8140fe337e62a37f3566500a99934c2231b6cb9fd7584b8e672);
+  let okP = (#fp(0x79be667ef9dcbbac55a06295ce870b07029bfcdb2dce28d959f2815b16f81798), #fp(0x483ada7726a3c4655da4fbfc0e1108a8fd17b448a68554199c47d08ffb10d4b8));
+  let okP2 = (#fp(0xc6047f9441ed7d6d3045406e95c07cd85c778e4b8cef3ca7abac09b95c709ee5), #fp(0x1ae168fea63dc339a3c58419466ceaeef7f632653266d0e1236431a950cfe52a));
+  let okP3 = (#fp(0xf9308a019258c31049344f85f89d5229b531c845836f99b08601f113bce036f9), #fp(0x388f7b0f632de8140fe337e62a37f3566500a99934c2231b6cb9fd7584b8e672));
 
   let P = M.newEcGenerator();
   assert(P.x() == okP.0);
@@ -197,12 +197,12 @@ func ecdsaTest() {
     case(?v) { v };
   };
   assert(sec == 0x83ecb3984a4f9ff03e84d5f9c0d7f888a81833643047acc58eb6431e01d9bac8);
-  var pub = Option.get(M.getPublicKey(sec), (0, 0));
-  assert(pub == (0x653bd02ba1367e5d4cd695b6f857d1cd90d4d8d42bc155d85377b7d2d0ed2e71, 0x04e8f5da403ab78decec1f19e2396739ea544e2b14159beb5091b30b418b813a));
+  var pub = Option.get(M.getPublicKey(sec), (#fp(0), #fp(0)));
+  assert(pub == (#fp(0x653bd02ba1367e5d4cd695b6f857d1cd90d4d8d42bc155d85377b7d2d0ed2e71), #fp(0x04e8f5da403ab78decec1f19e2396739ea544e2b14159beb5091b30b418b813a)));
   var sig = Option.get(M.signHashed(sec, hashed.vals(), signRand.vals()), (0, 0));
   assert(M.verifyHashed(pub, hashed.vals(), sig));
-  assert(not M.verifyHashed((pub.0, pub.1 + 1), hashed.vals(), sig));
-  assert(not M.verifyHashed((pub.0, pub.1 + 1), hashed.vals(), sig));
+  assert(not M.verifyHashed((pub.0, M.Fp.add(pub.1,#fp(1))), hashed.vals(), sig));
+//  assert(not M.verifyHashed((pub.0, pub.1 + 1), hashed.vals(), sig));
   assert(not M.verifyHashed(pub, ([0x1, 0x2] : [Nat8]).vals(), sig));
   assert(M.sign(sec, hello.vals(), signRand.vals()) == ?sig);
   assert(M.verifyHashed(pub, hashed.vals(), sig));
@@ -212,23 +212,23 @@ func ecdsaTest() {
 
   // generated values by Python:ecdsa
   sec := 0xb1aa6282b14e5ffbf6d12f783612f804e6a20d1a9734ffbb6c9923c670ee8da2;
-  pub := Option.get(M.getPublicKey(sec), (0, 0));
-  assert(pub == (0x0a09ff142d94bc3f56c5c81b75ea3b06b082c5263fbb5bd88c619fc6393dda3d, 0xa53e0e930892cdb7799eea8fd45b9fff377d838f4106454289ae8a080b111f8d));
+  pub := Option.get(M.getPublicKey(sec), (#fp(0), #fp(0)));
+  assert(pub == (#fp(0x0a09ff142d94bc3f56c5c81b75ea3b06b082c5263fbb5bd88c619fc6393dda3d), #fp(0xa53e0e930892cdb7799eea8fd45b9fff377d838f4106454289ae8a080b111f8d)));
   sig := M.normalizeSignature(0x50839a97404c24ec39455b996e4888477fd61bcf0ffb960c7ffa3bef10450191, 0x9671b8315bb5c1611d422d49cbbe7e80c6b463215bfad1c16ca73172155bf31a);
   assert(M.verifyHashed(pub, hashed.vals(), sig));
 };
 
 func serializeTest() {
   let expected = Blob.fromArray([0x04,0xa,0x9,0xff,0x14,0x2d,0x94,0xbc,0x3f,0x56,0xc5,0xc8,0x1b,0x75,0xea,0x3b,0x6,0xb0,0x82,0xc5,0x26,0x3f,0xbb,0x5b,0xd8,0x8c,0x61,0x9f,0xc6,0x39,0x3d,0xda,0x3d,0xa5,0x3e,0xe,0x93,0x8,0x92,0xcd,0xb7,0x79,0x9e,0xea,0x8f,0xd4,0x5b,0x9f,0xff,0x37,0x7d,0x83,0x8f,0x41,0x6,0x45,0x42,0x89,0xae,0x8a,0x8,0xb,0x11,0x1f,0x8d]);
-  let pub = (0x0a09ff142d94bc3f56c5c81b75ea3b06b082c5263fbb5bd88c619fc6393dda3d, 0xa53e0e930892cdb7799eea8fd45b9fff377d838f4106454289ae8a080b111f8d);
+  let pub = (#fp(0x0a09ff142d94bc3f56c5c81b75ea3b06b082c5263fbb5bd88c619fc6393dda3d), #fp(0xa53e0e930892cdb7799eea8fd45b9fff377d838f4106454289ae8a080b111f8d));
   var v = M.serializeUncompressed(pub);
   assert(v == expected);
   v := M.serializeCompressed(pub);
-  let (x, y) = Option.get(M.deserializeCompressed(v), (0, 0));
+  let (x, y) = Option.get(M.deserializeCompressed(v), (#fp(0), #fp(0)));
   assert((x, y) == pub);
-  let pub2 = (x, M.fp.neg(y));
+  let pub2 = (x, M.Fp.neg(y));
   v := M.serializeCompressed(pub2);
-  let pub3 = Option.get(M.deserializeCompressed(v), (0, 0));
+  let pub3 = Option.get(M.deserializeCompressed(v), (#fp(0), #fp(0)));
   assert(pub3 == pub2);
 };
 

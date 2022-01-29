@@ -24,11 +24,11 @@ module {
   // (gx, gy) in Ec
   // #Ec = r
   let p_ : Nat = 0xfffffffffffffffffffffffffffffffffffffffffffffffffffffffefffffc2f;
-  let a_ : Nat = 0;
-  let b_ : Nat = 7;
+  let a_ = #fp(0);
+  let b_ = #fp(7);
   let r_ : Nat = 0xfffffffffffffffffffffffffffffffebaaedce6af48a03bbfd25e8cd0364141;
-  let gx_ : Nat = 0x79be667ef9dcbbac55a06295ce870b07029bfcdb2dce28d959f2815b16f81798;
-  let gy_ : Nat = 0x483ada7726a3c4655da4fbfc0e1108a8fd17b448a68554199c47d08ffb10d4b8;
+  let gx_ = #fp(0x79be667ef9dcbbac55a06295ce870b07029bfcdb2dce28d959f2815b16f81798);
+  let gy_ = #fp(0x483ada7726a3c4655da4fbfc0e1108a8fd17b448a68554199c47d08ffb10d4b8);
 
   // pSqrRoot_ = (p_ + 1) / 4;
   let pSqrRoot_ : Nat = 0x3fffffffffffffffffffffffffffffffffffffffffffffffffffffffbfffff0c;
@@ -42,7 +42,7 @@ module {
   public func r() : Nat = r_;
 
   /// return the generator of Ec.
-  public func generator() : (Nat, Nat) = (gx_, gy_);
+  public func generator() : (FpElt, FpElt) = (gx_, gy_);
 
   public func sha2(iter : Iter.Iter<Nat8>) : Blob {
     SHA2.fromIter(#sha256, iter)
@@ -95,6 +95,46 @@ module {
     buf.toArray()
   };
 
+  public type FpElt = { #fp : Nat; };
+  public let Fp = {
+    add = func(x : FpElt, y : FpElt) : FpElt {
+      let #fp(x_) = x;
+      let #fp(y_) = y;
+      #fp(Field.add_(x_, y_, p_));
+    };
+    mul = func(x : FpElt, y : FpElt) : FpElt {
+      let #fp(x_) = x;
+      let #fp(y_) = y;
+      #fp(Field.mul_(x_, y_, p_));
+    };
+    sub = func(x : FpElt, y : FpElt) : FpElt {
+      let #fp(x_) = x;
+      let #fp(y_) = y;
+      #fp(Field.sub_(x_, y_, p_));
+    };
+    div = func(x : FpElt, y : FpElt) : FpElt {
+      let #fp(x_) = x;
+      let #fp(y_) = y;
+      #fp(Field.div_(x_, y_, p_));
+    };
+    pow = func(x : FpElt, n : Nat) : FpElt {
+      let #fp(x_) = x;
+      #fp(Field.pow_(x_, n, p_));
+    };
+    neg = func(x : FpElt) : FpElt {
+      let #fp(x_) = x;
+      #fp(Field.neg_(x_, p_));
+    };
+    inv = func(x : FpElt) : FpElt {
+      let #fp(x_) = x;
+      #fp(Field.inv_(x_, p_));
+    };
+    sqr = func(x : FpElt) : FpElt {
+      let #fp(x_) = x;
+      #fp(Field.sqr_(x_, p_));
+    };
+  };
+
   // Static version of 
   //   let fp = Field.Field(p_);
   // The line above is not static. We can use the type Field.Field, but have to 
@@ -111,7 +151,7 @@ module {
   };
 
   // Static version of 
-  //   let fp = Field.Field(r_);
+  //   let fr = Field.Field(r_);
   // The line above is not static. We can use the type Field.Field, but have to 
   // write out the constructor again with fixed r_ to make it static.
   public let fr : Field.Field = {
@@ -126,80 +166,80 @@ module {
   };
 
   // more mod fp functions
-  public func fpSqrRoot(x : Nat) : ?Nat {
-    let sq = fp.pow(x, pSqrRoot_);
-    if (fp.sqr(sq) == x) ?sq else null
+  public func fpSqrRoot(x : FpElt) : ?FpElt {
+    let sq = Fp.pow(x, pSqrRoot_);
+    if (Fp.sqr(sq) == x) ?sq else null
   };
 
   // return x^3 + ax + b
-  func getYsqrFromX(x : Nat) : Nat {
-    fp.add(fp.mul(fp.add(fp.sqr(x), a_), x), b_)
+  func getYsqrFromX(x : FpElt) : FpElt {
+    Fp.add(Fp.mul(Fp.add(Fp.sqr(x), a_), x), b_)
   };
-  func _isValid(x : Nat, y : Nat) : Bool {
-    fp.sqr(y) == getYsqrFromX(x)
+  func _isValid(x : FpElt, y : FpElt) : Bool {
+    Fp.sqr(y) == getYsqrFromX(x) 
   };
 
   public class Ec() {
-    var x_ : Nat = 0;
-    var y_ : Nat = 0;
+    var x_ : FpElt = #fp(0);
+    var y_ : FpElt = #fp(0);
     var isZero_ : Bool = true;
-    public func affine() : (Nat, Nat) = (x_, y_);
-    public func x() : Nat = x_;
-    public func y() : Nat = y_;
-    public func set(x : Nat, y : Nat) : Bool {
+    public func affine() : (FpElt, FpElt) = (x_, y_);
+    public func x() : FpElt = x_;
+    public func y() : FpElt = y_;
+    public func set(x : FpElt, y : FpElt) : Bool {
       if (not _isValid(x, y)) return false;
       x_ := x;
       y_ := y;
       isZero_ := false;
       return true
     };
-    public func setNoCheck(x : Nat, y : Nat) {
+    public func setNoCheck(x : FpElt, y : FpElt) {
       x_ := x;
       y_ := y;
       isZero_ := false;
     };
     public func isZero() : Bool = isZero_;
     public func isValid() : Bool = isZero_ or _isValid(x_, y_);
-    public func neg() : Ec = if (isZero()) Ec() else newEcNoCheck(x_, fp.neg(y_));
+    public func neg() : Ec = if (isZero()) Ec() else newEcNoCheck(x_, Fp.neg(y_));
     // QQQ : how can I return *this?
     public func copy() : Ec = if (isZero()) Ec() else newEcNoCheck(x_, y_);
     public func add(rhs : Ec) : Ec {
       if (isZero()) return rhs;
       if (rhs.isZero()) return copy();
-      var nume = 0;
-      var deno = 0;
+      var nume = #fp(0);
+      var deno = #fp(0);
       let x2 = rhs.x();
       let y2 = rhs.y();
       if (x_ == x2) {
         // P + (-P) = 0
-        if (y_ == fp.neg(y2)) return Ec();
+        if (y_ == Fp.neg(y2)) return Ec();
         // dbl
-        let xx = fp.sqr(x_);
-        let xx3 = fp.add(fp.add(xx, xx), xx);
-        nume := fp.add(xx3, a_);
-        deno := fp.add(y_, y_);
+        let xx = Fp.sqr(x_);
+        let xx3 = Fp.add(Fp.add(xx, xx), xx);
+        nume := Fp.add(xx3, a_);
+        deno := Fp.add(y_, y_);
       } else {
-        nume := fp.sub(y_, y2);
-        deno := fp.sub(x_, x2);
+        nume := Fp.sub(y_, y2);
+        deno := Fp.sub(x_, x2);
       };
-      let L = fp.div(nume, deno);
-      let x3 = fp.sub(fp.sqr(L), fp.add(x_, x2));
-      let y3 = fp.sub(fp.mul(L, fp.sub(x_, x3)), y_);
+      let L = Fp.div(nume, deno);
+      let x3 = Fp.sub(Fp.sqr(L), Fp.add(x_, x2));
+      let y3 = Fp.sub(Fp.mul(L, Fp.sub(x_, x3)), y_);
       return newEcNoCheck(x3, y3)
     };
     public func dbl() : Ec {
       if (isZero()) return Ec();
-      var nume = 0;
-      var deno = 0;
+      var nume = #fp(0);
+      var deno = #fp(0);
       // P + (-P) = 0
-      if (y_ == 0) return Ec();
-      let xx = fp.sqr(x_);
-      let xx3 = fp.add(fp.add(xx, xx), xx);
-      nume := fp.add(xx3, a_);
-      deno := fp.add(y_, y_);
-      let L = fp.div(nume, deno);
-      let x3 = fp.sub(fp.sqr(L), fp.add(x_, x_));
-      let y3 = fp.sub(fp.mul(L, fp.sub(x_, x3)), y_);
+      if (y_ == #fp(0)) return Ec();
+      let xx = Fp.sqr(x_);
+      let xx3 = Fp.add(Fp.add(xx, xx), xx);
+      nume := Fp.add(xx3, a_);
+      deno := Fp.add(y_, y_);
+      let L = Fp.div(nume, deno);
+      let x3 = Fp.sub(Fp.sqr(L), Fp.add(x_, x_));
+      let y3 = Fp.sub(Fp.mul(L, Fp.sub(x_, x3)), y_);
       return newEcNoCheck(x3, y3)
     };
     public func equal(rhs : Ec) : Bool {
@@ -229,16 +269,18 @@ module {
       if (isZero()) {
         Debug.print("0");
       } else {
-        Debug.print("x=" # toHex(x_));
-        Debug.print("y=" # toHex(y_));
+        let #fp(x__) = x_;
+        let #fp(y__) = y_;
+        Debug.print("x=" # toHex(x__));
+        Debug.print("y=" # toHex(y__));
       };
     };
   };
-  public func newEc(x : Nat, y : Nat) : ?Ec {
+  public func newEc(x : FpElt, y : FpElt) : ?Ec {
     let P = Ec();
     if (P.set(x, y)) ?P else null
   };
-  public func newEcNoCheck(x : Nat, y : Nat) : Ec {
+  public func newEcNoCheck(x : FpElt, y : FpElt) : Ec {
     let P = Ec();
     P.setNoCheck(x, y);
     return P
@@ -295,7 +337,7 @@ module {
   };
   /// Get public key from sec.
   /// public key (x, y) is a point of elliptic curve
-  public func getPublicKey(sec : Nat) : ?(Nat, Nat) {
+  public func getPublicKey(sec : Nat) : ?(FpElt, FpElt) {
     let P = newEcGenerator();
     let Q = P.mul(sec);
     if (Q.isZero()) null else ?(Q.x(), Q.y())
@@ -310,7 +352,8 @@ module {
     let P = newEcGenerator();
     let Q = P.mul(k);
     if (Q.isZero()) return null;
-    let r = Q.x() % r_;
+    let #fp(rp) = Q.x();
+    let r = rp % r_;
     if (r == 0) return null;
     let z = toNatAsBigEndian(hashed) % r_;
     // s = (r * sec + z) / k
@@ -323,7 +366,7 @@ module {
     if (s < rHalf_) (r, s) else (r, fr.neg(s))
   };
   /// verify a tuple of pub, hashed, and lowerS sig
-  public func verifyHashed(pub : (Nat, Nat), hashed : Iter.Iter<Nat8>, sig : (Nat, Nat)) : Bool {
+  public func verifyHashed(pub : (FpElt, FpElt), hashed : Iter.Iter<Nat8>, sig : (Nat, Nat)) : Bool {
     let (r, s) = sig;
     if (r == 0 or r >= r_) return false;
     if (s == 0 or s >= rHalf_) return false;
@@ -337,22 +380,25 @@ module {
     if (not Q.isValid()) return false;
     let R = P.mul(u1).add(Q.mul(u2));
     if (R.isZero()) return false;
-    return (R.x() % r_) == r
+    let #fp(Rx) = R.x();
+    return (Rx % r_) == r
   };
   /// Sign a message by sec and rand with SHA-256
   public func sign(sec : Nat, msg : Iter.Iter<Nat8>, rand : Iter.Iter<Nat8>) : ?(Nat, Nat) {
     signHashed(sec, sha2(msg).vals(), rand)
   };
   // verify a tuple of pub, msg, and sig
-  public func verify(pub : (Nat, Nat), msg : Iter.Iter<Nat8>, sig : (Nat, Nat)) : Bool {
+  public func verify(pub : (FpElt, FpElt), msg : Iter.Iter<Nat8>, sig : (Nat, Nat)) : Bool {
     verifyHashed(pub, sha2(msg).vals(), sig)
   };
   /// return 0x04 + bigEndian(x) + bigEndian(y)
-  public func serializeUncompressed(pub : (Nat, Nat)) : Blob {
+  public func serializeUncompressed(pub : (FpElt, FpElt)) : Blob {
     let prefix = 0x04 : Nat8;
     let n = 32;
-    let x = toBigEndianPad(n, pub.0);
-    let y = toBigEndianPad(n, pub.1);
+    let #fp(pubx) = pub.0;
+    let #fp(puby) = pub.1;
+    let x = toBigEndianPad(n, pubx);
+    let y = toBigEndianPad(n, puby);
     let ith = func(i : Nat) : Nat8 {
       if (i == 0) {
         prefix
@@ -367,10 +413,12 @@ module {
   };
   /// return 0x02 + bigEndian(x) if y is even
   /// return 0x03 + bigEndian(x) if y is odd
-  public func serializeCompressed(pub : (Nat, Nat)) : Blob {
-    let prefix : Nat8 = if ((pub.1 % 2) == 0) 0x02 else 0x03;
+  public func serializeCompressed(pub : (FpElt, FpElt)) : Blob {
+    let #fp(pubx) = pub.0;
+    let #fp(puby) = pub.1;
+    let prefix : Nat8 = if ((puby % 2) == 0) 0x02 else 0x03;
     let n = 32;
-    let x = toBigEndianPad(n, pub.0);
+    let x = toBigEndianPad(n, pubx);
     let ith = func(i : Nat) : Nat8 {
       if (i == 0) {
         prefix
@@ -383,17 +431,18 @@ module {
   };
   /// Get y corresponding to x such that y^2 = x^ + ax + b.
   /// Return even y if `even` is true.
-  public func getYfromX(x : Nat, even : Bool) : ?Nat {
+  public func getYfromX(x : FpElt, even : Bool) : ?FpElt {
     let y2 = getYsqrFromX(x);
     switch (fpSqrRoot(y2)) {
       case (null) { return null };
       case (?y) {
-        return if (even == ((y % 2) == 0)) ?y else ?fp.neg(y)
+        let #fp(y_) = y;
+        return if (even == ((y_ % 2) == 0)) ?y else ?Fp.neg(y)
       };
     }
   };
   /// Deserialize a compressed public key.
-  public func deserializeCompressed(b : Blob) : ?(Nat, Nat) {
+  public func deserializeCompressed(b : Blob) : ?(FpElt, FpElt) {
     let n = 32;
     if (b.size() != n + 1) return null;
     let iter = b.vals();
@@ -403,8 +452,9 @@ module {
       case (?0x03) { even := false; };
       case _ { return null; };
     };
-    let x = toNatAsBigEndian(iter);
-    if (x >= p_) return null;
+    let x_ = toNatAsBigEndian(iter);
+    if (x_ >= p_) return null;
+    let x = #fp(x_);
     switch (getYfromX(x, even)) {
       case (null) return null;
       case (?y) return ?(x, y);
