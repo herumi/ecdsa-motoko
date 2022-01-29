@@ -96,7 +96,15 @@ module {
   };
 
   public type FpElt = { #fp : Nat; };
+  public type FrElt = { #fr : Nat; };
   public let Fp = {
+    fromNat = func (n : Nat) : FpElt {
+      #fp(n % p_);
+    };
+    toNat = func (x : FpElt) : Nat {
+      let #fp(x_) = x;
+      x_
+    };
     add = func(x : FpElt, y : FpElt) : FpElt {
       let #fp(x_) = x;
       let #fp(y_) = y;
@@ -134,35 +142,50 @@ module {
       #fp(Field.sqr_(x_, p_));
     };
   };
-
-  // Static version of 
-  //   let fp = Field.Field(p_);
-  // The line above is not static. We can use the type Field.Field, but have to 
-  // write out the constructor again with fixed p_ to make it static.
-  public let fp : Field.Field = {
-    add = func (x : Nat, y : Nat) : Nat = Field.add_(x, y, p_);
-    mul = func (x : Nat, y : Nat) : Nat = Field.mul_(x, y, p_);
-    sub = func (x : Nat, y : Nat) : Nat = Field.sub_(x, y, p_);
-    div = func (x : Nat, y : Nat) : Nat = Field.div_(x, y, p_);
-    pow = func (x : Nat, y : Nat) : Nat = Field.pow_(x, y, p_);
-    neg = func (x : Nat) : Nat = Field.neg_(x, p_);
-    inv = func (x : Nat) : Nat = Field.inv_(x, p_);
-    sqr = func (x : Nat) : Nat = Field.sqr_(x, p_);
-  };
-
-  // Static version of 
-  //   let fr = Field.Field(r_);
-  // The line above is not static. We can use the type Field.Field, but have to 
-  // write out the constructor again with fixed r_ to make it static.
-  public let fr : Field.Field = {
-    add = func (x : Nat, y : Nat) : Nat = Field.add_(x, y, r_);
-    mul = func (x : Nat, y : Nat) : Nat = Field.mul_(x, y, r_);
-    sub = func (x : Nat, y : Nat) : Nat = Field.sub_(x, y, r_);
-    div = func (x : Nat, y : Nat) : Nat = Field.div_(x, y, r_);
-    pow = func (x : Nat, y : Nat) : Nat = Field.pow_(x, y, r_);
-    neg = func (x : Nat) : Nat = Field.neg_(x, r_);
-    inv = func (x : Nat) : Nat = Field.inv_(x, r_);
-    sqr = func (x : Nat) : Nat = Field.sqr_(x, r_);
+  public let Fr = {
+    fromNat = func (n : Nat) : FrElt {
+      #fr(n % r_);
+    };
+    toNat = func (x : FrElt) : Nat {
+      let #fr(x_) = x;
+      x_
+    };
+    add = func(x : FrElt, y : FrElt) : FrElt {
+      let #fr(x_) = x;
+      let #fr(y_) = y;
+      #fr(Field.add_(x_, y_, r_));
+    };
+    mul = func(x : FrElt, y : FrElt) : FrElt {
+      let #fr(x_) = x;
+      let #fr(y_) = y;
+      #fr(Field.mul_(x_, y_, r_));
+    };
+    sub = func(x : FrElt, y : FrElt) : FrElt {
+      let #fr(x_) = x;
+      let #fr(y_) = y;
+      #fr(Field.sub_(x_, y_, r_));
+    };
+    div = func(x : FrElt, y : FrElt) : FrElt {
+      let #fr(x_) = x;
+      let #fr(y_) = y;
+      #fr(Field.div_(x_, y_, r_));
+    };
+    pow = func(x : FrElt, n : Nat) : FrElt {
+      let #fr(x_) = x;
+      #fr(Field.pow_(x_, n, r_));
+    };
+    neg = func(x : FrElt) : FrElt {
+      let #fr(x_) = x;
+      #fr(Field.neg_(x_, r_));
+    };
+    inv = func(x : FrElt) : FrElt {
+      let #fr(x_) = x;
+      #fr(Field.inv_(x_, r_));
+    };
+    sqr = func(x : FrElt) : FrElt {
+      let #fr(x_) = x;
+      #fr(Field.sqr_(x_, r_));
+    };
   };
 
   // more mod fp functions
@@ -248,9 +271,9 @@ module {
       // both are not zero
       return x_ == rhs.x() and y_ == rhs.y()
     };
-    public func mul(x : Nat) : Ec {
-      if (x == 0) return Ec();
-      let bs = toReverseBin(x);
+    public func mul(x : FrElt) : Ec {
+      if (x == #fr(0)) return Ec();
+      let bs = toReverseBin(Fr.toNat(x));
       let self = copy();
       var ret = Ec();
       let n = bs.size();
@@ -331,13 +354,13 @@ module {
   /// Get secret key from rand.
   /// rand : Nat8 values
   /// return secret key in [1, r_-1]
-  public func getSecretKey(rand : Iter.Iter<Nat8>) : ?Nat {
-    let sec = toNatAsBigEndian(rand) % r_;
-    if (sec == 0) null else ?sec
+  public func getSecretKey(rand : Iter.Iter<Nat8>) : ?FrElt {
+    let sec = #fr(toNatAsBigEndian(rand) % r_);
+    if (sec == #fr(0)) null else ?sec
   };
   /// Get public key from sec.
   /// public key (x, y) is a point of elliptic curve
-  public func getPublicKey(sec : Nat) : ?(FpElt, FpElt) {
+  public func getPublicKey(sec : FrElt) : ?(FpElt, FpElt) {
     let P = newEcGenerator();
     let Q = P.mul(sec);
     if (Q.isZero()) null else ?(Q.x(), Q.y())
@@ -345,60 +368,54 @@ module {
   /// Sign hashed by sec and rand return lower S signature (r, s) such that s < rHalf_
   /// hashed : 32-byte SHA-256 value of a message.
   /// rand : 32-byte random value.
-  public func signHashed(sec : Nat, hashed : Iter.Iter<Nat8>, rand : Iter.Iter<Nat8>) : ?(Nat, Nat) {
-    if (sec == 0 or sec >= r_) return null;
-    let k = toNatAsBigEndian(rand) % r_;
-    if (k == 0) return null;
+  public func signHashed(sec : FrElt, hashed : Iter.Iter<Nat8>, rand : Iter.Iter<Nat8>) : ?(FrElt, FrElt) {
+    if (sec == #fr(0)) return null; // 0 is an invalid secret key
+    let k = Fr.fromNat(toNatAsBigEndian(rand));
+    if (k == #fr(0)) return null; // 0 is an invalid k value
     let P = newEcGenerator();
     let Q = P.mul(k);
-    if (Q.isZero()) return null;
-    let #fp(rp) = Q.x();
-    let r = rp % r_;
-    if (r == 0) return null;
-    let z = toNatAsBigEndian(hashed) % r_;
+    if (Q.isZero()) return null; // TODO: isn't this check redundant?
+    let r = Fr.fromNat(Fp.toNat(Q.x()));
+    if (r == #fr(0)) return null; // 0 is an invalid r value
+    let z = Fr.fromNat(toNatAsBigEndian(hashed));
     // s = (r * sec + z) / k
-    var s = fr.div(fr.add(fr.mul(r, sec), z), k);
-    if (s >= rHalf_) s := fr.neg(s);
-    ?(r, s)
+    let s = Fr.div(Fr.add(Fr.mul(r, sec), z), k);
+    ?normalizeSignature(r,s)
   };
   /// convert a signature to lower S signature
-  public func normalizeSignature((r, s) : (Nat, Nat)) : (Nat, Nat) {
-    if (s < rHalf_) (r, s) else (r, fr.neg(s))
+  public func normalizeSignature((r, s) : (FrElt, FrElt)) : (FrElt, FrElt) {
+    if (Fr.toNat(s) < rHalf_) (r, s) else (r, Fr.neg(s))
   };
   /// verify a tuple of pub, hashed, and lowerS sig
-  public func verifyHashed(pub : (FpElt, FpElt), hashed : Iter.Iter<Nat8>, sig : (Nat, Nat)) : Bool {
-    let (r, s) = sig;
-    if (r == 0 or r >= r_) return false;
-    if (s == 0 or s >= rHalf_) return false;
-    let z = toNatAsBigEndian(hashed) % r_;
-    let w = fr.inv(s);
-    let u1 = fr.mul(z, w);
-    let u2 = fr.mul(r, w);
+  public func verifyHashed(pub : (FpElt, FpElt), hashed : Iter.Iter<Nat8>, (r,s) : (FrElt, FrElt)) : Bool {
+    if (r == #fr(0)) return false;
+    if (s == #fr(0) or Fr.toNat(s) >= rHalf_) return false;
+    let z = Fr.fromNat(toNatAsBigEndian(hashed));
+    let w = Fr.inv(s);
+    let u1 = Fr.mul(z, w);
+    let u2 = Fr.mul(r, w);
     let P = newEcGenerator();
     let (x, y) = pub;
     let Q = newEcNoCheck(x, y);
     if (not Q.isValid()) return false;
     let R = P.mul(u1).add(Q.mul(u2));
     if (R.isZero()) return false;
-    let #fp(Rx) = R.x();
-    return (Rx % r_) == r
+    return Fr.fromNat(Fp.toNat(R.x())) == r
   };
   /// Sign a message by sec and rand with SHA-256
-  public func sign(sec : Nat, msg : Iter.Iter<Nat8>, rand : Iter.Iter<Nat8>) : ?(Nat, Nat) {
+  public func sign(sec : FrElt, msg : Iter.Iter<Nat8>, rand : Iter.Iter<Nat8>) : ?(FrElt, FrElt) {
     signHashed(sec, sha2(msg).vals(), rand)
   };
   // verify a tuple of pub, msg, and sig
-  public func verify(pub : (FpElt, FpElt), msg : Iter.Iter<Nat8>, sig : (Nat, Nat)) : Bool {
+  public func verify(pub : (FpElt, FpElt), msg : Iter.Iter<Nat8>, sig : (FrElt, FrElt)) : Bool {
     verifyHashed(pub, sha2(msg).vals(), sig)
   };
   /// return 0x04 + bigEndian(x) + bigEndian(y)
   public func serializeUncompressed(pub : (FpElt, FpElt)) : Blob {
     let prefix = 0x04 : Nat8;
     let n = 32;
-    let #fp(pubx) = pub.0;
-    let #fp(puby) = pub.1;
-    let x = toBigEndianPad(n, pubx);
-    let y = toBigEndianPad(n, puby);
+    let x = toBigEndianPad(n, Fp.toNat(pub.0));
+    let y = toBigEndianPad(n, Fp.toNat(pub.1));
     let ith = func(i : Nat) : Nat8 {
       if (i == 0) {
         prefix
@@ -414,11 +431,9 @@ module {
   /// return 0x02 + bigEndian(x) if y is even
   /// return 0x03 + bigEndian(x) if y is odd
   public func serializeCompressed(pub : (FpElt, FpElt)) : Blob {
-    let #fp(pubx) = pub.0;
-    let #fp(puby) = pub.1;
-    let prefix : Nat8 = if ((puby % 2) == 0) 0x02 else 0x03;
+    let prefix : Nat8 = if ((Fp.toNat(pub.1) % 2) == 0) 0x02 else 0x03;
     let n = 32;
-    let x = toBigEndianPad(n, pubx);
+    let x = toBigEndianPad(n, Fp.toNat(pub.0));
     let ith = func(i : Nat) : Nat8 {
       if (i == 0) {
         prefix
@@ -436,8 +451,7 @@ module {
     switch (fpSqrRoot(y2)) {
       case (null) { return null };
       case (?y) {
-        let #fp(y_) = y;
-        return if (even == ((y_ % 2) == 0)) ?y else ?Fp.neg(y)
+        return if (even == ((Fp.toNat(y) % 2) == 0)) ?y else ?Fp.neg(y)
       };
     }
   };

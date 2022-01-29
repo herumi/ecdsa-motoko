@@ -81,20 +81,20 @@ func toBigEndianPadTest() {
 func arithTest() {
   let m1 = 5 * 2 ** 128;
   let m2 = 6 * 2 ** 128;
-  var x1 = m1 % p;
-  var x2 = m2 % p;
-  assert(M.fp.add(x1, x2) == (m1 + m2) % p);
-  assert(M.fp.sub(x1, x2) == (m1 + p - m2 : Nat) % p);
-  assert(M.fp.sub(x2, x1) == (m2 - m1 : Nat) % p);
-  assert(M.fp.neg(0) == 0);
-  assert(M.fp.neg(x1) == (p - m1 : Nat));
-  assert(M.fp.mul(x1, x2) == (m1 * m2) % p);
+  var x1 = #fp(m1 % p);
+  var x2 = #fp(m2 % p);
+  assert(M.Fp.add(x1, x2) == #fp((m1 + m2) % p));
+  assert(M.Fp.sub(x1, x2) == #fp((m1 + p - m2 : Nat) % p));
+  assert(M.Fp.sub(x2, x1) == #fp((m2 - m1 : Nat) % p));
+  assert(M.Fp.neg(#fp(0)) == #fp(0));
+  assert(M.Fp.neg(x1) == #fp((p - m1 : Nat)));
+  assert(M.Fp.mul(x1, x2) == #fp((m1 * m2) % p));
 
   var i = 0;
-  x2 := 1;
+  x2 := #fp(1);
   while (i < 30) {
-    assert(x2 == M.fp.pow(x1, i));
-    x2 := M.fp.mul(x2, x1);
+    assert(x2 == M.Fp.pow(x1, i));
+    x2 := M.Fp.mul(x2, x1);
     i += 1;
   };
 };
@@ -102,12 +102,13 @@ func arithTest() {
 func invTest() {
   let inv123 = Field.inv_(123, 65537);
   assert(inv123 == 14919);
-  let x2 = M.fp.inv(123);
-  var x1 = 1;
-  while (x1 < 20) {
-    assert(M.fp.mul(x1, M.fp.inv(x1)) == 1);
-    assert(M.fp.mul(M.fp.div(x2, x1), x1) == x2);
-    x1 += 1;
+  let x2 = M.Fp.inv(#fp(123));
+  var i = 1;
+  while (i < 20) {
+    let x1 = #fp(i);
+    assert(M.Fp.mul(x1, M.Fp.inv(x1)) == #fp(1));
+    assert(M.Fp.mul(M.Fp.div(x2, x1), x1) == x2);
+    i += 1;
   };
 };
 
@@ -172,15 +173,15 @@ func ec2Teset() {
   let P5 = P4.add(P);
   assert(P.add(P.neg()).isZero());
   assert(P.dbl().equal(P2));
-  assert(P.mul(1).equal(P));
-  assert(P.mul(2).equal(P2));
-  assert(P.mul(3).equal(P3));
-  assert(P.mul(4).equal(P4));
-  assert(P.mul(5).equal(P5));
-  let Q = P.mul(M.r() - 1);
+  assert(P.mul(#fr(1)).equal(P));
+  assert(P.mul(#fr(2)).equal(P2));
+  assert(P.mul(#fr(3)).equal(P3));
+  assert(P.mul(#fr(4)).equal(P4));
+  assert(P.mul(#fr(5)).equal(P5));
+  let Q = P.mul(M.Fr.fromNat(M.r() - 1));
   assert(Q.equal(P.neg()));
   assert(Q.add(P).isZero());
-  assert(P.mul(M.r()).isZero());
+  assert(P.mul(M.Fr.fromNat(M.r())).isZero());
 };
 
 func ecdsaTest() {
@@ -193,28 +194,27 @@ func ecdsaTest() {
   assert(Blob.toArray(M.sha2(hello.vals())) == hashed);
 
   var sec = switch (M.getSecretKey(secRand.vals())) {
-    case(null) { 0 };
+    case(null) { #fr(0) };
     case(?v) { v };
   };
-  assert(sec == 0x83ecb3984a4f9ff03e84d5f9c0d7f888a81833643047acc58eb6431e01d9bac8);
+  assert(sec == #fr(0x83ecb3984a4f9ff03e84d5f9c0d7f888a81833643047acc58eb6431e01d9bac8));
   var pub = Option.get(M.getPublicKey(sec), (#fp(0), #fp(0)));
   assert(pub == (#fp(0x653bd02ba1367e5d4cd695b6f857d1cd90d4d8d42bc155d85377b7d2d0ed2e71), #fp(0x04e8f5da403ab78decec1f19e2396739ea544e2b14159beb5091b30b418b813a)));
-  var sig = Option.get(M.signHashed(sec, hashed.vals(), signRand.vals()), (0, 0));
+  var sig = Option.get(M.signHashed(sec, hashed.vals(), signRand.vals()), (#fr(0), #fr(0)));
   assert(M.verifyHashed(pub, hashed.vals(), sig));
   assert(not M.verifyHashed((pub.0, M.Fp.add(pub.1,#fp(1))), hashed.vals(), sig));
-//  assert(not M.verifyHashed((pub.0, pub.1 + 1), hashed.vals(), sig));
   assert(not M.verifyHashed(pub, ([0x1, 0x2] : [Nat8]).vals(), sig));
   assert(M.sign(sec, hello.vals(), signRand.vals()) == ?sig);
   assert(M.verifyHashed(pub, hashed.vals(), sig));
 
-  sig := M.normalizeSignature(0xa598a8030da6d86c6bc7f2f5144ea549d28211ea58faa70ebf4c1e665c1fe9b5, 0xde5d79a2ba44e311d04fdca263639283965780bce9169822be9cc81756e95a24);
+  sig := M.normalizeSignature(#fr(0xa598a8030da6d86c6bc7f2f5144ea549d28211ea58faa70ebf4c1e665c1fe9b5), #fr(0xde5d79a2ba44e311d04fdca263639283965780bce9169822be9cc81756e95a24));
   assert(M.verify(pub, hello.vals(), sig));
 
   // generated values by Python:ecdsa
-  sec := 0xb1aa6282b14e5ffbf6d12f783612f804e6a20d1a9734ffbb6c9923c670ee8da2;
+  sec := #fr(0xb1aa6282b14e5ffbf6d12f783612f804e6a20d1a9734ffbb6c9923c670ee8da2);
   pub := Option.get(M.getPublicKey(sec), (#fp(0), #fp(0)));
   assert(pub == (#fp(0x0a09ff142d94bc3f56c5c81b75ea3b06b082c5263fbb5bd88c619fc6393dda3d), #fp(0xa53e0e930892cdb7799eea8fd45b9fff377d838f4106454289ae8a080b111f8d)));
-  sig := M.normalizeSignature(0x50839a97404c24ec39455b996e4888477fd61bcf0ffb960c7ffa3bef10450191, 0x9671b8315bb5c1611d422d49cbbe7e80c6b463215bfad1c16ca73172155bf31a);
+  sig := M.normalizeSignature(#fr(0x50839a97404c24ec39455b996e4888477fd61bcf0ffb960c7ffa3bef10450191), #fr(0x9671b8315bb5c1611d422d49cbbe7e80c6b463215bfad1c16ca73172155bf31a));
   assert(M.verifyHashed(pub, hashed.vals(), sig));
 };
 
