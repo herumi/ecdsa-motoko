@@ -1,5 +1,5 @@
 import M "../src";
-import ModN "../src/zn";
+import Field "../src/field";
 import IntExt "../src/intext";
 import Nat "mo:base/Nat";
 import Debug "mo:base/Debug";
@@ -100,7 +100,7 @@ func arithTest() {
 };
 
 func invTest() {
-  let inv123 = ModN.inv_(123, 65537);
+  let inv123 = Field.inv_(123, 65537);
   assert(inv123 == 14919);
   let x2 = M.fp.inv(123);
   var x1 = 1;

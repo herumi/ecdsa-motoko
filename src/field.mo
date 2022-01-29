@@ -44,7 +44,7 @@ module {
   };
   public func sqr_(x : Nat, n : Nat) : Nat = mul_(x, x, n);
 
-  public class Zn(n : Nat) {
+  public class Field(n : Nat) {
     public func add(x : Nat, y : Nat) : Nat = add_(x, y, n);
     public func mul(x : Nat, y : Nat) : Nat = mul_(x, y, n);
     public func sub(x : Nat, y : Nat) : Nat = sub_(x, y, n);

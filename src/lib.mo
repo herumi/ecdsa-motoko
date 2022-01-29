@@ -16,7 +16,7 @@ import Blob "mo:base/Blob";
 import Debug "mo:base/Debug";
 import Option "mo:base/Option";
 import SHA2 "mo:sha2";
-import Zn "zn";
+import Field "field";
 
 module {
   // secp256k1
@@ -96,33 +96,33 @@ module {
   };
 
   // Static version of 
-  //   let fp = Zn.Zn(p_);
-  // The line above is not static. We can use the type Zn.Zn, but have to 
+  //   let fp = Field.Field(p_);
+  // The line above is not static. We can use the type Field.Field, but have to 
   // write out the constructor again with fixed p_ to make it static.
-  public let fp : Zn.Zn = {
-    add = func (x : Nat, y : Nat) : Nat = Zn.add_(x, y, p_);
-    mul = func (x : Nat, y : Nat) : Nat = Zn.mul_(x, y, p_);
-    sub = func (x : Nat, y : Nat) : Nat = Zn.sub_(x, y, p_);
-    div = func (x : Nat, y : Nat) : Nat = Zn.div_(x, y, p_);
-    pow = func (x : Nat, y : Nat) : Nat = Zn.pow_(x, y, p_);
-    neg = func (x : Nat) : Nat = Zn.neg_(x, p_);
-    inv = func (x : Nat) : Nat = Zn.inv_(x, p_);
-    sqr = func (x : Nat) : Nat = Zn.sqr_(x, p_);
+  public let fp : Field.Field = {
+    add = func (x : Nat, y : Nat) : Nat = Field.add_(x, y, p_);
+    mul = func (x : Nat, y : Nat) : Nat = Field.mul_(x, y, p_);
+    sub = func (x : Nat, y : Nat) : Nat = Field.sub_(x, y, p_);
+    div = func (x : Nat, y : Nat) : Nat = Field.div_(x, y, p_);
+    pow = func (x : Nat, y : Nat) : Nat = Field.pow_(x, y, p_);
+    neg = func (x : Nat) : Nat = Field.neg_(x, p_);
+    inv = func (x : Nat) : Nat = Field.inv_(x, p_);
+    sqr = func (x : Nat) : Nat = Field.sqr_(x, p_);
   };
 
   // Static version of 
-  //   let fp = Zn.Zn(r_);
-  // The line above is not static. We can use the type Zn.Zn, but have to 
+  //   let fp = Field.Field(r_);
+  // The line above is not static. We can use the type Field.Field, but have to 
   // write out the constructor again with fixed r_ to make it static.
-  public let fr : Zn.Zn = {
-    add = func (x : Nat, y : Nat) : Nat = Zn.add_(x, y, r_);
-    mul = func (x : Nat, y : Nat) : Nat = Zn.mul_(x, y, r_);
-    sub = func (x : Nat, y : Nat) : Nat = Zn.sub_(x, y, r_);
-    div = func (x : Nat, y : Nat) : Nat = Zn.div_(x, y, r_);
-    pow = func (x : Nat, y : Nat) : Nat = Zn.pow_(x, y, r_);
-    neg = func (x : Nat) : Nat = Zn.neg_(x, r_);
-    inv = func (x : Nat) : Nat = Zn.inv_(x, r_);
-    sqr = func (x : Nat) : Nat = Zn.sqr_(x, r_);
+  public let fr : Field.Field = {
+    add = func (x : Nat, y : Nat) : Nat = Field.add_(x, y, r_);
+    mul = func (x : Nat, y : Nat) : Nat = Field.mul_(x, y, r_);
+    sub = func (x : Nat, y : Nat) : Nat = Field.sub_(x, y, r_);
+    div = func (x : Nat, y : Nat) : Nat = Field.div_(x, y, r_);
+    pow = func (x : Nat, y : Nat) : Nat = Field.pow_(x, y, r_);
+    neg = func (x : Nat) : Nat = Field.neg_(x, r_);
+    inv = func (x : Nat) : Nat = Field.inv_(x, r_);
+    sqr = func (x : Nat) : Nat = Field.sqr_(x, r_);
   };
 
   // more mod fp functions
