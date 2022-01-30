@@ -7,15 +7,6 @@
  * Stability   : Stable
  */
 
-/*
-  changelog:
-  remove class Ec
-  problem with *this goes away
-  type safety
-  use patter in function arg list
-  use double pattern in switch
-*/
-
 import Int "mo:base/Int";
 import Iter "mo:base/Iter";
 import Nat8 "mo:base/Nat8";
@@ -26,7 +17,6 @@ import Debug "mo:base/Debug";
 import Option "mo:base/Option";
 import SHA2 "mo:sha2";
 import Field "field";
-import Curve "curve";
 import Prelude "mo:base/Prelude";
 
 module {
@@ -51,9 +41,6 @@ module {
   public func p() : Nat = p_;
   /// return the order of the generator of Ec.
     public func r() : Nat = r_;
-
-  /// return the generator of Ec.
-  public func generator() : (FpElt, FpElt) = (gx_, gy_);
 
   public func sha2(iter : Iter.Iter<Nat8>) : Blob {
     SHA2.fromIter(#sha256, iter)
@@ -325,7 +312,7 @@ module {
     if (sec == #fr(0)) null else ?sec
   };
   /// Get public key from sec.
-  /// public key (x, y) is a point of elliptic curve
+  /// public key (x, y) is an affine point of elliptic curve
   public func getPublicKey(sec : FrElt) : Affine {
     switch (mul(g,sec)) {
       case (#zero) Prelude.unreachable();
