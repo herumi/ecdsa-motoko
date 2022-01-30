@@ -8,6 +8,8 @@ test: test.wasm
 test-hmac: hmac-test.wasm
 	wasmtime $<
 
+TIME=time
+
 %.wasm: %.mo ../src/lib.mo ../src/hmac.mo
 	$(shell vessel bin)/moc $(shell vessel sources) --release -wasi-system-api -o $@ $<
 
@@ -18,9 +20,9 @@ bench-gen20.mo: bench-gen.tmpl
 	sed 's/@@@/20/' < bench-gen.tmpl > bench-gen20.mo
 
 bench-gen10: bench-gen10.wasm
-	time -f %U wasmtime $<
+	$(TIME) wasmtime $<
 bench-gen20: bench-gen20.wasm
-	time -f %U wasmtime $<
+	$(TIME) wasmtime $<
 
 bench-gen:
 	$(MAKE) bench-gen10
@@ -33,9 +35,9 @@ bench-sign20.mo: bench-sign.tmpl
 	sed 's/@@@/20/' < bench-sign.tmpl > bench-sign20.mo
 
 bench-sign10: bench-sign10.wasm
-	time -f %U wasmtime $<
+	$(TIME) wasmtime $<
 bench-sign20: bench-sign20.wasm
-	time -f %U wasmtime $<
+	$(TIME) wasmtime $<
 
 bench-sign:
 	$(MAKE) bench-sign10
