@@ -7,6 +7,15 @@
  * Stability   : Stable
  */
 
+/*
+  changelog:
+  remove class Ec
+  problem with *this goes away
+  type safety
+  use patter in function arg list
+  use double pattern in switch
+*/
+
 import Int "mo:base/Int";
 import Iter "mo:base/Iter";
 import Nat8 "mo:base/Nat8";
@@ -17,6 +26,8 @@ import Debug "mo:base/Debug";
 import Option "mo:base/Option";
 import SHA2 "mo:sha2";
 import Field "field";
+import Curve "curve";
+import Prelude "mo:base/Prelude";
 
 module {
   // secp256k1
@@ -39,7 +50,7 @@ module {
   /// return the order of the field where Ec is defined.
   public func p() : Nat = p_;
   /// return the order of the generator of Ec.
-  public func r() : Nat = r_;
+    public func r() : Nat = r_;
 
   /// return the generator of Ec.
   public func generator() : (FpElt, FpElt) = (gx_, gy_);
@@ -198,116 +209,73 @@ module {
   func getYsqrFromX(x : FpElt) : FpElt {
     Fp.add(Fp.mul(Fp.add(Fp.sqr(x), a_), x), b_)
   };
-  func _isValid(x : FpElt, y : FpElt) : Bool {
+
+  public type Affine = (FpElt, FpElt);
+  public type Point = { #zero; #affine : Affine };
+
+  public let g_coords : Affine = 
+    (#fp(0x79be667ef9dcbbac55a06295ce870b07029bfcdb2dce28d959f2815b16f81798), #fp(0x483ada7726a3c4655da4fbfc0e1108a8fd17b448a68554199c47d08ffb10d4b8));
+  public let g : Point = #affine(g_coords);
+  public let zero : Point = #zero;
+
+  public func isValid((x,y) : Affine) : Bool {
     Fp.sqr(y) == getYsqrFromX(x) 
   };
-
-  public class Ec() {
-    var x_ = #fp(0);
-    var y_ = #fp(0);
-    var isZero_ : Bool = true;
-    public func affine() : (FpElt, FpElt) = (x_, y_);
-    public func x() : FpElt = x_;
-    public func y() : FpElt = y_;
-    public func set(x : FpElt, y : FpElt) : Bool {
-      if (not _isValid(x, y)) return false;
-      x_ := x;
-      y_ := y;
-      isZero_ := false;
-      return true
-    };
-    public func setNoCheck(x : FpElt, y : FpElt) {
-      x_ := x;
-      y_ := y;
-      isZero_ := false;
-    };
-    public func isZero() : Bool = isZero_;
-    public func isValid() : Bool = isZero_ or _isValid(x_, y_);
-    public func neg() : Ec = if (isZero()) Ec() else newEcNoCheck(x_, Fp.neg(y_));
-    // QQQ : how can I return *this?
-    public func copy() : Ec = if (isZero()) Ec() else newEcNoCheck(x_, y_);
-    public func add(rhs : Ec) : Ec {
-      if (isZero()) return rhs;
-      if (rhs.isZero()) return copy();
-      var nume = #fp(0);
-      var deno = #fp(0);
-      let x2 = rhs.x();
-      let y2 = rhs.y();
-      if (x_ == x2) {
-        // P + (-P) = 0
-        if (y_ == Fp.neg(y2)) return Ec();
-        // dbl
-        let xx = Fp.sqr(x_);
-        let xx3 = Fp.add(Fp.add(xx, xx), xx);
-        nume := Fp.add(xx3, a_);
-        deno := Fp.add(y_, y_);
-      } else {
-        nume := Fp.sub(y_, y2);
-        deno := Fp.sub(x_, x2);
-      };
-      let L = Fp.div(nume, deno);
-      let x3 = Fp.sub(Fp.sqr(L), Fp.add(x_, x2));
-      let y3 = Fp.sub(Fp.mul(L, Fp.sub(x_, x3)), y_);
-      return newEcNoCheck(x3, y3)
-    };
-    public func dbl() : Ec {
-      if (isZero()) return Ec();
-      var nume = #fp(0);
-      var deno = #fp(0);
-      // P + (-P) = 0
-      if (y_ == #fp(0)) return Ec();
-      let xx = Fp.sqr(x_);
-      let xx3 = Fp.add(Fp.add(xx, xx), xx);
-      nume := Fp.add(xx3, a_);
-      deno := Fp.add(y_, y_);
-      let L = Fp.div(nume, deno);
-      let x3 = Fp.sub(Fp.sqr(L), Fp.add(x_, x_));
-      let y3 = Fp.sub(Fp.mul(L, Fp.sub(x_, x3)), y_);
-      return newEcNoCheck(x3, y3)
-    };
-    public func equal(rhs : Ec) : Bool {
-      if (isZero()) return rhs.isZero();
-      if (rhs.isZero()) return false;
-      // both are not zero
-      return x_ == rhs.x() and y_ == rhs.y()
-    };
-    public func mul(x : FrElt) : Ec {
-      if (x == #fr(0)) return Ec();
-      let bs = toReverseBin(Fr.toNat(x));
-      let self = copy();
-      var ret = Ec();
-      let n = bs.size();
-      var i = 0;
-      while (i < n) {
-        let b = bs[n - 1 - i];
-        ret := ret.dbl();
-        if (b) {
-          ret := ret.add(self);
+  public func isZero(a : Point) : Bool = a == #zero;
+  public func isNegOf(a : Point, b : Point) : Bool = a == neg(b);
+  public func neg(p : Point) : Point {
+    switch (p) {
+        case (#zero) { #zero };
+        case (#affine(c)) { #affine(c.0, Fp.neg(c.1)) };
+    }
+  };
+  func dbl_affine((x,y) : Affine) : Affine {
+    let xx = Fp.mul(x,x);
+    let xx3 = Fp.add(Fp.add(xx, xx), xx);
+    let nume = Fp.add(xx3, a_);
+    let deno = Fp.add(y,y);
+    let L = Fp.div(nume, deno);
+    let x3 = Fp.sub(Fp.mul(L, L), Fp.add(x,x));
+    let y3 = Fp.sub(Fp.mul(L, Fp.sub(x, x3)), y);
+    (x3, y3)
+  };
+  public func dbl(a : Point) : Point {
+    switch (a) {
+      case (#zero) #zero;
+      case (#affine(c)) #affine(dbl_affine(c));
+    }
+  };
+  public func add(a : Point, b : Point) : Point {
+    switch (a, b) {
+      case (#zero, b) return b;
+      case (a, #zero) return a;
+      case (#affine(ax,ay), #affine(bx,by)) {
+        if (ax == bx) {
+          // P + (-P) or P + P 
+          return if (ay == Fp.neg(by)) #zero else dbl(a);
+        } else {
+          let L = Fp.div(Fp.sub(ay, by), Fp.sub(ax, bx));
+          let x3 = Fp.sub(Fp.mul(L, L), Fp.add(ax, bx));
+          let y3 = Fp.sub(Fp.mul(L, Fp.sub(ax, x3)), ay);
+          return #affine(x3, y3);
         };
-        i += 1;
-      };
-      return ret
-    };
-    public func put() {
-      if (isZero()) {
-        Debug.print("0");
-      } else {
-        Debug.print("x=" # toHex(Fp.toNat(x_)));
-        Debug.print("y=" # toHex(Fp.toNat(y_)));
       };
     };
   };
-  public func newEc(x : FpElt, y : FpElt) : ?Ec {
-    let P = Ec();
-    if (P.set(x, y)) ?P else null
+  public func mul(a : Point, #fr(x) : FrElt) : Point {
+    let bs = toReverseBin(x);
+    let n = bs.size();
+    var ret : Point = #zero;
+    var i = 0;
+    while (i < n) {
+      let b = bs[n - 1 - i];
+      ret := dbl(ret);
+      if (b) ret := add(ret, a);
+      i += 1;
+    };
+    ret
   };
-  public func newEcNoCheck(x : FpElt, y : FpElt) : Ec {
-    let P = Ec();
-    P.setNoCheck(x, y);
-    return P
-  };
-  /// return the generator of Ec
-  public func newEcGenerator() : Ec = newEcNoCheck(gx_, gy_);
+
   // [0x12, 0x34] : [Nat] => 0x1234
   public func toNatAsBigEndian(iter : Iter.Iter<Nat8>) : Nat {
     var v = 0;
@@ -358,10 +326,11 @@ module {
   };
   /// Get public key from sec.
   /// public key (x, y) is a point of elliptic curve
-  public func getPublicKey(sec : FrElt) : ?(FpElt, FpElt) {
-    let P = newEcGenerator();
-    let Q = P.mul(sec);
-    if (Q.isZero()) null else ?(Q.x(), Q.y())
+  public func getPublicKey(sec : FrElt) : Affine {
+    switch (mul(g,sec)) {
+      case (#zero) Prelude.unreachable();
+      case (#affine(c)) c;
+    }
   };
   /// Sign hashed by sec and rand return lower S signature (r, s) such that s < rHalf_
   /// hashed : 32-byte SHA-256 value of a message.
@@ -370,10 +339,12 @@ module {
     if (sec == #fr(0)) return null; // 0 is an invalid secret key
     let k = Fr.fromNat(toNatAsBigEndian(rand));
     if (k == #fr(0)) return null; // 0 is an invalid k value
-    let P = newEcGenerator();
-    let Q = P.mul(k);
-    if (Q.isZero()) return null; // TODO: isn't this check redundant?
-    let r = Fr.fromNat(Fp.toNat(Q.x()));
+    let Q = mul(g,k);
+    let x : FpElt = switch (Q) {
+      case (#zero) Prelude.unreachable(); // should not happen because k is non-zero
+      case (#affine(x, _)) x;
+    };
+    let r = Fr.fromNat(Fp.toNat(x));
     if (r == #fr(0)) return null; // 0 is an invalid r value
     let z = Fr.fromNat(toNatAsBigEndian(hashed));
     // s = (r * sec + z) / k
@@ -392,13 +363,13 @@ module {
     let w = Fr.inv(s);
     let u1 = Fr.mul(z, w);
     let u2 = Fr.mul(r, w);
-    let P = newEcGenerator();
-    let (x, y) = pub;
-    let Q = newEcNoCheck(x, y);
-    if (not Q.isValid()) return false;
-    let R = P.mul(u1).add(Q.mul(u2));
-    if (R.isZero()) return false;
-    return Fr.fromNat(Fp.toNat(R.x())) == r
+    if (not isValid(pub)) return false;
+    let Q = #affine(pub);
+    let R = add(mul(g,u1),mul(Q,u2));
+    switch (R) {
+      case (#zero) false;
+      case (#affine(x,_)) Fr.fromNat(Fp.toNat(x)) == r
+    }
   };
   /// Sign a message by sec and rand with SHA-256
   public func sign(sec : FrElt, msg : Iter.Iter<Nat8>, rand : Iter.Iter<Nat8>) : ?(FrElt, FrElt) {
