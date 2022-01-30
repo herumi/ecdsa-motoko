@@ -353,7 +353,7 @@ module {
   /// rand : Nat8 values
   /// return secret key in [1, r_-1]
   public func getSecretKey(rand : Iter.Iter<Nat8>) : ?FrElt {
-    let sec = #fr(toNatAsBigEndian(rand) % r_);
+    let sec = Fr.fromNat(toNatAsBigEndian(rand));
     if (sec == #fr(0)) null else ?sec
   };
   /// Get public key from sec.
