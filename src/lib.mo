@@ -23,13 +23,11 @@ module {
     SHA2.fromIter(#sha256, iter)
   };
 
-  public type FpElt = Curve.FpElt;
   public type FrElt = Curve.FrElt;
   public let Fp = Curve.Fp;
   public let Fr = Curve.Fr;
 
-  public type Affine = Curve.Affine;
-  public type Point = Curve.Point;
+  public type PublicKey = Curve.Affine;
 
   /// Get secret key from rand.
   /// rand : Nat8 values
@@ -40,7 +38,7 @@ module {
   };
   /// Get public key from sec.
   /// public key (x, y) is an affine point of elliptic curve
-  public func getPublicKey(sec : FrElt) : Affine {
+  public func getPublicKey(sec : FrElt) : PublicKey {
     switch (Curve.mul_base(sec)) {
       case (#zero) Prelude.unreachable();
       case (#affine(c)) c;
@@ -54,7 +52,7 @@ module {
     let k = Fr.fromNat(Util.toNatAsBigEndian(rand));
     if (k == #fr(0)) return null; // 0 is an invalid k value
     let Q = Curve.mul_base(k);
-    let x : FpElt = switch (Q) {
+    let x = switch (Q) {
       case (#zero) Prelude.unreachable(); // should not happen because k is non-zero
       case (#affine(x, _)) x;
     };
@@ -70,7 +68,7 @@ module {
     if (Fr.toNat(s) < Curve.params.rHalf) (r, s) else (r, Fr.neg(s))
   };
   /// verify a tuple of pub, hashed, and lowerS sig
-  public func verifyHashed(pub : (FpElt, FpElt), hashed : Iter.Iter<Nat8>, (r,s) : (FrElt, FrElt)) : Bool {
+  public func verifyHashed(pub : PublicKey, hashed : Iter.Iter<Nat8>, (r,s) : (FrElt, FrElt)) : Bool {
     if (r == #fr(0)) return false;
     if (s == #fr(0) or Fr.toNat(s) >= Curve.params.rHalf) return false;
     let z = Fr.fromNat(Util.toNatAsBigEndian(hashed));
@@ -90,11 +88,11 @@ module {
     signHashed(sec, sha2(msg).vals(), rand)
   };
   // verify a tuple of pub, msg, and sig
-  public func verify(pub : (FpElt, FpElt), msg : Iter.Iter<Nat8>, sig : (FrElt, FrElt)) : Bool {
+  public func verify(pub : PublicKey, msg : Iter.Iter<Nat8>, sig : (FrElt, FrElt)) : Bool {
     verifyHashed(pub, sha2(msg).vals(), sig)
   };
   /// return 0x04 + bigEndian(x) + bigEndian(y)
-  public func serializePublicKeyUncompressed(pub : (FpElt, FpElt)) : Blob {
+  public func serializePublicKeyUncompressed(pub : PublicKey) : Blob {
     let prefix = 0x04 : Nat8;
     let n = 32;
     let x = Util.toBigEndianPad(n, Fp.toNat(pub.0));
@@ -113,7 +111,7 @@ module {
   };
   /// return 0x02 + bigEndian(x) if y is even
   /// return 0x03 + bigEndian(x) if y is odd
-  public func serializePublicKeyCompressed(pub : (FpElt, FpElt)) : Blob {
+  public func serializePublicKeyCompressed(pub : PublicKey) : Blob {
     let prefix : Nat8 = if ((Fp.toNat(pub.1) % 2) == 0) 0x02 else 0x03;
     let n = 32;
     let x = Util.toBigEndianPad(n, Fp.toNat(pub.0));
@@ -128,7 +126,7 @@ module {
     Blob.fromArray(ar)
   };
   /// Deserialize an uncompressed public key
-  public func deserializePublicKeyUncompressed(b : Blob) : ?(FpElt, FpElt) {
+  public func deserializePublicKeyUncompressed(b : Blob) : ?PublicKey {
     if(b.size() != 65) return null;
     let a = Blob.toArray(b);
     if (a[0] != 0x04) return null;
@@ -147,7 +145,7 @@ module {
     ?(#fp(x), #fp(y));
   };
   /// Deserialize a compressed public key.
-  public func deserializePublicKeyCompressed(b : Blob) : ?(FpElt, FpElt) {
+  public func deserializePublicKeyCompressed(b : Blob) : ?PublicKey {
     let n = 32;
     if (b.size() != n + 1) return null;
     let iter = b.vals();
