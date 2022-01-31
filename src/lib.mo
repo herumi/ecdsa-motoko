@@ -59,7 +59,7 @@ module {
     };
     let r = Fr.fromNat(Fp.toNat(x));
     if (r == #fr(0)) return null; // x was 0 mod r, bad luck with rand
-    let z = Fr.fromNat(Util.toNatAsBigEndian(hashed));
+    let z = getExponent(hashed);
     // s = (r * sec + z) / k
     let s = Fr.div(Fr.add(Fr.mul(r, sec), z), k);
     ?normalizeSignature(r,s)
@@ -74,7 +74,7 @@ module {
     if (r == #fr(0)) return false;
     if (s == #fr(0)) return false;
     if (Fr.toNat(s) >= Curve.params.rHalf) return false;
-    let z = Fr.fromNat(Util.toNatAsBigEndian(hashed));
+    let z = getExponent(hashed);
     let w = Fr.inv(s);
     let u1 = Fr.mul(z, w);
     let u2 = Fr.mul(r, w);
