@@ -1,7 +1,8 @@
 import M "../src";
 import Field "../src/field";
 import C "../src/curve";
-import U "../src/curve_util";
+import UC "../src/curve_util";
+import UL "../src/lib_util";
 import IntExt "../src/intext";
 import Nat "mo:base/Nat";
 import Debug "mo:base/Debug";
@@ -40,7 +41,7 @@ func toReverseBinTest() {
   ];
   for(i in tbl.keys()) {
     let (v, a) = tbl[i];
-    let b = U.toReverseBin(v);
+    let b = UC.toReverseBin(v);
     assert(b == a);
   };
   switch (optionFunc(5)) {
@@ -59,7 +60,7 @@ func toBigEndianTest() {
   ];
   for (i in tbl.keys()) {
     let (b, v) = tbl[i];
-    assert(M.toBigEndian(v) == b);
+    assert(UL.toBigEndian(v) == b);
   };
 };
 
@@ -73,11 +74,11 @@ func toBigEndianPadTest() {
   ];
   for (i in tbl.keys()) {
     let (b, v) = tbl[i];
-    assert(M.toNatAsBigEndian(b.vals()) == v);
-    assert(M.toBigEndianPad(b.size(), v) == b);
+    assert(UL.toNatAsBigEndian(b.vals()) == v);
+    assert(UL.toBigEndianPad(b.size(), v) == b);
   };
-  assert(M.toBigEndianPad(1, 0) == ([0x00] : [Nat8]));
-  assert(M.toBigEndianPad(5, 0x1234) == ([0x00, 0x00, 0x00, 0x12, 0x34] : [Nat8]));
+  assert(UL.toBigEndianPad(1, 0) == ([0x00] : [Nat8]));
+  assert(UL.toBigEndianPad(5, 0x1234) == ([0x00, 0x00, 0x00, 0x12, 0x34] : [Nat8]));
 };
 
 func arithTest() {

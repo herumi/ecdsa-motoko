@@ -17,6 +17,7 @@ import Debug "mo:base/Debug";
 import Option "mo:base/Option";
 import SHA2 "mo:sha2";
 import Curve "curve";
+import Util "lib_util";
 import Prelude "mo:base/Prelude";
 
 module {
@@ -72,52 +73,11 @@ module {
   public type Affine = Curve.Affine;
   public type Point = Curve.Point;
 
-  // [0x12, 0x34] : [Nat] => 0x1234
-  public func toNatAsBigEndian(iter : Iter.Iter<Nat8>) : Nat {
-    var v = 0;
-    label l loop {
-      switch (iter.next()) {
-        case (null) break l;
-        case (?e) v := v * 256 + Nat8.toNat(e);
-      };
-    };
-    return v
-  };
-  /// 0x1234 => [0x12, 0x34], 0 => [0]
-  public func toBigEndian(x : Nat) : [Nat8] {
-    if (x == 0) return [0];
-    var buf = Buffer.Buffer<Nat8>(64);
-    var t = x;
-    while (t > 0) {
-      buf.add(Nat8.fromNat(t % 256));
-      t /= 256;
-    };
-    let n = buf.size();
-    let ith = func(i : Nat) : Nat8 {
-      buf.get(n - 1 - i)
-    };
-    Array.tabulate<Nat8>(n, ith)
-  };
-  /// (5, 0x1234) => [0x00, 0x00, 0x00, 0x12, 0x34]
-  public func toBigEndianPad(len : Nat, x : Nat) : [Nat8] {
-    var buf = Buffer.Buffer<Nat8>(len);
-    var t = x;
-    var i = 0;
-    while (i < len) {
-      buf.add(Nat8.fromNat(t % 256));
-      t /= 256;
-      i += 1;
-    };
-    let ith = func(i : Nat) : Nat8 {
-      buf.get(len - 1 - i)
-    };
-    Array.tabulate<Nat8>(len, ith)
-  };
   /// Get secret key from rand.
   /// rand : Nat8 values
   /// return secret key in [1, r_-1]
   public func getSecretKey(rand : Iter.Iter<Nat8>) : ?FrElt {
-    let sec = Fr.fromNat(toNatAsBigEndian(rand));
+    let sec = Fr.fromNat(Util.toNatAsBigEndian(rand));
     if (sec == #fr(0)) null else ?sec
   };
   /// Get public key from sec.
@@ -133,7 +93,7 @@ module {
   /// rand : 32-byte random value.
   public func signHashed(sec : FrElt, hashed : Iter.Iter<Nat8>, rand : Iter.Iter<Nat8>) : ?(FrElt, FrElt) {
     if (sec == #fr(0)) return null; // 0 is an invalid secret key
-    let k = Fr.fromNat(toNatAsBigEndian(rand));
+    let k = Fr.fromNat(Util.toNatAsBigEndian(rand));
     if (k == #fr(0)) return null; // 0 is an invalid k value
     let Q = Curve.mul(Curve.G,k);
     let x : FpElt = switch (Q) {
@@ -142,7 +102,7 @@ module {
     };
     let r = Fr.fromNat(Fp.toNat(x));
     if (r == #fr(0)) return null; // 0 is an invalid r value
-    let z = Fr.fromNat(toNatAsBigEndian(hashed));
+    let z = Fr.fromNat(Util.toNatAsBigEndian(hashed));
     // s = (r * sec + z) / k
     let s = Fr.div(Fr.add(Fr.mul(r, sec), z), k);
     ?normalizeSignature(r,s)
@@ -155,7 +115,7 @@ module {
   public func verifyHashed(pub : (FpElt, FpElt), hashed : Iter.Iter<Nat8>, (r,s) : (FrElt, FrElt)) : Bool {
     if (r == #fr(0)) return false;
     if (s == #fr(0) or Fr.toNat(s) >= rHalf_) return false;
-    let z = Fr.fromNat(toNatAsBigEndian(hashed));
+    let z = Fr.fromNat(Util.toNatAsBigEndian(hashed));
     let w = Fr.inv(s);
     let u1 = Fr.mul(z, w);
     let u2 = Fr.mul(r, w);
@@ -179,8 +139,8 @@ module {
   public func serializePublicKeyUncompressed(pub : (FpElt, FpElt)) : Blob {
     let prefix = 0x04 : Nat8;
     let n = 32;
-    let x = toBigEndianPad(n, Fp.toNat(pub.0));
-    let y = toBigEndianPad(n, Fp.toNat(pub.1));
+    let x = Util.toBigEndianPad(n, Fp.toNat(pub.0));
+    let y = Util.toBigEndianPad(n, Fp.toNat(pub.1));
     let ith = func(i : Nat) : Nat8 {
       if (i == 0) {
         prefix
@@ -198,7 +158,7 @@ module {
   public func serializePublicKeyCompressed(pub : (FpElt, FpElt)) : Blob {
     let prefix : Nat8 = if ((Fp.toNat(pub.1) % 2) == 0) 0x02 else 0x03;
     let n = 32;
-    let x = toBigEndianPad(n, Fp.toNat(pub.0));
+    let x = Util.toBigEndianPad(n, Fp.toNat(pub.0));
     let ith = func(i : Nat) : Nat8 {
       if (i == 0) {
         prefix
@@ -224,8 +184,8 @@ module {
       };
     };
     let n = 32;
-    let x = toNatAsBigEndian(range(a, 1, n));
-    let y = toNatAsBigEndian(range(a, 1+n, n));
+    let x = Util.toNatAsBigEndian(range(a, 1, n));
+    let y = Util.toNatAsBigEndian(range(a, 1+n, n));
     ?(#fp(x), #fp(y));
   };
   /// Deserialize a compressed public key.
@@ -239,7 +199,7 @@ module {
       case (?0x03) { even := false; };
       case _ { return null; };
     };
-    let x_ = toNatAsBigEndian(iter);
+    let x_ = Util.toNatAsBigEndian(iter);
     if (x_ >= p_) return null;
     let x = #fp(x_);
     switch (Curve.getYfromX(x, even)) {
@@ -255,7 +215,7 @@ module {
     buf.add(0); // modify later
     let append = func(x : Nat) {
       buf.add(0x02); // marker
-      let a = toBigEndian(x);
+      let a = Util.toBigEndian(x);
       let adj = if (a[0] >= 0x80) 1 else 0;
       buf.add(Nat8.fromNat(a.size() + adj));
       if (adj == 1) buf.add(0x00);
