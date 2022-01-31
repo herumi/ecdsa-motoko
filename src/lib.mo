@@ -23,32 +23,34 @@ module {
     SHA2.fromIter(#sha256, iter)
   };
 
-  public type FrElt = Curve.FrElt;
+  type FrElt = Curve.FrElt;
   public let Fp = Curve.Fp;
   public let Fr = Curve.Fr;
 
   public type PublicKey = Curve.Affine;
+  public type SecretKey = { #non_zero : Curve.FrElt; };
 
   /// Get secret key from rand.
   /// rand : Nat8 values
   /// return secret key in [1, r_-1]
-  public func getSecretKey(rand : Iter.Iter<Nat8>) : ?FrElt {
+  public func getSecretKey(rand : Iter.Iter<Nat8>) : ?SecretKey {
     let sec = Fr.fromNat(Util.toNatAsBigEndian(rand));
-    if (sec == #fr(0)) null else ?sec
+    if (sec == #fr(0)) null else ?#non_zero(sec)
   };
   /// Get public key from sec.
   /// public key (x, y) is an affine point of elliptic curve
-  public func getPublicKey(sec : FrElt) : PublicKey {
-    switch (Curve.mul_base(sec)) {
-      case (#zero) Prelude.unreachable();
+  public func getPublicKey(#non_zero(s) : SecretKey) : PublicKey {
+    if (s == #fr(0)) Prelude.unreachable(); // type error
+    switch (Curve.mul_base(s)) {
+      case (#zero) Prelude.unreachable(); // because s is non-zero
       case (#affine(c)) c;
     }
   };
   /// Sign hashed by sec and rand return lower S signature (r, s) such that s < rHalf
   /// hashed : 32-byte SHA-256 value of a message.
   /// rand : 32-byte random value.
-  public func signHashed(sec : FrElt, hashed : Iter.Iter<Nat8>, rand : Iter.Iter<Nat8>) : ?(FrElt, FrElt) {
-    if (sec == #fr(0)) return null; // 0 is an invalid secret key
+  public func signHashed(#non_zero(sec) : SecretKey, hashed : Iter.Iter<Nat8>, rand : Iter.Iter<Nat8>) : ?(FrElt, FrElt) {
+    if (sec == #fr(0)) Prelude.unreachable(); // type error
     let k = Fr.fromNat(Util.toNatAsBigEndian(rand));
     if (k == #fr(0)) return null; // 0 is an invalid k value
     let Q = Curve.mul_base(k);
@@ -84,7 +86,7 @@ module {
     }
   };
   /// Sign a message by sec and rand with SHA-256
-  public func sign(sec : FrElt, msg : Iter.Iter<Nat8>, rand : Iter.Iter<Nat8>) : ?(FrElt, FrElt) {
+  public func sign(sec : SecretKey, msg : Iter.Iter<Nat8>, rand : Iter.Iter<Nat8>) : ?(FrElt, FrElt) {
     signHashed(sec, sha2(msg).vals(), rand)
   };
   // verify a tuple of pub, msg, and sig

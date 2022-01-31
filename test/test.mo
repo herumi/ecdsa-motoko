@@ -11,6 +11,7 @@ import Option "mo:base/Option";
 import Blob "mo:base/Blob";
 import Iter "mo:base/Iter";
 import Nat8 "mo:base/Nat8";
+import P "mo:base/Prelude";
 
 let p = C.params.p;
 
@@ -194,10 +195,10 @@ func ecdsaTest() {
 
   do {
     let sec = switch (M.getSecretKey(secRand.vals())) {
-      case(null) { #fr(0) };
-      case(?v) { v };
+      case(null) P.unreachable();
+      case(?v) v;
     };
-    assert(sec == #fr(0x83ecb3984a4f9ff03e84d5f9c0d7f888a81833643047acc58eb6431e01d9bac8));
+    assert(sec == #non_zero(#fr(0x83ecb3984a4f9ff03e84d5f9c0d7f888a81833643047acc58eb6431e01d9bac8)));
     let pub = M.getPublicKey(sec);
     assert(pub == (#fp(0x653bd02ba1367e5d4cd695b6f857d1cd90d4d8d42bc155d85377b7d2d0ed2e71), #fp(0x04e8f5da403ab78decec1f19e2396739ea544e2b14159beb5091b30b418b813a)));
     let sig = Option.get(M.signHashed(sec, hashed.vals(), signRand.vals()), (#fr(0), #fr(0)));
@@ -213,7 +214,7 @@ func ecdsaTest() {
 
   // generated values by Python:ecdsa
   do {
-    let sec = #fr(0xb1aa6282b14e5ffbf6d12f783612f804e6a20d1a9734ffbb6c9923c670ee8da2);
+    let sec = #non_zero(#fr(0xb1aa6282b14e5ffbf6d12f783612f804e6a20d1a9734ffbb6c9923c670ee8da2));
     let pub = M.getPublicKey(sec);
     assert(pub == (#fp(0x0a09ff142d94bc3f56c5c81b75ea3b06b082c5263fbb5bd88c619fc6393dda3d), #fp(0xa53e0e930892cdb7799eea8fd45b9fff377d838f4106454289ae8a080b111f8d)));
     let sig = M.normalizeSignature(#fr(0x50839a97404c24ec39455b996e4888477fd61bcf0ffb960c7ffa3bef10450191), #fr(0x9671b8315bb5c1611d422d49cbbe7e80c6b463215bfad1c16ca73172155bf31a));
