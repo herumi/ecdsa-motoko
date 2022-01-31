@@ -1,5 +1,6 @@
 import Hmac "../src/hmac";
 import M "../src";
+import UL "../src/lib_util";
 import Debug "mo:base/Debug";
 import Blob "mo:base/Blob";
 
@@ -47,15 +48,15 @@ let tbl = [
 ];
 
 for (e in tbl.vals()) {
-  let key = M.toBigEndian(e.0);
-  let msg = M.toBigEndian(e.1);
-  let md = M.toBigEndian(e.2);
+  let key = UL.toBigEndian(e.0);
+  let msg = UL.toBigEndian(e.1);
+  let md = UL.toBigEndian(e.2);
   let ret = Hmac.hmac256(key, msg.vals());
   assert(md == Blob.toArray(ret));
 };
 
 do {
-  let md = M.toBigEndian(0xb613679a0814d9ec772f95d778c35fc5ff1697c493715653c6c712144292c5ad);
+  let md = UL.toBigEndian(0xb613679a0814d9ec772f95d778c35fc5ff1697c493715653c6c712144292c5ad);
   let ret = Hmac.hmac256([], [].vals());
   assert(md == Blob.toArray(ret));
 };
