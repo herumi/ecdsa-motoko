@@ -432,7 +432,7 @@ module {
   };
   /// serialize to DER format
   /// https://www.oreilly.com/library/view/programming-bitcoin/9781492031482/ch04.html
-  public func serializeToDer((r, s) : (Nat, Nat)) : Blob {
+  public func serializeSignatureDer((r, s) : (Nat, Nat)) : Blob {
     var buf = Buffer.Buffer<Nat8>(80);
     buf.add(0x30); // top marker
     buf.add(0); // modify later
@@ -453,7 +453,7 @@ module {
     Blob.fromArrayMut(va)
   };
   /// deserialize DER to signature
-  public func deserializeDer(b : Blob) : ?(Nat, Nat) {
+  public func deserializeSignatureDer(b : Blob) : ?(Nat, Nat) {
     let a = Blob.toArray(b);
     if (a[0] != 0x30) return null;
     if (a.size() != Nat8.toNat(a[1]) + 2) return null;
