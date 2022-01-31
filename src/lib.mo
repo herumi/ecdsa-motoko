@@ -411,6 +411,25 @@ module {
       };
     }
   };
+  /// Deserialize an uncompressed public key
+  public func deserializePublicKeyUncompressed(b : Blob) : ?(FpElt, FpElt) {
+    if(b.size() != 65) return null;
+    let a = Blob.toArray(b);
+    if (a[0] != 0x04) return null;
+    class range(a : [Nat8], begin : Nat, size : Nat) {
+      var i = 0;
+      public func next() : ?Nat8 {
+        if (i == size) return null;
+        let ret = ?a[begin + i];
+        i += 1;
+        ret
+      };
+    };
+    let n = 32;
+    let x = toNatAsBigEndian(range(a, 1, n));
+    let y = toNatAsBigEndian(range(a, 1+n, n));
+    ?(#fp(x), #fp(y));
+  };
   /// Deserialize a compressed public key.
   public func deserializePublicKeyCompressed(b : Blob) : ?(FpElt, FpElt) {
     let n = 32;
