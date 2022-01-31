@@ -412,7 +412,7 @@ module {
     }
   };
   /// Deserialize a compressed public key.
-  public func deserilizePublicKeyCompressed(b : Blob) : ?(FpElt, FpElt) {
+  public func deserializePublicKeyCompressed(b : Blob) : ?(FpElt, FpElt) {
     let n = 32;
     if (b.size() != n + 1) return null;
     let iter = b.vals();

@@ -223,11 +223,11 @@ func serializeTest() {
   var v = M.serilizePublicKeyUncompressed(pub);
   assert(v == expected);
   v := M.serilizePublicKeyCompressed(pub);
-  let (x, y) = Option.get(M.deserilizePublicKeyCompressed(v), (#fp(0), #fp(0)));
+  let (x, y) = Option.get(M.deserializePublicKeyCompressed(v), (#fp(0), #fp(0)));
   assert((x, y) == pub);
   let pub2 = (x, M.Fp.neg(y));
   v := M.serilizePublicKeyCompressed(pub2);
-  let pub3 = Option.get(M.deserilizePublicKeyCompressed(v), (#fp(0), #fp(0)));
+  let pub3 = Option.get(M.deserializePublicKeyCompressed(v), (#fp(0), #fp(0)));
   assert(pub3 == pub2);
 };
 
