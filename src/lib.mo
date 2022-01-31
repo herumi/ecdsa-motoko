@@ -30,9 +30,12 @@ module {
   let Fp = Curve.Fp;
   let Fr = Curve.Fr;
 
+  func getExponent(rand : Iter.Iter<Nat8>) : Curve.FrElt =
+    Fr.fromNat(Util.toNatAsBigEndian(rand));
+
   /// Get secret key from rand.
   public func getSecretKey(rand : Iter.Iter<Nat8>) : ?SecretKey {
-    let s = Fr.fromNat(Util.toNatAsBigEndian(rand));
+    let s = getExponent(rand);
     if (s == #fr(0)) null else ?#non_zero(s)
   };
   /// Get public key from sec.
@@ -49,15 +52,13 @@ module {
   /// rand : 32-byte random value.
   public func signHashed(#non_zero(sec) : SecretKey, hashed : Iter.Iter<Nat8>, rand : Iter.Iter<Nat8>) : ?Signature {
     if (sec == #fr(0)) Prelude.unreachable(); // type error
-    let k = Fr.fromNat(Util.toNatAsBigEndian(rand));
-    if (k == #fr(0)) return null; // bad luck with rand
-    let Q = Curve.mul_base(k);
-    let x = switch (Q) {
-      case (#zero) Prelude.unreachable(); // cannot happen because k is non-zero
+    let k = getExponent(rand);
+    let x = switch (Curve.mul_base(k)) {
+      case (#zero) return null; // k was 0, bad luck with rand
       case (#affine(x, _)) x;
     };
     let r = Fr.fromNat(Fp.toNat(x));
-    if (r == #fr(0)) return null; // bad luck with rand
+    if (r == #fr(0)) return null; // x was 0 mod r, bad luck with rand
     let z = Fr.fromNat(Util.toNatAsBigEndian(hashed));
     // s = (r * sec + z) / k
     let s = Fr.div(Fr.add(Fr.mul(r, sec), z), k);
