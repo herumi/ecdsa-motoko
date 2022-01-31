@@ -16,31 +16,12 @@ import Blob "mo:base/Blob";
 import Debug "mo:base/Debug";
 import Option "mo:base/Option";
 import SHA2 "mo:sha2";
-import Field "field";
+import Curve "curve";
 import Prelude "mo:base/Prelude";
 
 module {
-  // secp256k1
-  // Ec/Fp : y^2 = x^3 + ax + b
-  // (gx, gy) in Ec
-  // #Ec = r
-  let p_ : Nat = 0xfffffffffffffffffffffffffffffffffffffffffffffffffffffffefffffc2f;
-  let a_ = #fp(0);
-  let b_ = #fp(7);
-  let r_ : Nat = 0xfffffffffffffffffffffffffffffffebaaedce6af48a03bbfd25e8cd0364141;
-  let gx_ = #fp(0x79be667ef9dcbbac55a06295ce870b07029bfcdb2dce28d959f2815b16f81798);
-  let gy_ = #fp(0x483ada7726a3c4655da4fbfc0e1108a8fd17b448a68554199c47d08ffb10d4b8);
-
-  // pSqrRoot_ = (p_ + 1) / 4;
-  let pSqrRoot_ : Nat = 0x3fffffffffffffffffffffffffffffffffffffffffffffffffffffffbfffff0c;
-
-  // rHalf_ = (r_ + 1) / 2;
-  let rHalf_ : Nat = 0x7fffffffffffffffffffffffffffffff5d576e7357a4501ddfe92f46681b20a1;
-
-  /// return the order of the field where Ec is defined.
-  public func p() : Nat = p_;
-  /// return the order of the generator of Ec.
-    public func r() : Nat = r_;
+  let p_ = Curve.params.p;
+  let rHalf_ = Curve.params.rHalf;
 
   public func sha2(iter : Iter.Iter<Nat8>) : Blob {
     SHA2.fromIter(#sha256, iter)
@@ -82,186 +63,14 @@ module {
     };
     Debug.print(text);
   };
-  // 13 = 0b1101 => [true,false,true,ture]
-  public func toReverseBin(x : Nat) : [Bool] {
-    var buf = Buffer.Buffer<Bool>(256);
-    var t = x;
-    while (t > 0) {
-      buf.add((t % 2) == 1);
-      t /= 2;
-    };
-    buf.toArray()
-  };
 
-  public type FpElt = { #fp : Nat; };
-  public type FrElt = { #fr : Nat; };
-  public let Fp = {
-    fromNat = func (n : Nat) : FpElt {
-      #fp(n % p_);
-    };
-    toNat = func (x : FpElt) : Nat {
-      let #fp(x_) = x;
-      x_
-    };
-    add = func(x : FpElt, y : FpElt) : FpElt {
-      let #fp(x_) = x;
-      let #fp(y_) = y;
-      #fp(Field.add_(x_, y_, p_));
-    };
-    mul = func(x : FpElt, y : FpElt) : FpElt {
-      let #fp(x_) = x;
-      let #fp(y_) = y;
-      #fp(Field.mul_(x_, y_, p_));
-    };
-    sub = func(x : FpElt, y : FpElt) : FpElt {
-      let #fp(x_) = x;
-      let #fp(y_) = y;
-      #fp(Field.sub_(x_, y_, p_));
-    };
-    div = func(x : FpElt, y : FpElt) : FpElt {
-      let #fp(x_) = x;
-      let #fp(y_) = y;
-      #fp(Field.div_(x_, y_, p_));
-    };
-    pow = func(x : FpElt, n : Nat) : FpElt {
-      let #fp(x_) = x;
-      #fp(Field.pow_(x_, n, p_));
-    };
-    neg = func(x : FpElt) : FpElt {
-      let #fp(x_) = x;
-      #fp(Field.neg_(x_, p_));
-    };
-    inv = func(x : FpElt) : FpElt {
-      let #fp(x_) = x;
-      #fp(Field.inv_(x_, p_));
-    };
-    sqr = func(x : FpElt) : FpElt {
-      let #fp(x_) = x;
-      #fp(Field.sqr_(x_, p_));
-    };
-  };
-  public let Fr = {
-    fromNat = func (n : Nat) : FrElt {
-      #fr(n % r_);
-    };
-    toNat = func (x : FrElt) : Nat {
-      let #fr(x_) = x;
-      x_
-    };
-    add = func(x : FrElt, y : FrElt) : FrElt {
-      let #fr(x_) = x;
-      let #fr(y_) = y;
-      #fr(Field.add_(x_, y_, r_));
-    };
-    mul = func(x : FrElt, y : FrElt) : FrElt {
-      let #fr(x_) = x;
-      let #fr(y_) = y;
-      #fr(Field.mul_(x_, y_, r_));
-    };
-    sub = func(x : FrElt, y : FrElt) : FrElt {
-      let #fr(x_) = x;
-      let #fr(y_) = y;
-      #fr(Field.sub_(x_, y_, r_));
-    };
-    div = func(x : FrElt, y : FrElt) : FrElt {
-      let #fr(x_) = x;
-      let #fr(y_) = y;
-      #fr(Field.div_(x_, y_, r_));
-    };
-    pow = func(x : FrElt, n : Nat) : FrElt {
-      let #fr(x_) = x;
-      #fr(Field.pow_(x_, n, r_));
-    };
-    neg = func(x : FrElt) : FrElt {
-      let #fr(x_) = x;
-      #fr(Field.neg_(x_, r_));
-    };
-    inv = func(x : FrElt) : FrElt {
-      let #fr(x_) = x;
-      #fr(Field.inv_(x_, r_));
-    };
-    sqr = func(x : FrElt) : FrElt {
-      let #fr(x_) = x;
-      #fr(Field.sqr_(x_, r_));
-    };
-  };
+  public type FpElt = Curve.FpElt;
+  public type FrElt = Curve.FrElt;
+  public let Fp = Curve.Fp;
+  public let Fr = Curve.Fr;
 
-  // more mod fp functions
-  public func fpSqrRoot(x : FpElt) : ?FpElt {
-    let sq = Fp.pow(x, pSqrRoot_);
-    if (Fp.sqr(sq) == x) ?sq else null
-  };
-
-  // return x^3 + ax + b
-  func getYsqrFromX(x : FpElt) : FpElt {
-    Fp.add(Fp.mul(Fp.add(Fp.sqr(x), a_), x), b_)
-  };
-
-  public type Affine = (FpElt, FpElt);
-  public type Point = { #zero; #affine : Affine };
-
-  public let g_coords : Affine = 
-    (#fp(0x79be667ef9dcbbac55a06295ce870b07029bfcdb2dce28d959f2815b16f81798), #fp(0x483ada7726a3c4655da4fbfc0e1108a8fd17b448a68554199c47d08ffb10d4b8));
-  public let g : Point = #affine(g_coords);
-  public let zero : Point = #zero;
-
-  public func isValid((x,y) : Affine) : Bool {
-    Fp.sqr(y) == getYsqrFromX(x) 
-  };
-  public func isZero(a : Point) : Bool = a == #zero;
-  public func isNegOf(a : Point, b : Point) : Bool = a == neg(b);
-  public func neg(p : Point) : Point {
-    switch (p) {
-        case (#zero) { #zero };
-        case (#affine(c)) { #affine(c.0, Fp.neg(c.1)) };
-    }
-  };
-  func dbl_affine((x,y) : Affine) : Affine {
-    let xx = Fp.mul(x,x);
-    let xx3 = Fp.add(Fp.add(xx, xx), xx);
-    let nume = Fp.add(xx3, a_);
-    let deno = Fp.add(y,y);
-    let L = Fp.div(nume, deno);
-    let x3 = Fp.sub(Fp.mul(L, L), Fp.add(x,x));
-    let y3 = Fp.sub(Fp.mul(L, Fp.sub(x, x3)), y);
-    (x3, y3)
-  };
-  public func dbl(a : Point) : Point {
-    switch (a) {
-      case (#zero) #zero;
-      case (#affine(c)) #affine(dbl_affine(c));
-    }
-  };
-  public func add(a : Point, b : Point) : Point {
-    switch (a, b) {
-      case (#zero, b) return b;
-      case (a, #zero) return a;
-      case (#affine(ax,ay), #affine(bx,by)) {
-        if (ax == bx) {
-          // P + (-P) or P + P 
-          return if (ay == Fp.neg(by)) #zero else dbl(a);
-        } else {
-          let L = Fp.div(Fp.sub(ay, by), Fp.sub(ax, bx));
-          let x3 = Fp.sub(Fp.mul(L, L), Fp.add(ax, bx));
-          let y3 = Fp.sub(Fp.mul(L, Fp.sub(ax, x3)), ay);
-          return #affine(x3, y3);
-        };
-      };
-    };
-  };
-  public func mul(a : Point, #fr(x) : FrElt) : Point {
-    let bs = toReverseBin(x);
-    let n = bs.size();
-    var ret : Point = #zero;
-    var i = 0;
-    while (i < n) {
-      let b = bs[n - 1 - i];
-      ret := dbl(ret);
-      if (b) ret := add(ret, a);
-      i += 1;
-    };
-    ret
-  };
+  public type Affine = Curve.Affine;
+  public type Point = Curve.Point;
 
   // [0x12, 0x34] : [Nat] => 0x1234
   public func toNatAsBigEndian(iter : Iter.Iter<Nat8>) : Nat {
@@ -314,7 +123,7 @@ module {
   /// Get public key from sec.
   /// public key (x, y) is an affine point of elliptic curve
   public func getPublicKey(sec : FrElt) : Affine {
-    switch (mul(g,sec)) {
+    switch (Curve.mul(Curve.G,sec)) {
       case (#zero) Prelude.unreachable();
       case (#affine(c)) c;
     }
@@ -326,7 +135,7 @@ module {
     if (sec == #fr(0)) return null; // 0 is an invalid secret key
     let k = Fr.fromNat(toNatAsBigEndian(rand));
     if (k == #fr(0)) return null; // 0 is an invalid k value
-    let Q = mul(g,k);
+    let Q = Curve.mul(Curve.G,k);
     let x : FpElt = switch (Q) {
       case (#zero) Prelude.unreachable(); // should not happen because k is non-zero
       case (#affine(x, _)) x;
@@ -350,9 +159,9 @@ module {
     let w = Fr.inv(s);
     let u1 = Fr.mul(z, w);
     let u2 = Fr.mul(r, w);
-    if (not isValid(pub)) return false;
+    if (not Curve.isValid(pub)) return false;
     let Q = #affine(pub);
-    let R = add(mul(g,u1),mul(Q,u2));
+    let R = Curve.add(Curve.mul(Curve.G,u1),Curve.mul(Q,u2));
     switch (R) {
       case (#zero) false;
       case (#affine(x,_)) Fr.fromNat(Fp.toNat(x)) == r
@@ -400,17 +209,6 @@ module {
     let ar = Array.tabulate<Nat8>(1+n, ith);
     Blob.fromArray(ar)
   };
-  /// Get y corresponding to x such that y^2 = x^ + ax + b.
-  /// Return even y if `even` is true.
-  public func getYfromX(x : FpElt, even : Bool) : ?FpElt {
-    let y2 = getYsqrFromX(x);
-    switch (fpSqrRoot(y2)) {
-      case (null) { return null };
-      case (?y) {
-        return if (even == ((Fp.toNat(y) % 2) == 0)) ?y else ?Fp.neg(y)
-      };
-    }
-  };
   /// Deserialize an uncompressed public key
   public func deserializePublicKeyUncompressed(b : Blob) : ?(FpElt, FpElt) {
     if(b.size() != 65) return null;
@@ -444,7 +242,7 @@ module {
     let x_ = toNatAsBigEndian(iter);
     if (x_ >= p_) return null;
     let x = #fp(x_);
-    switch (getYfromX(x, even)) {
+    switch (Curve.getYfromX(x, even)) {
       case (null) return null;
       case (?y) return ?(x, y);
     };

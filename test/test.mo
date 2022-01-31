@@ -1,5 +1,7 @@
 import M "../src";
 import Field "../src/field";
+import C "../src/curve";
+import U "../src/curve_util";
 import IntExt "../src/intext";
 import Nat "mo:base/Nat";
 import Debug "mo:base/Debug";
@@ -8,7 +10,7 @@ import Blob "mo:base/Blob";
 import Iter "mo:base/Iter";
 import Nat8 "mo:base/Nat8";
 
-let p = M.p();
+let p = C.params.p;
 
 func consumeIter(iter : Iter.Iter<Nat>, expect : [Nat]) {
   assert(iter.next() == ?expect[0]);
@@ -38,7 +40,7 @@ func toReverseBinTest() {
   ];
   for(i in tbl.keys()) {
     let (v, a) = tbl[i];
-    let b = M.toReverseBin(v);
+    let b = U.toReverseBin(v);
     assert(b == a);
   };
   switch (optionFunc(5)) {
@@ -116,7 +118,7 @@ func sqrRootTest() {
   var i = 0;
   while (i < 30) {
 //    Debug.print("i=" # M.toHex(i));
-    switch (M.fpSqrRoot(#fp(i))) {
+    switch (C.fpSqrRoot(#fp(i))) {
       case (null) { };
       case (?sq) {
 //        Debug.print("sq=" # M.toHex(sq));
@@ -139,18 +141,18 @@ func gcdTest(f : (Int, Int) -> (Int, Int, Int)) {
 };
 
 func ec1Test() {
-  let Z = M.zero;
-  assert(M.isZero(Z));
-  assert(M.isZero(M.neg(Z)));
-  assert(M.isZero(M.add(Z,Z)));
+  let Z = C.Z;
+  assert(C.isZero(Z));
+  assert(C.isZero(C.neg(Z)));
+  assert(C.isZero(C.add(Z,Z)));
 
-  let P = M.g;
-  assert(not M.isZero(P));
-  let Q = M.neg(P);
-  assert(not M.isZero(Q));
-  assert(M.isNegOf(P,Q));
-  assert(M.isNegOf(Q,P));
-  assert(M.isZero(M.add(P,Q)));
+  let P = C.G;
+  assert(not C.isZero(P));
+  let Q = C.neg(P);
+  assert(not C.isZero(Q));
+  assert(C.isNegOf(P,Q));
+  assert(C.isNegOf(Q,P));
+  assert(C.isZero(C.add(P,Q)));
 };
 
 func ec2Teset() {
@@ -158,25 +160,25 @@ func ec2Teset() {
   let okP2 = (#fp(0xc6047f9441ed7d6d3045406e95c07cd85c778e4b8cef3ca7abac09b95c709ee5), #fp(0x1ae168fea63dc339a3c58419466ceaeef7f632653266d0e1236431a950cfe52a));
   let okP3 = (#fp(0xf9308a019258c31049344f85f89d5229b531c845836f99b08601f113bce036f9), #fp(0x388f7b0f632de8140fe337e62a37f3566500a99934c2231b6cb9fd7584b8e672));
 
-  let P = M.g;
+  let P = C.G;
   assert(P == #affine(okP));
-  let P2 = M.add(P,P);
+  let P2 = C.add(P,P);
   assert(P2 == #affine(okP2));
-  let P3 = M.add(P2,P);
+  let P3 = C.add(P2,P);
   assert(P3 == #affine(okP3));
-  let P4 = M.add(P3,P);
-  let P5 = M.add(P4,P);
-  assert(M.isZero(M.add(P,M.neg(P))));
-  assert(M.dbl(P) == P2);
-  assert(M.mul(P,#fr(1)) == P);
-  assert(M.mul(P,#fr(2)) == P2);
-  assert(M.mul(P,#fr(3)) == P3);
-  assert(M.mul(P,#fr(4)) == P4);
-  assert(M.mul(P,#fr(5)) == P5);
-  let Q = M.mul(P,M.Fr.fromNat(M.r() - 1));
-  assert(Q == M.neg(P));
-  assert(M.isZero(M.add(Q,P)));
-  assert(M.isZero(M.mul(P,M.Fr.fromNat(M.r()))));
+  let P4 = C.add(P3,P);
+  let P5 = C.add(P4,P);
+  assert(C.isZero(C.add(P,C.neg(P))));
+  assert(C.dbl(P) == P2);
+  assert(C.mul(P,#fr(1)) == P);
+  assert(C.mul(P,#fr(2)) == P2);
+  assert(C.mul(P,#fr(3)) == P3);
+  assert(C.mul(P,#fr(4)) == P4);
+  assert(C.mul(P,#fr(5)) == P5);
+  let Q = C.mul(P,C.Fr.fromNat(C.params.r - 1));
+  assert(Q == C.neg(P));
+  assert(C.isZero(C.add(Q,P)));
+  assert(C.isZero(C.mul(P,C.Fr.fromNat(C.params.r))));
 };
 
 func ecdsaTest() {
