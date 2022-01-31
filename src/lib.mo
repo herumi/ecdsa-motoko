@@ -13,7 +13,6 @@ import Nat8 "mo:base/Nat8";
 import Buffer "mo:base/Buffer";
 import Array "mo:base/Array";
 import Blob "mo:base/Blob";
-import Option "mo:base/Option";
 import SHA2 "mo:sha2";
 import Curve "curve";
 import Util "lib_util";
