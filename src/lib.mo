@@ -69,19 +69,19 @@ module {
   };
   /// verify a tuple of pub, hashed, and lowerS sig
   public func verifyHashed(pub : PublicKey, hashed : Iter.Iter<Nat8>, (r,s) : Signature) : Bool {
+    if (not Curve.isValid(pub)) return false;
     if (r == #fr(0)) return false;
-    if (s == #fr(0) or Fr.toNat(s) >= Curve.params.rHalf) return false;
+    if (s == #fr(0)) return false;
+    if (Fr.toNat(s) >= Curve.params.rHalf) return false;
     let z = Fr.fromNat(Util.toNatAsBigEndian(hashed));
     let w = Fr.inv(s);
     let u1 = Fr.mul(z, w);
     let u2 = Fr.mul(r, w);
-    if (not Curve.isValid(pub)) return false;
-    let Q = #affine(pub);
-    let R = Curve.add(Curve.mul_base(u1),Curve.mul(Q,u2));
-    switch (R) {
+    let R = Curve.add(Curve.mul_base(u1),Curve.mul(#affine(pub),u2));
+    return switch (R) {
       case (#zero) false;
       case (#affine(x,_)) Fr.fromNat(Fp.toNat(x)) == r
-    }
+    };
   };
   /// Sign a message by sec and rand with SHA-256
   public func sign(sec : SecretKey, msg : Iter.Iter<Nat8>, rand : Iter.Iter<Nat8>) : ?Signature {
@@ -92,18 +92,18 @@ module {
     verifyHashed(pub, sha2(msg).vals(), sig)
   };
   /// return 0x04 + bigEndian(x) + bigEndian(y)
-  public func serializePublicKeyUncompressed(pub : PublicKey) : Blob {
+  public func serializePublicKeyUncompressed((x,y) : PublicKey) : Blob {
     let prefix = 0x04 : Nat8;
     let n = 32;
-    let x = Util.toBigEndianPad(n, Fp.toNat(pub.0));
-    let y = Util.toBigEndianPad(n, Fp.toNat(pub.1));
+    let x_bytes = Util.toBigEndianPad(n, Fp.toNat(x));
+    let y_bytes = Util.toBigEndianPad(n, Fp.toNat(y));
     let ith = func(i : Nat) : Nat8 {
       if (i == 0) {
         prefix
       } else if (i <= n) {
-        x[i - 1]
+        x_bytes[i - 1]
       } else {
-        y[i - 1 - n]
+        y_bytes[i - 1 - n]
       }
     };
     let ar = Array.tabulate<Nat8>(1+n*2, ith);
@@ -111,15 +111,15 @@ module {
   };
   /// return 0x02 + bigEndian(x) if y is even
   /// return 0x03 + bigEndian(x) if y is odd
-  public func serializePublicKeyCompressed(pub : PublicKey) : Blob {
-    let prefix : Nat8 = if ((Fp.toNat(pub.1) % 2) == 0) 0x02 else 0x03;
+  public func serializePublicKeyCompressed((x,y) : PublicKey) : Blob {
+    let prefix : Nat8 = if ((Fp.toNat(y) % 2) == 0) 0x02 else 0x03;
     let n = 32;
-    let x = Util.toBigEndianPad(n, Fp.toNat(pub.0));
+    let x_bytes = Util.toBigEndianPad(n, Fp.toNat(x));
     let ith = func(i : Nat) : Nat8 {
       if (i == 0) {
         prefix
       } else {
-        x[i - 1]
+        x_bytes[i - 1]
       }
     };
     let ar = Array.tabulate<Nat8>(1+n, ith);
@@ -142,31 +142,34 @@ module {
     let n = 32;
     let x = Util.toNatAsBigEndian(range(a, 1, n));
     let y = Util.toNatAsBigEndian(range(a, 1+n, n));
-    ?(#fp(x), #fp(y));
+    if (x >= Curve.params.p) return null;
+    if (y >= Curve.params.p) return null;
+    let pub = (#fp(x), #fp(y));
+    if (not Curve.isValid(pub)) return null;
+    return ?pub;
   };
   /// Deserialize a compressed public key.
   public func deserializePublicKeyCompressed(b : Blob) : ?PublicKey {
     let n = 32;
     if (b.size() != n + 1) return null;
     let iter = b.vals();
-    var even = true;
-    switch (iter.next()) {
-      case (?0x02) { even := true; };
-      case (?0x03) { even := false; };
-      case _ { return null; };
+    let even = switch (iter.next()) {
+      case (?0x02) true;
+      case (?0x03) false;
+      case _ return null;
     };
     let x_ = Util.toNatAsBigEndian(iter);
     if (x_ >= Curve.params.p) return null;
     let x = #fp(x_);
-    switch (Curve.getYfromX(x, even)) {
-      case (null) return null;
-      case (?y) return ?(x, y);
+    return switch (Curve.getYfromX(x, even)) {
+      case (null) null;
+      case (?y) ?(x, y);
     };
   };
   /// serialize to DER format
   /// https://www.oreilly.com/library/view/programming-bitcoin/9781492031482/ch04.html
-  public func serializeSignatureDer((r, s) : (Nat, Nat)) : Blob {
-    var buf = Buffer.Buffer<Nat8>(80);
+  public func serializeSignatureDer(sig : Signature) : Blob {
+    let buf = Buffer.Buffer<Nat8>(80);
     buf.add(0x30); // top marker
     buf.add(0); // modify later
     let append = func(x : Nat) {
@@ -179,6 +182,7 @@ module {
         buf.add(e);
       };
     };
+    let (#fr(r), #fr(s)) = sig;
     append(r);
     append(s);
     let va = buf.toVarArray();
@@ -186,7 +190,7 @@ module {
     Blob.fromArrayMut(va)
   };
   /// deserialize DER to signature
-  public func deserializeSignatureDer(b : Blob) : ?(Nat, Nat) {
+  public func deserializeSignatureDer(b : Blob) : ?Signature {
     let a = Blob.toArray(b);
     if (a[0] != 0x30) return null;
     if (a.size() != Nat8.toNat(a[1]) + 2) return null;
@@ -202,14 +206,14 @@ module {
       };
       ?(n + 2, v)
     };
-    switch (read(a, 2)) {
-      case (null) { null };
+    return switch (read(a, 2)) {
+      case (null) null;
       case (?(read1, r)) {
         switch (read(a, 2 + read1)) {
-          case (null) { null };
+          case (null) null;
           case (?(read2, s)) {
             if (a.size() != 2 + read1 + read2) return null;
-            ?(r, s)
+            ?(#fr(r), #fr(s))
           };
         };
       };
