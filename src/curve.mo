@@ -27,94 +27,28 @@ module {
   let pSqrRoot_ : Nat = 0x3fffffffffffffffffffffffffffffffffffffffffffffffffffffffbfffff0c;
 
   public let Fp = {
-    fromNat = func (n : Nat) : FpElt {
-      #fp(n % p_);
-    };
-    toNat = func (x : FpElt) : Nat {
-      let #fp(x_) = x;
-      x_
-    };
-    add = func(x : FpElt, y : FpElt) : FpElt {
-      let #fp(x_) = x;
-      let #fp(y_) = y;
-      #fp(Field.add_(x_, y_, p_));
-    };
-    mul = func(x : FpElt, y : FpElt) : FpElt {
-      let #fp(x_) = x;
-      let #fp(y_) = y;
-      #fp(Field.mul_(x_, y_, p_));
-    };
-    sub = func(x : FpElt, y : FpElt) : FpElt {
-      let #fp(x_) = x;
-      let #fp(y_) = y;
-      #fp(Field.sub_(x_, y_, p_));
-    };
-    div = func(x : FpElt, y : FpElt) : FpElt {
-      let #fp(x_) = x;
-      let #fp(y_) = y;
-      #fp(Field.div_(x_, y_, p_));
-    };
-    pow = func(x : FpElt, n : Nat) : FpElt {
-      let #fp(x_) = x;
-      #fp(Field.pow_(x_, n, p_));
-    };
-    neg = func(x : FpElt) : FpElt {
-      let #fp(x_) = x;
-      #fp(Field.neg_(x_, p_));
-    };
-    inv = func(x : FpElt) : FpElt {
-      let #fp(x_) = x;
-      #fp(Field.inv_(x_, p_));
-    };
-    sqr = func(x : FpElt) : FpElt {
-      let #fp(x_) = x;
-      #fp(Field.sqr_(x_, p_));
-    };
+    fromNat = func (n : Nat) : FpElt = #fp(n % p_);
+    toNat = func (#fp(x) : FpElt) : Nat = x;
+    add = func(#fp(x) : FpElt, #fp(y) : FpElt) : FpElt = #fp(Field.add_(x, y, p_));
+    mul = func(#fp(x) : FpElt, #fp(y) : FpElt) : FpElt = #fp(Field.mul_(x, y, p_));
+    sub = func(#fp(x) : FpElt, #fp(y) : FpElt) : FpElt = #fp(Field.sub_(x, y, p_));
+    div = func(#fp(x) : FpElt, #fp(y) : FpElt) : FpElt = #fp(Field.div_(x, y, p_));
+    pow = func(#fp(x) : FpElt, n : Nat) : FpElt = #fp(Field.pow_(x, n, p_));
+    neg = func(#fp(x) : FpElt) : FpElt = #fp(Field.neg_(x, p_));
+    inv = func(#fp(x) : FpElt) : FpElt = #fp(Field.inv_(x, p_));
+    sqr = func(#fp(x) : FpElt) : FpElt = #fp(Field.sqr_(x, p_));
   };
   public let Fr = {
-    fromNat = func (n : Nat) : FrElt {
-      #fr(n % r_);
-    };
-    toNat = func (x : FrElt) : Nat {
-      let #fr(x_) = x;
-      x_
-    };
-    add = func(x : FrElt, y : FrElt) : FrElt {
-      let #fr(x_) = x;
-      let #fr(y_) = y;
-      #fr(Field.add_(x_, y_, r_));
-    };
-    mul = func(x : FrElt, y : FrElt) : FrElt {
-      let #fr(x_) = x;
-      let #fr(y_) = y;
-      #fr(Field.mul_(x_, y_, r_));
-    };
-    sub = func(x : FrElt, y : FrElt) : FrElt {
-      let #fr(x_) = x;
-      let #fr(y_) = y;
-      #fr(Field.sub_(x_, y_, r_));
-    };
-    div = func(x : FrElt, y : FrElt) : FrElt {
-      let #fr(x_) = x;
-      let #fr(y_) = y;
-      #fr(Field.div_(x_, y_, r_));
-    };
-    pow = func(x : FrElt, n : Nat) : FrElt {
-      let #fr(x_) = x;
-      #fr(Field.pow_(x_, n, r_));
-    };
-    neg = func(x : FrElt) : FrElt {
-      let #fr(x_) = x;
-      #fr(Field.neg_(x_, r_));
-    };
-    inv = func(x : FrElt) : FrElt {
-      let #fr(x_) = x;
-      #fr(Field.inv_(x_, r_));
-    };
-    sqr = func(x : FrElt) : FrElt {
-      let #fr(x_) = x;
-      #fr(Field.sqr_(x_, r_));
-    };
+    fromNat = func (n : Nat) : FrElt = #fr(n % r_);
+    toNat = func (#fr(x) : FrElt) : Nat = x;
+    add = func(#fr(x) : FrElt, #fr(y) : FrElt) : FrElt = #fr(Field.add_(x, y, r_));
+    mul = func(#fr(x) : FrElt, #fr(y) : FrElt) : FrElt = #fr(Field.mul_(x, y, r_));
+    sub = func(#fr(x) : FrElt, #fr(y) : FrElt) : FrElt = #fr(Field.sub_(x, y, r_));
+    div = func(#fr(x) : FrElt, #fr(y) : FrElt) : FrElt = #fr(Field.div_(x, y, r_));
+    pow = func(#fr(x) : FrElt, n : Nat) : FrElt = #fr(Field.pow_(x, n, r_));
+    neg = func(#fr(x) : FrElt) : FrElt = #fr(Field.neg_(x, r_));
+    inv = func(#fr(x) : FrElt) : FrElt = #fr(Field.inv_(x, r_));
+    sqr = func(#fr(x) : FrElt) : FrElt = #fr(Field.sqr_(x, r_));
   };
 
   // public only for testing
@@ -124,33 +58,26 @@ module {
   };
 
   // return x^3 + ax + b
-  func getYsqrFromX(x : FpElt) : FpElt {
-    Fp.add(Fp.mul(Fp.add(Fp.sqr(x), a_), x), b_)
-  };
+  func getYsqrFromX(x : FpElt) : FpElt =
+    Fp.add(Fp.mul(Fp.add(Fp.sqr(x), a_), x), b_);
 
   /// Get y corresponding to x such that y^2 = x^ + ax + b.
   /// Return even y if `even` is true.
   public func getYfromX(x : FpElt, even : Bool) : ?FpElt {
     let y2 = getYsqrFromX(x);
     switch (fpSqrRoot(y2)) {
-      case (null) { return null };
-      case (?y) {
-        return if (even == ((Fp.toNat(y) % 2) == 0)) ?y else ?Fp.neg(y)
-      };
+      case (null) null;
+      case (?y) if (even == ((Fp.toNat(y) % 2) == 0)) ?y else ?Fp.neg(y);
     }
   };
 
   // point functions
-  public func isValid((x,y) : Affine) : Bool {
-    Fp.sqr(y) == getYsqrFromX(x) 
-  };
+  public func isValid((x,y) : Affine) : Bool = Fp.sqr(y) == getYsqrFromX(x);
   public func isZero(a : Point) : Bool = a == #zero;
   public func isNegOf(a : Point, b : Point) : Bool = a == neg(b);
-  public func neg(p : Point) : Point {
-    switch (p) {
-        case (#zero) { #zero };
-        case (#affine(c)) { #affine(c.0, Fp.neg(c.1)) };
-    }
+  public func neg(p : Point) : Point = switch (p) {
+    case (#zero) #zero;
+    case (#affine(c)) #affine(c.0, Fp.neg(c.1));
   };
   func dbl_affine((x,y) : Affine) : Affine {
     let xx = Fp.mul(x,x);
@@ -162,26 +89,22 @@ module {
     let y3 = Fp.sub(Fp.mul(L, Fp.sub(x, x3)), y);
     (x3, y3)
   };
-  public func dbl(a : Point) : Point {
-    switch (a) {
-      case (#zero) #zero;
-      case (#affine(c)) #affine(dbl_affine(c));
-    }
+  public func dbl(a : Point) : Point = switch (a) {
+    case (#zero) #zero;
+    case (#affine(c)) #affine(dbl_affine(c));
   };
-  public func add(a : Point, b : Point) : Point {
-    switch (a, b) {
-      case (#zero, b) return b;
-      case (a, #zero) return a;
-      case (#affine(ax,ay), #affine(bx,by)) {
-        if (ax == bx) {
-          // P + (-P) or P + P 
-          return if (ay == Fp.neg(by)) #zero else dbl(a);
-        } else {
-          let L = Fp.div(Fp.sub(ay, by), Fp.sub(ax, bx));
-          let x3 = Fp.sub(Fp.mul(L, L), Fp.add(ax, bx));
-          let y3 = Fp.sub(Fp.mul(L, Fp.sub(ax, x3)), ay);
-          return #affine(x3, y3);
-        };
+  public func add(a : Point, b : Point) : Point = switch (a, b) {
+    case (#zero, b) return b;
+    case (a, #zero) return a;
+    case (#affine(ax,ay), #affine(bx,by)) {
+      if (ax == bx) {
+        // P + (-P) or P + P 
+        return if (ay == Fp.neg(by)) #zero else dbl(a);
+      } else {
+        let L = Fp.div(Fp.sub(ay, by), Fp.sub(ax, bx));
+        let x3 = Fp.sub(Fp.mul(L, L), Fp.add(ax, bx));
+        let y3 = Fp.sub(Fp.mul(L, Fp.sub(ax, x3)), ay);
+        return #affine(x3, y3);
       };
     };
   };
