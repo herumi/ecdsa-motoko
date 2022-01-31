@@ -44,7 +44,7 @@ module {
   /// Get public key from sec.
   /// public key (x, y) is an affine point of elliptic curve
   public func getPublicKey(sec : FrElt) : Affine {
-    switch (Curve.mul(Curve.G,sec)) {
+    switch (Curve.mul_base(sec)) {
       case (#zero) Prelude.unreachable();
       case (#affine(c)) c;
     }
@@ -56,7 +56,7 @@ module {
     if (sec == #fr(0)) return null; // 0 is an invalid secret key
     let k = Fr.fromNat(Util.toNatAsBigEndian(rand));
     if (k == #fr(0)) return null; // 0 is an invalid k value
-    let Q = Curve.mul(Curve.G,k);
+    let Q = Curve.mul_base(k);
     let x : FpElt = switch (Q) {
       case (#zero) Prelude.unreachable(); // should not happen because k is non-zero
       case (#affine(x, _)) x;
@@ -82,7 +82,7 @@ module {
     let u2 = Fr.mul(r, w);
     if (not Curve.isValid(pub)) return false;
     let Q = #affine(pub);
-    let R = Curve.add(Curve.mul(Curve.G,u1),Curve.mul(Q,u2));
+    let R = Curve.add(Curve.mul_base(u1),Curve.mul(Q,u2));
     switch (R) {
       case (#zero) false;
       case (#affine(x,_)) Fr.fromNat(Fp.toNat(x)) == r

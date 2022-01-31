@@ -16,8 +16,8 @@ module {
 	  // rHalf_ = (r_ + 1) / 2;
 	  rHalf = 0x7fffffffffffffffffffffffffffffff5d576e7357a4501ddfe92f46681b20a1;
   };	
-  public let G = #affine(params.g);
-  public let Z = #zero;
+
+  let G_ = #affine(params.g);
 
   let p_ = params.p;
   let r_ = params.r;
@@ -198,4 +198,5 @@ module {
     };
     ret
   };
+  public func mul_base(e : FrElt) : Point = mul(G_, e);
 }
