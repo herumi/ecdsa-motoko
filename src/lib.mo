@@ -19,9 +19,6 @@ import Util "lib_util";
 import Prelude "mo:base/Prelude";
 
 module {
-  let p_ = Curve.params.p;
-  let rHalf_ = Curve.params.rHalf;
-
   public func sha2(iter : Iter.Iter<Nat8>) : Blob {
     SHA2.fromIter(#sha256, iter)
   };
@@ -49,7 +46,7 @@ module {
       case (#affine(c)) c;
     }
   };
-  /// Sign hashed by sec and rand return lower S signature (r, s) such that s < rHalf_
+  /// Sign hashed by sec and rand return lower S signature (r, s) such that s < rHalf
   /// hashed : 32-byte SHA-256 value of a message.
   /// rand : 32-byte random value.
   public func signHashed(sec : FrElt, hashed : Iter.Iter<Nat8>, rand : Iter.Iter<Nat8>) : ?(FrElt, FrElt) {
@@ -70,12 +67,12 @@ module {
   };
   /// convert a signature to lower S signature
   public func normalizeSignature((r, s) : (FrElt, FrElt)) : (FrElt, FrElt) {
-    if (Fr.toNat(s) < rHalf_) (r, s) else (r, Fr.neg(s))
+    if (Fr.toNat(s) < Curve.params.rHalf) (r, s) else (r, Fr.neg(s))
   };
   /// verify a tuple of pub, hashed, and lowerS sig
   public func verifyHashed(pub : (FpElt, FpElt), hashed : Iter.Iter<Nat8>, (r,s) : (FrElt, FrElt)) : Bool {
     if (r == #fr(0)) return false;
-    if (s == #fr(0) or Fr.toNat(s) >= rHalf_) return false;
+    if (s == #fr(0) or Fr.toNat(s) >= Curve.params.rHalf) return false;
     let z = Fr.fromNat(Util.toNatAsBigEndian(hashed));
     let w = Fr.inv(s);
     let u1 = Fr.mul(z, w);
@@ -161,7 +158,7 @@ module {
       case _ { return null; };
     };
     let x_ = Util.toNatAsBigEndian(iter);
-    if (x_ >= p_) return null;
+    if (x_ >= Curve.params.p) return null;
     let x = #fp(x_);
     switch (Curve.getYfromX(x, even)) {
       case (null) return null;
