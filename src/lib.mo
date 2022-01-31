@@ -367,7 +367,7 @@ module {
     verifyHashed(pub, sha2(msg).vals(), sig)
   };
   /// return 0x04 + bigEndian(x) + bigEndian(y)
-  public func serilizePublicKeyUncompressed(pub : (FpElt, FpElt)) : Blob {
+  public func serializePublicKeyUncompressed(pub : (FpElt, FpElt)) : Blob {
     let prefix = 0x04 : Nat8;
     let n = 32;
     let x = toBigEndianPad(n, Fp.toNat(pub.0));
@@ -386,7 +386,7 @@ module {
   };
   /// return 0x02 + bigEndian(x) if y is even
   /// return 0x03 + bigEndian(x) if y is odd
-  public func serilizePublicKeyCompressed(pub : (FpElt, FpElt)) : Blob {
+  public func serializePublicKeyCompressed(pub : (FpElt, FpElt)) : Blob {
     let prefix : Nat8 = if ((Fp.toNat(pub.1) % 2) == 0) 0x02 else 0x03;
     let n = 32;
     let x = toBigEndianPad(n, Fp.toNat(pub.0));
