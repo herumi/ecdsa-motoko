@@ -23,12 +23,12 @@ module {
     SHA2.fromIter(#sha256, iter)
   };
 
-  public let Fp = Curve.Fp;
-  public let Fr = Curve.Fr;
-
   public type PublicKey = Curve.Affine;
   public type SecretKey = { #non_zero : Curve.FrElt; };
   public type Signature = (Curve.FrElt, Curve.FrElt);
+
+  let Fp = Curve.Fp;
+  let Fr = Curve.Fr;
 
   /// Get secret key from rand.
   public func getSecretKey(rand : Iter.Iter<Nat8>) : ?SecretKey {

@@ -86,20 +86,20 @@ func toBigEndianPadTest() {
 func arithTest() {
   let m1 = 5 * 2 ** 128;
   let m2 = 6 * 2 ** 128;
-  var x1 = M.Fp.fromNat(m1);
-  var x2 = M.Fp.fromNat(m2);
-  assert(M.Fp.add(x1, x2) == M.Fp.fromNat(m1 + m2));
-  assert(M.Fp.sub(x1, x2) == M.Fp.fromNat(m1 + p - m2 : Nat));
-  assert(M.Fp.sub(x2, x1) == M.Fp.fromNat(m2 - m1 : Nat));
-  assert(M.Fp.neg(#fp(0)) == #fp(0));
-  assert(M.Fp.neg(x1) == M.Fp.fromNat(p - m1 : Nat));
-  assert(M.Fp.mul(x1, x2) == M.Fp.fromNat(m1 * m2));
+  var x1 = C.Fp.fromNat(m1);
+  var x2 = C.Fp.fromNat(m2);
+  assert(C.Fp.add(x1, x2) == C.Fp.fromNat(m1 + m2));
+  assert(C.Fp.sub(x1, x2) == C.Fp.fromNat(m1 + p - m2 : Nat));
+  assert(C.Fp.sub(x2, x1) == C.Fp.fromNat(m2 - m1 : Nat));
+  assert(C.Fp.neg(#fp(0)) == #fp(0));
+  assert(C.Fp.neg(x1) == C.Fp.fromNat(p - m1 : Nat));
+  assert(C.Fp.mul(x1, x2) == C.Fp.fromNat(m1 * m2));
 
   var i = 0;
   x2 := #fp(1);
   while (i < 30) {
-    assert(x2 == M.Fp.pow(x1, i));
-    x2 := M.Fp.mul(x2, x1);
+    assert(x2 == C.Fp.pow(x1, i));
+    x2 := C.Fp.mul(x2, x1);
     i += 1;
   };
 };
@@ -107,12 +107,12 @@ func arithTest() {
 func invTest() {
   let inv123 = Field.inv_(123, 65537);
   assert(inv123 == 14919);
-  let x2 = M.Fp.inv(#fp(123));
+  let x2 = C.Fp.inv(#fp(123));
   var i = 1;
   while (i < 20) {
     let x1 = #fp(i);
-    assert(M.Fp.mul(x1, M.Fp.inv(x1)) == #fp(1));
-    assert(M.Fp.mul(M.Fp.div(x2, x1), x1) == x2);
+    assert(C.Fp.mul(x1, C.Fp.inv(x1)) == #fp(1));
+    assert(C.Fp.mul(C.Fp.div(x2, x1), x1) == x2);
     i += 1;
   };
 };
@@ -125,7 +125,7 @@ func sqrRootTest() {
       case (null) { };
       case (?sq) {
 //        Debug.print("sq=" # M.toHex(sq));
-        assert(M.Fp.sqr(sq) == #fp(i));
+        assert(C.Fp.sqr(sq) == #fp(i));
       };
     };
     i += 1;
@@ -203,7 +203,7 @@ func ecdsaTest() {
     assert(pub == (#fp(0x653bd02ba1367e5d4cd695b6f857d1cd90d4d8d42bc155d85377b7d2d0ed2e71), #fp(0x04e8f5da403ab78decec1f19e2396739ea544e2b14159beb5091b30b418b813a)));
     let sig = Option.get(M.signHashed(sec, hashed.vals(), signRand.vals()), (#fr(0), #fr(0)));
     assert(M.verifyHashed(pub, hashed.vals(), sig));
-    assert(not M.verifyHashed((pub.0, M.Fp.add(pub.1,#fp(1))), hashed.vals(), sig));
+    assert(not M.verifyHashed((pub.0, C.Fp.add(pub.1,#fp(1))), hashed.vals(), sig));
     assert(not M.verifyHashed(pub, ([0x1, 0x2] : [Nat8]).vals(), sig));
     assert(M.sign(sec, hello.vals(), signRand.vals()) == ?sig);
     assert(M.verifyHashed(pub, hashed.vals(), sig));
@@ -234,7 +234,7 @@ func serializeTest() {
   do {
     let v = M.serializePublicKeyCompressed(pub);
     assert(M.deserializePublicKeyCompressed(v) == ?pub);
-    let pub2 = (pub.0, M.Fp.neg(pub.1));
+    let pub2 = (pub.0, C.Fp.neg(pub.1));
     let v2 = M.serializePublicKeyCompressed(pub2);
     assert(M.deserializePublicKeyCompressed(v2) == ?pub2);
   };
