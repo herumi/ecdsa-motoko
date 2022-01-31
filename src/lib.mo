@@ -23,19 +23,17 @@ module {
     SHA2.fromIter(#sha256, iter)
   };
 
-  type FrElt = Curve.FrElt;
   public let Fp = Curve.Fp;
   public let Fr = Curve.Fr;
 
   public type PublicKey = Curve.Affine;
   public type SecretKey = { #non_zero : Curve.FrElt; };
+  public type Signature = (Curve.FrElt, Curve.FrElt);
 
   /// Get secret key from rand.
-  /// rand : Nat8 values
-  /// return secret key in [1, r_-1]
   public func getSecretKey(rand : Iter.Iter<Nat8>) : ?SecretKey {
-    let sec = Fr.fromNat(Util.toNatAsBigEndian(rand));
-    if (sec == #fr(0)) null else ?#non_zero(sec)
+    let s = Fr.fromNat(Util.toNatAsBigEndian(rand));
+    if (s == #fr(0)) null else ?#non_zero(s)
   };
   /// Get public key from sec.
   /// public key (x, y) is an affine point of elliptic curve
@@ -49,28 +47,28 @@ module {
   /// Sign hashed by sec and rand return lower S signature (r, s) such that s < rHalf
   /// hashed : 32-byte SHA-256 value of a message.
   /// rand : 32-byte random value.
-  public func signHashed(#non_zero(sec) : SecretKey, hashed : Iter.Iter<Nat8>, rand : Iter.Iter<Nat8>) : ?(FrElt, FrElt) {
+  public func signHashed(#non_zero(sec) : SecretKey, hashed : Iter.Iter<Nat8>, rand : Iter.Iter<Nat8>) : ?Signature {
     if (sec == #fr(0)) Prelude.unreachable(); // type error
     let k = Fr.fromNat(Util.toNatAsBigEndian(rand));
-    if (k == #fr(0)) return null; // 0 is an invalid k value
+    if (k == #fr(0)) return null; // bad luck with rand
     let Q = Curve.mul_base(k);
     let x = switch (Q) {
-      case (#zero) Prelude.unreachable(); // should not happen because k is non-zero
+      case (#zero) Prelude.unreachable(); // cannot happen because k is non-zero
       case (#affine(x, _)) x;
     };
     let r = Fr.fromNat(Fp.toNat(x));
-    if (r == #fr(0)) return null; // 0 is an invalid r value
+    if (r == #fr(0)) return null; // bad luck with rand
     let z = Fr.fromNat(Util.toNatAsBigEndian(hashed));
     // s = (r * sec + z) / k
     let s = Fr.div(Fr.add(Fr.mul(r, sec), z), k);
     ?normalizeSignature(r,s)
   };
   /// convert a signature to lower S signature
-  public func normalizeSignature((r, s) : (FrElt, FrElt)) : (FrElt, FrElt) {
+  public func normalizeSignature((r, s) : Signature) : Signature {
     if (Fr.toNat(s) < Curve.params.rHalf) (r, s) else (r, Fr.neg(s))
   };
   /// verify a tuple of pub, hashed, and lowerS sig
-  public func verifyHashed(pub : PublicKey, hashed : Iter.Iter<Nat8>, (r,s) : (FrElt, FrElt)) : Bool {
+  public func verifyHashed(pub : PublicKey, hashed : Iter.Iter<Nat8>, (r,s) : Signature) : Bool {
     if (r == #fr(0)) return false;
     if (s == #fr(0) or Fr.toNat(s) >= Curve.params.rHalf) return false;
     let z = Fr.fromNat(Util.toNatAsBigEndian(hashed));
@@ -86,11 +84,11 @@ module {
     }
   };
   /// Sign a message by sec and rand with SHA-256
-  public func sign(sec : SecretKey, msg : Iter.Iter<Nat8>, rand : Iter.Iter<Nat8>) : ?(FrElt, FrElt) {
+  public func sign(sec : SecretKey, msg : Iter.Iter<Nat8>, rand : Iter.Iter<Nat8>) : ?Signature {
     signHashed(sec, sha2(msg).vals(), rand)
   };
   // verify a tuple of pub, msg, and sig
-  public func verify(pub : PublicKey, msg : Iter.Iter<Nat8>, sig : (FrElt, FrElt)) : Bool {
+  public func verify(pub : PublicKey, msg : Iter.Iter<Nat8>, sig : Signature) : Bool {
     verifyHashed(pub, sha2(msg).vals(), sig)
   };
   /// return 0x04 + bigEndian(x) + bigEndian(y)
