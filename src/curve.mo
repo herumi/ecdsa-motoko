@@ -112,6 +112,8 @@ module {
     };
   };
   public func mul(a : Point, #fr(x) : FrElt) : Point {
+    fromJacobi(mulJacobi(toJacobi(a), #fr(x)))
+/*
     let bs = Util.toReverseBin(x);
     let n = bs.size();
     var ret : Point = #zero;
@@ -123,6 +125,7 @@ module {
       i += 1;
     };
     ret
+*/
   };
   public func mul_base(e : FrElt) : Point = mul(G_, e);
 
