@@ -271,4 +271,17 @@ module {
     ry := Fp.sub(U1, H3);
     (rx, ry, rz)
   };
+  public func mulJacobi(a : Jacobi, #fr(x) : FrElt) : Jacobi {
+    let bs = Util.toReverseBin(x);
+    let n = bs.size();
+    var ret = zeroJ;
+    var i = 0;
+    while (i < n) {
+      let b = bs[n - 1 - i];
+      ret := dblJacobi(ret);
+      if (b) ret := addJacobi(ret, a);
+      i += 1;
+    };
+    ret
+  };
 }
