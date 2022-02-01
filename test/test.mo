@@ -270,8 +270,17 @@ func jacobiTest() {
     assert(Qa == C.fromJacobi(Qj));
     assert(C.isEqualJacobi(Qj, R));
     assert(C.isEqualJacobi(Qj, C.toJacobi(Qa)));
+
+    let n = #fr(i * 123456789123456789123456789);
+    Qa := C.mul(Qa, n);
+    Qj := C.mulJacobi(Qj, n);
+    assert(Qa == C.fromJacobi(Qj));
     i += 1;
   };
+  Qj := C.mulJacobi(Pj, C.Fr.fromNat(C.params.r - 1));
+  assert(C.isEqualJacobi(Qj, C.negJacobi(Pj)));
+  assert(C.isZeroJacobi(C.addJacobi(Qj, Pj)));
+  assert(C.isZeroJacobi(C.mulJacobi(Pj, C.Fr.fromNat(C.params.r))));
 };
 
 toBigEndianPadTest();
