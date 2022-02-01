@@ -260,21 +260,13 @@ func jacobiTest() {
   assert(C.isZeroJacobi(C.addJacobi(Pj, Qj)));
   Qj := C.dblJacobi(Pj);
   var Qa = C.dbl(Pa);
-  UT.putPoint(Qa);
-  UT.putJacobi(Qj);
-  UT.putPoint(C.fromJacobi(Qj));
-  return;
   assert(Qa == C.fromJacobi(Qj));
-  Qa := Pa;
-  Qj := Pj;
-  for (i in Iter.range(0, 3)) {
-Debug.print("i=" # UT.toHex(i));
-    UT.putPoint(Qa);
-//    UT.putPoint(C.fromJacobi(Qj));
-    UT.putJacobi(Qj);
+  var i = 0;
+  while (i < 10) {
     Qa := C.add(Qa, Pa);
     Qj := C.addJacobi(Qj, Pj);
- //   assert(Qa == C.fromJacobi(Qj));
+    assert(Qa == C.fromJacobi(Qj));
+    i += 1;
   };
 };
 

@@ -167,7 +167,7 @@ module {
     rx := Fp.sub(rx, xy);
     var rz : FpElt = if (z == #fp(1)) y else Fp.mul(y, z);
     rz := Fp.add(rz, rz);
-    var ry = Fp.sub(xy, x);
+    var ry = Fp.sub(xy, rx);
     ry := Fp.mul(ry, x2);
     y2 := Fp.add(y2, y2);
     y2 := Fp.add(y2, y2);
@@ -181,7 +181,7 @@ module {
     let isPzOne = pz == #fp(1);
     let isQzOne = qz == #fp(1);
     var r = #fp(1);
-    if (isPzOne) r := Fp.sqr(pz);
+    if (not isPzOne) r := Fp.sqr(pz);
     var U1 = #fp(0);
     var S1 = #fp(0);
     var H = #fp(0);

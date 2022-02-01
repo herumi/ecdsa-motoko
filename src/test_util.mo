@@ -51,6 +51,8 @@ module {
     };
   };
   public func putJacobi((x, y, z) : C.Jacobi) {
-    Debug.print("(" # toHex(C.Fp.toNat(x)) # ", " # toHex(C.Fp.toNat(y)) # ", " # toHex(C.Fp.toNat(z)) # ")");
+    Debug.print("(" # toHex(C.Fp.toNat(x)) # ",");
+    Debug.print(" " # toHex(C.Fp.toNat(y)) # ",");
+    Debug.print(" " # toHex(C.Fp.toNat(z)) # ")");
   };
 }
