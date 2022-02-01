@@ -3,10 +3,10 @@ import Field "../src/field";
 import C "../src/curve";
 import UC "../src/curve_util";
 import UL "../src/lib_util";
-// import UT "../src/test_util";
+import UT "../src/test_util";
 import IntExt "../src/intext";
 import Nat "mo:base/Nat";
-// import Debug "mo:base/Debug";
+import Debug "mo:base/Debug";
 import Option "mo:base/Option";
 import Blob "mo:base/Blob";
 import Iter "mo:base/Iter";
@@ -253,6 +253,23 @@ func derTest() {
   assert(M.deserializeSignatureDer(der) == ?sig);
 };
 
+func jacobiTest() {
+  let Pa = #affine(C.params.g);
+  let Pj = C.toJacobi(Pa);
+  var Qj = C.negJacobi(Pj);
+  assert(C.isZeroJacobi(C.addJacobi(Pj, Qj)));
+  var Qa : C.Point = Pa;
+  Qj := Pj;
+  for (i in Iter.range(0, 3)) {
+Debug.print("i=" # UT.toHex(i));
+    UT.putPoint(Qa);
+    UT.putPoint(C.fromJacobi(Qj));
+    Qa := C.add(Qa, Pa);
+    Qj := C.addJacobi(Qj, Pj);
+ //   assert(Qa == C.fromJacobi(Qj));
+  };
+};
+
 toBigEndianPadTest();
 toBigEndianTest();
 toReverseBinTest();
@@ -269,3 +286,4 @@ ec2Teset();
 ecdsaTest();
 serializeTest();
 derTest();
+//jacobiTest();

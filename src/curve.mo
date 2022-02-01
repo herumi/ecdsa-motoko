@@ -122,4 +122,132 @@ module {
     ret
   };
   public func mul_base(e : FrElt) : Point = mul(G_, e);
+
+  public type Jacobi = (FpElt, FpElt, FpElt);
+  public let zeroJ = (#fp(0), #fp(0), #fp(0));
+  public func isZeroJacobi((_, _, z) : Jacobi) : Bool = z == #fp(0);
+  public func toJacobi(a : Point) : Jacobi = switch (a) {
+    case (#zero) zeroJ;
+    case (#affine(x, y)) (x, y, #fp(1));
+  };
+  public func fromJacobi((x, y, z) : Jacobi) : Point {
+    if (z == #fp(0)) return #zero;
+    let rz = Fp.inv(z);
+    let rz2 = Fp.sqr(rz);
+    #affine((Fp.mul(x, rz2), Fp.mul(Fp.mul(y, rz2), rz)))
+  };
+  // y^2 == x(x^2 + a z^4) + b z^6
+  public func isValidJacobi((x, y, z) : Jacobi) : Bool {
+    let x2 = Fp.sqr(x);
+    let y2 = Fp.sqr(y);
+    let z2 = Fp.sqr(z);
+    var z4 = Fp.sqr(z2);
+    var t = Fp.mul(z4, a_);
+    t := Fp.add(t, x2);
+    t := Fp.mul(t, x);
+    z4 := Fp.mul(z4, z2);
+    z4 := Fp.mul(z4, b_);
+    t := Fp.add(t, z4);
+    y2 == t
+  };
+  public func negJacobi((x, y, z) : Jacobi) : Jacobi = (x, Fp.neg(y), z);
+  public func dblJacobi((x, y, z) : Jacobi) : Jacobi {
+    if (z == #fp(0)) return zeroJ;
+    var x2 = Fp.sqr(x);
+    var y2 = Fp.sqr(y);
+    var xy = Fp.mul(x, y2);
+    xy := Fp.add(xy, xy);
+    y2 := Fp.sqr(y2);
+    xy := Fp.add(xy, xy);
+    assert(a_ == #fp(0));
+    var t = Fp.add(x2, x2);
+    x2 := Fp.add(x2, t);
+    var rx = Fp.sqr(x2);
+    rx := Fp.sub(rx, xy);
+    rx := Fp.sub(rx, xy);
+    var rz : FpElt = if (z == #fp(1)) y else Fp.mul(y, z);
+    rz := Fp.add(rz, rz);
+    var ry = Fp.sub(xy, x);
+    ry := Fp.mul(ry, x2);
+    y2 := Fp.add(y2, y2);
+    y2 := Fp.add(y2, y2);
+    y2 := Fp.add(y2, y2);
+    ry := Fp.sub(ry, y2);
+    (rx, ry, rz)
+  };
+  public func addJacobi((px, py, pz) : Jacobi, (qx,qy, qz) : Jacobi) : Jacobi {
+    if (pz == #fp(0)) return (qx, qy, qz);
+    if (qz == #fp(0)) return (px, py, pz);
+    let isPzOne = pz == #fp(1);
+    let isQzOne = qz == #fp(1);
+    var r = #fp(1);
+    if (isPzOne) r := Fp.sqr(pz);
+    var U1 = #fp(0);
+    var S1 = #fp(0);
+    var H = #fp(0);
+    if (isQzOne) {
+      U1 := px;
+      if (isPzOne) {
+        H := qx;
+      } else {
+        H := Fp.mul(qx, r);
+      };
+      H := Fp.sub(H, U1);
+      S1 := py;
+    } else {
+      S1 := Fp.sqr(qz);
+      U1 := Fp.mul(px, S1);
+      if (isPzOne) {
+        H := qx;
+      } else {
+        H := Fp.mul(qx, r);
+      };
+      H := Fp.sub(H, U1);
+      S1 := Fp.mul(S1, qz);
+      S1 := Fp.mul(S1, py);
+    };
+    if (isPzOne) {
+      r := qy;
+    } else {
+      r := Fp.mul(r, pz);
+      r := Fp.mul(r, qy);
+    };
+    r := Fp.sub(r, S1);
+    if (H == #fp(1)) {
+      if (r == #fp(0)) {
+        return dblJacobi((px, py, pz));
+      } else {
+        return zeroJ;
+      };
+    };
+    var rx = #fp(0);
+    var ry = #fp(0);
+    var rz = #fp(0);
+    if (isPzOne) {
+      if (isQzOne) {
+        rz := H;
+      } else {
+        rz := Fp.mul(H, qz);
+      };
+    } else {
+      if (isQzOne) {
+        rz := Fp.mul(pz, H);
+      } else {
+        rz := Fp.mul(pz, qz);
+        rz := Fp.mul(rz, H);
+      };
+    };
+    var H3 = Fp.sqr(H);
+    ry := Fp.sqr(r);
+    U1 := Fp.mul(U1, H3);
+    H3 := Fp.mul(H3, H);
+    ry := Fp.sub(ry, U1);
+    ry := Fp.sub(ry, U1);
+    rx := Fp.sub(ry, H3);
+    U1 := Fp.sub(U1, rx);
+    U1 := Fp.mul(U1, r);
+    H3 := Fp.mul(H3, S1);
+    ry := Fp.sub(U1, H3);
+    (rx, ry, rz)
+  };
 }
