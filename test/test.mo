@@ -2,7 +2,7 @@ import M "../src";
 import Field "../src/field";
 import C "../src/curve";
 import Binary "../src/binary";
-import UL "../src/lib_util";
+import Util "../src/util";
 import Dump "../src/dump";
 import IntExt "../src/intext";
 import Nat "mo:base/Nat";
@@ -62,7 +62,7 @@ func toBigEndianTest() {
   ];
   for (i in tbl.keys()) {
     let (b, v) = tbl[i];
-    assert(UL.toBigEndian(v) == b);
+    assert(Util.toBigEndian(v) == b);
   };
 };
 
@@ -76,11 +76,11 @@ func toBigEndianPadTest() {
   ];
   for (i in tbl.keys()) {
     let (b, v) = tbl[i];
-    assert(UL.toNatAsBigEndian(b.vals()) == v);
-    assert(UL.toBigEndianPad(b.size(), v) == b);
+    assert(Util.toNatAsBigEndian(b.vals()) == v);
+    assert(Util.toBigEndianPad(b.size(), v) == b);
   };
-  assert(UL.toBigEndianPad(1, 0) == ([0x00] : [Nat8]));
-  assert(UL.toBigEndianPad(5, 0x1234) == ([0x00, 0x00, 0x00, 0x12, 0x34] : [Nat8]));
+  assert(Util.toBigEndianPad(1, 0) == ([0x00] : [Nat8]));
+  assert(Util.toBigEndianPad(5, 0x1234) == ([0x00, 0x00, 0x00, 0x12, 0x34] : [Nat8]));
 };
 
 func arithTest() {
