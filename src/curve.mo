@@ -1,6 +1,6 @@
 import Field "field";
-import Util "curve_util";
 import Hex "hex";
+import Binary "binary";
 import Debug "mo:base/Debug";
 
 module {
@@ -113,7 +113,7 @@ module {
   public func mul(a : Point, #fr(x) : FrElt) : Point {
     fromJacobi(mulJacobi(toJacobi(a), #fr(x)))
 /*
-    let bs = Util.toReverseBin(x);
+    let bs = Binary.fromNatReversed(x);
     let n = bs.size();
     var ret : Point = #zero;
     var i = 0;
@@ -274,7 +274,7 @@ module {
     (rx, ry, rz)
   };
   public func mulJacobi(a : Jacobi, #fr(x) : FrElt) : Jacobi {
-    let bs = Util.toReverseBin(x);
+    let bs = Binary.fromNatReversed(x);
     let n = bs.size();
     var ret = zeroJ;
     var i = 0;

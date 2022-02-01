@@ -1,7 +1,7 @@
 import M "../src";
 import Field "../src/field";
 import C "../src/curve";
-import UC "../src/curve_util";
+import Binary "../src/binary";
 import UL "../src/lib_util";
 import Dump "../src/dump";
 import IntExt "../src/intext";
@@ -43,7 +43,7 @@ func toReverseBinTest() {
   ];
   for(i in tbl.keys()) {
     let (v, a) = tbl[i];
-    let b = UC.toReverseBin(v);
+    let b = Binary.fromNatReversed(v);
     assert(b == a);
   };
   switch (optionFunc(5)) {
