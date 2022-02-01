@@ -258,12 +258,20 @@ func jacobiTest() {
   let Pj = C.toJacobi(Pa);
   var Qj = C.negJacobi(Pj);
   assert(C.isZeroJacobi(C.addJacobi(Pj, Qj)));
-  var Qa : C.Point = Pa;
+  Qj := C.dblJacobi(Pj);
+  var Qa = C.dbl(Pa);
+  UT.putPoint(Qa);
+  UT.putJacobi(Qj);
+  UT.putPoint(C.fromJacobi(Qj));
+  return;
+  assert(Qa == C.fromJacobi(Qj));
+  Qa := Pa;
   Qj := Pj;
   for (i in Iter.range(0, 3)) {
 Debug.print("i=" # UT.toHex(i));
     UT.putPoint(Qa);
-    UT.putPoint(C.fromJacobi(Qj));
+//    UT.putPoint(C.fromJacobi(Qj));
+    UT.putJacobi(Qj);
     Qa := C.add(Qa, Pa);
     Qj := C.addJacobi(Qj, Pj);
  //   assert(Qa == C.fromJacobi(Qj));
@@ -286,4 +294,4 @@ ec2Teset();
 ecdsaTest();
 serializeTest();
 derTest();
-//jacobiTest();
+jacobiTest();
