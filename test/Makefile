@@ -10,7 +10,7 @@ test-hmac: hmac-test.wasm
 
 TIME=time
 
-%.wasm: %.mo ../src/lib.mo ../src/hmac.mo
+%.wasm: %.mo $(shell echo ../src/*.mo)
 	$(shell vessel bin)/moc $(shell vessel sources) --release -wasi-system-api -o $@ $<
 
 bench-gen10.mo: bench-gen.tmpl
