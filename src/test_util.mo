@@ -1,6 +1,7 @@
 import Nat8 "mo:base/Nat8";
 import Iter "mo:base/Iter";
 import Debug "mo:base/Debug";
+import C "../src/curve";
 
 module {
   public func toHex(x : Nat) : Text {
@@ -38,5 +39,15 @@ module {
       text := text # (if (s.size() == 1) "0" else "") # s;
     };
     Debug.print(text);
+  };
+  public func putPoint(a : C.Point) {
+    switch (a) {
+      case(#zero) {
+        Debug.print("0");
+      };
+      case(#affine(x, y)) {
+        Debug.print("(" # toHex(C.Fp.toNat(x)) # ", " # toHex(C.Fp.toNat(y)) # ")");
+      };
+    };
   };
 }
