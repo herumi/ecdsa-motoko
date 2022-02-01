@@ -261,11 +261,15 @@ func jacobiTest() {
   Qj := C.dblJacobi(Pj);
   var Qa = C.dbl(Pa);
   assert(Qa == C.fromJacobi(Qj));
+  assert(C.isEqualJacobi(Qj, C.toJacobi(Qa)));
   var i = 0;
   while (i < 10) {
     Qa := C.add(Qa, Pa);
+    let R = C.addJacobi(Pj, Qj);
     Qj := C.addJacobi(Qj, Pj);
     assert(Qa == C.fromJacobi(Qj));
+    assert(C.isEqualJacobi(Qj, R));
+    assert(C.isEqualJacobi(Qj, C.toJacobi(Qa)));
     i += 1;
   };
 };

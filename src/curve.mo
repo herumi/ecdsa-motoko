@@ -1,6 +1,9 @@
 import Field "field";
 import Util "curve_util";
 
+//import Debug "mo:base/Debug";
+//import Nat "mo:base/Nat";
+
 module {
   public type FpElt = { #fp : Nat; };
   public type FrElt = { #fr : Nat; };
@@ -149,6 +152,24 @@ module {
     z4 := Fp.mul(z4, b_);
     t := Fp.add(t, z4);
     y2 == t
+  };
+  public func isEqualJacobi(P1 : Jacobi, P2 : Jacobi) : Bool {
+    let zero1 = isZeroJacobi(P1);
+    let zero2 = isZeroJacobi(P2);
+    if (zero1) return zero2;
+    if (zero2) return false;
+    let (x1, y1, z1) = P1;
+    let (x2, y2, z2) = P2;
+    let s1 = Fp.sqr(z1);
+    let s2 = Fp.sqr(z2);
+    var t1 = Fp.mul(x1, s2);
+    var t2 = Fp.mul(x2, s1);
+    if (t1 != t2) return false;
+    t1 := Fp.mul(y1, s2);
+    t2 := Fp.mul(y2, s1);
+    t1 := Fp.mul(t1, z2);
+    t2 := Fp.mul(t2, z1);
+    t1 == t2
   };
   public func negJacobi((x, y, z) : Jacobi) : Jacobi = (x, Fp.neg(y), z);
   public func dblJacobi((x, y, z) : Jacobi) : Jacobi {
