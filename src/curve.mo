@@ -1,8 +1,7 @@
 import Field "field";
 import Util "curve_util";
-
-//import Debug "mo:base/Debug";
-//import Nat "mo:base/Nat";
+import Hex "hex";
+import Debug "mo:base/Debug";
 
 module {
   public type FpElt = { #fp : Nat; };
@@ -286,5 +285,20 @@ module {
       i += 1;
     };
     ret
+  };
+  public func putPoint(a : Point) {
+    switch (a) {
+      case(#zero) {
+        Debug.print("0");
+      };
+      case(#affine(x, y)) {
+        Debug.print("(" # Hex.fromNat(Fp.toNat(x)) # ", " # Hex.fromNat(Fp.toNat(y)) # ")");
+      };
+    };
+  };
+  public func putJacobi((x, y, z) : Jacobi) {
+    Debug.print("(" # Hex.fromNat(Fp.toNat(x)) # ",");
+    Debug.print(" " # Hex.fromNat(Fp.toNat(y)) # ",");
+    Debug.print(" " # Hex.fromNat(Fp.toNat(z)) # ")");
   };
 }

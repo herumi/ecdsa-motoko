@@ -3,7 +3,7 @@ import Field "../src/field";
 import C "../src/curve";
 import UC "../src/curve_util";
 import UL "../src/lib_util";
-import UT "../src/test_util";
+import Dump "../src/dump";
 import IntExt "../src/intext";
 import Nat "mo:base/Nat";
 import Debug "mo:base/Debug";
@@ -148,6 +148,7 @@ func ec1Test() {
   assert(C.isZero(Z));
   assert(C.isZero(C.neg(Z)));
   assert(C.isZero(C.add(Z,Z)));
+//  C.putPoint(Z);
 
   let P = #affine(C.params.g);
   assert(not C.isZero(P));
@@ -156,6 +157,8 @@ func ec1Test() {
   assert(C.isNegOf(P,Q));
   assert(C.isNegOf(Q,P));
   assert(C.isZero(C.add(P,Q)));
+//  C.putPoint(P);
+//  C.putPoint(Q);
 };
 
 func ec2Teset() {
@@ -247,8 +250,8 @@ func derTest() {
   let sig = (#fr(0xed81ff192e75a3fd2304004dcadb746fa5e24c5031ccfcf21320b0277457c98f), #fr(0x7a986d955c6e0cb35d446a89d3f56100f4d7f67801c31967743a9c8e10615bed));
   let expected : [Nat8] = [0x30, 0x45, 0x02, 0x21, 0x00, 0xed, 0x81, 0xff, 0x19, 0x2e, 0x75, 0xa3, 0xfd, 0x23, 0x04, 0x00, 0x4d, 0xca, 0xdb, 0x74, 0x6f, 0xa5, 0xe2, 0x4c, 0x50, 0x31, 0xcc, 0xfc, 0xf2, 0x13, 0x20, 0xb0, 0x27, 0x74, 0x57, 0xc9, 0x8f, 0x02, 0x20, 0x7a, 0x98, 0x6d, 0x95, 0x5c, 0x6e, 0x0c, 0xb3, 0x5d, 0x44, 0x6a, 0x89, 0xd3, 0xf5, 0x61, 0x00, 0xf4, 0xd7, 0xf6, 0x78, 0x01, 0xc3, 0x19, 0x67, 0x74, 0x3a, 0x9c, 0x8e, 0x10, 0x61, 0x5b, 0xed];
   let der = M.serializeSignatureDer(sig);
-//  UT.dump(expected.vals());
-//  UT.dump(Blob.toArray(der).vals());
+//  Dump.dump(expected.vals());
+//  Dump.dump(Blob.toArray(der).vals());
   assert(Blob.toArray(der) == expected);
   assert(M.deserializeSignatureDer(der) == ?sig);
 };
@@ -257,6 +260,8 @@ func jacobiTest() {
   let Pa = #affine(C.params.g);
   let Pj = C.toJacobi(Pa);
   var Qj = C.negJacobi(Pj);
+//  C.putJacobi(Pj);
+//  C.putJacobi(Qj);
   assert(C.isZeroJacobi(C.addJacobi(Pj, Qj)));
   Qj := C.dblJacobi(Pj);
   var Qa = C.dbl(Pa);
