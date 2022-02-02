@@ -23,6 +23,8 @@ bench-gen10: bench-gen10.wasm
 	$(TIME) wasmtime $<
 bench-gen20: bench-gen20.wasm
 	$(TIME) wasmtime $<
+bench-mulmod: bench-mulmod.wasm
+	$(TIME) wasmtime $<
 
 bench-gen:
 	$(MAKE) bench-gen10
