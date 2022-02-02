@@ -1,8 +1,8 @@
 import Buffer "mo:base/Buffer";
 
 module {
-  // 13 = 0b1101 => [true,false,true,ture]
-  public func toReverseBin(x : Nat) : [Bool] {
+  // 13 = 0b1101 => [true,false,true,true]
+  public func fromNatReversed(x : Nat) : [Bool] {
     var buf = Buffer.Buffer<Bool>(256);
     var t = x;
     while (t > 0) {

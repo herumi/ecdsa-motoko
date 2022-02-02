@@ -1,18 +1,9 @@
-import Int "mo:base/Int";
 import IntExt "intext";
+import Binary "binary";
+import Int "mo:base/Int";
 import Buffer "mo:base/Buffer";
 
 module {
-  // 13 = 0b1101 => [true,false,true,ture]
-  public func toReverseBin(x : Nat) : [Bool] {
-    var buf = Buffer.Buffer<Bool>(256);
-    var t = x;
-    while (t > 0) {
-      buf.add((t % 2) == 1);
-      t /= 2;
-    };
-    buf.toArray()
-  };
   public func inv_(x : Nat, n : Nat) : Nat {
     let (gcd, rev, _) = IntExt.extGcd(x, n);
     assert(gcd == 1);
@@ -30,7 +21,7 @@ module {
   public func neg_(x : Nat, n : Nat) : Nat = if (x == 0) 0 else n - x;
   public func pow_(x : Nat, y : Nat, n : Nat) : Nat {
     if (y == 0) return 1;
-    let bs = toReverseBin(y);
+    let bs = Binary.fromNatReversed(y);
     let len = bs.size();
     var ret = 1;
     var i = 0;

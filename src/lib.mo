@@ -15,7 +15,7 @@ import Array "mo:base/Array";
 import Blob "mo:base/Blob";
 import SHA2 "mo:sha2";
 import Curve "curve";
-import Util "lib_util";
+import Util "util";
 import Prelude "mo:base/Prelude";
 
 module {

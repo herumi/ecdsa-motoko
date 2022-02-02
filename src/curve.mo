@@ -1,8 +1,7 @@
 import Field "field";
-import Util "curve_util";
-
-//import Debug "mo:base/Debug";
-//import Nat "mo:base/Nat";
+import Hex "hex";
+import Binary "binary";
+import Debug "mo:base/Debug";
 
 module {
   public type FpElt = { #fp : Nat; };
@@ -114,7 +113,7 @@ module {
   public func mul(a : Point, #fr(x) : FrElt) : Point {
     fromJacobi(mulJacobi(toJacobi(a), #fr(x)))
 /*
-    let bs = Util.toReverseBin(x);
+    let bs = Binary.fromNatReversed(x);
     let n = bs.size();
     var ret : Point = #zero;
     var i = 0;
@@ -275,7 +274,7 @@ module {
     (rx, ry, rz)
   };
   public func mulJacobi(a : Jacobi, #fr(x) : FrElt) : Jacobi {
-    let bs = Util.toReverseBin(x);
+    let bs = Binary.fromNatReversed(x);
     let n = bs.size();
     var ret = zeroJ;
     var i = 0;
@@ -286,5 +285,20 @@ module {
       i += 1;
     };
     ret
+  };
+  public func putPoint(a : Point) {
+    switch (a) {
+      case(#zero) {
+        Debug.print("0");
+      };
+      case(#affine(x, y)) {
+        Debug.print("(" # Hex.fromNat(Fp.toNat(x)) # ", " # Hex.fromNat(Fp.toNat(y)) # ")");
+      };
+    };
+  };
+  public func putJacobi((x, y, z) : Jacobi) {
+    Debug.print("(" # Hex.fromNat(Fp.toNat(x)) # ",");
+    Debug.print(" " # Hex.fromNat(Fp.toNat(y)) # ",");
+    Debug.print(" " # Hex.fromNat(Fp.toNat(z)) # ")");
   };
 }
