@@ -130,6 +130,7 @@ module {
 
   public type Jacobi = (FpElt, FpElt, FpElt);
   public let zeroJ = (#fp(0), #fp(0), #fp(0));
+  public let GJ_ = (params.g.0, params.g.1, #fp(1));
   public func isZeroJacobi((_, _, z) : Jacobi) : Bool = z == #fp(0);
   public func toJacobi(a : Point) : Jacobi = switch (a) {
     case (#zero) zeroJ;
@@ -286,6 +287,7 @@ module {
     };
     ret
   };
+  public func mul_baseJ(x : FrElt) : Jacobi = mulJacobi(GJ_, x);
   public func putPoint(a : Point) {
     switch (a) {
       case(#zero) {

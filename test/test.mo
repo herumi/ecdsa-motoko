@@ -201,7 +201,7 @@ func ecdsaTest() {
     };
     assert(sec == #non_zero(#fr(0x83ecb3984a4f9ff03e84d5f9c0d7f888a81833643047acc58eb6431e01d9bac8)));
     let pub = M.getPublicKey(sec);
-    assert(pub == (#fp(0x653bd02ba1367e5d4cd695b6f857d1cd90d4d8d42bc155d85377b7d2d0ed2e71), #fp(0x04e8f5da403ab78decec1f19e2396739ea544e2b14159beb5091b30b418b813a)));
+    assert(C.isEqualJacobi(pub, (#fp(0x653bd02ba1367e5d4cd695b6f857d1cd90d4d8d42bc155d85377b7d2d0ed2e71), #fp(0x04e8f5da403ab78decec1f19e2396739ea544e2b14159beb5091b30b418b813a), #fp(1))));
 
     let rand : [Nat8] = [ 0x8a, 0xfa, 0x4a, 0x16, 0x2b, 0x7b, 0xad, 0x6c, 0x92, 0xff, 0x14, 0xf3, 0xa8, 0xbf, 0x4d, 0xb0, 0xf3, 0xc3, 0x9e, 0x90, 0xc0, 0x6f, 0x93, 0x78, 0x61, 0xf8, 0x23, 0xd2, 0x99, 0x5c, 0x74, 0xf0 ];
     let sig = switch (M.signHashed(sec, hashed.vals(), rand.vals())) {
@@ -209,7 +209,7 @@ func ecdsaTest() {
       case(?v) v;
     };
     assert(M.verifyHashed(pub, hashed.vals(), sig));
-    assert(not M.verifyHashed((pub.0, C.Fp.add(pub.1,#fp(1))), hashed.vals(), sig));
+    assert(not M.verifyHashed((pub.0, C.Fp.add(pub.1,#fp(1)), #fp(1)), hashed.vals(), sig));
     assert(not M.verifyHashed(pub, ([0x1, 0x2] : [Nat8]).vals(), sig));
     assert(M.sign(sec, hello.vals(), rand.vals()) == ?sig);
     assert(M.verifyHashed(pub, hashed.vals(), sig));
@@ -222,7 +222,7 @@ func ecdsaTest() {
   do {
     let sec = #non_zero(#fr(0xb1aa6282b14e5ffbf6d12f783612f804e6a20d1a9734ffbb6c9923c670ee8da2));
     let pub = M.getPublicKey(sec);
-    assert(pub == (#fp(0x0a09ff142d94bc3f56c5c81b75ea3b06b082c5263fbb5bd88c619fc6393dda3d), #fp(0xa53e0e930892cdb7799eea8fd45b9fff377d838f4106454289ae8a080b111f8d)));
+    assert(C.isEqualJacobi(pub, (#fp(0x0a09ff142d94bc3f56c5c81b75ea3b06b082c5263fbb5bd88c619fc6393dda3d), #fp(0xa53e0e930892cdb7799eea8fd45b9fff377d838f4106454289ae8a080b111f8d), #fp(1))));
     let sig = M.normalizeSignature(#fr(0x50839a97404c24ec39455b996e4888477fd61bcf0ffb960c7ffa3bef10450191), #fr(0x9671b8315bb5c1611d422d49cbbe7e80c6b463215bfad1c16ca73172155bf31a));
     assert(M.verifyHashed(pub, hashed.vals(), sig));
   };
@@ -231,18 +231,27 @@ func ecdsaTest() {
 func serializeTest() {
   let expected = Blob.fromArray([0x04,0xa,0x9,0xff,0x14,0x2d,0x94,0xbc,0x3f,0x56,0xc5,0xc8,0x1b,0x75,0xea,0x3b,0x6,0xb0,0x82,0xc5,0x26,0x3f,0xbb,0x5b,0xd8,0x8c,0x61,0x9f,0xc6,0x39,0x3d,0xda,0x3d,0xa5,0x3e,0xe,0x93,0x8,0x92,0xcd,0xb7,0x79,0x9e,0xea,0x8f,0xd4,0x5b,0x9f,0xff,0x37,0x7d,0x83,0x8f,0x41,0x6,0x45,0x42,0x89,0xae,0x8a,0x8,0xb,0x11,0x1f,0x8d]);
   let pub = (#fp(0x0a09ff142d94bc3f56c5c81b75ea3b06b082c5263fbb5bd88c619fc6393dda3d), #fp(0xa53e0e930892cdb7799eea8fd45b9fff377d838f4106454289ae8a080b111f8d));
+  let pubJ : C.Jacobi = C.toJacobi(#affine(pub));
+
+  let check = func(ret : ?M.PublicKey, expected : M.PublicKey) {
+    switch (ret) {
+      case (null) { assert(false); };
+      case (?pub) {
+        assert(C.isEqualJacobi(pub, expected));
+      };
+    };
+  };
   do {
     let v = M.serializePublicKeyUncompressed(pub);
     assert(v == expected);
-    let pub2 = M.deserializePublicKeyUncompressed(v);
-    assert(pub2 == ?pub);
+    check(M.deserializePublicKeyUncompressed(v), pubJ);
   };
   do {
     let v = M.serializePublicKeyCompressed(pub);
-    assert(M.deserializePublicKeyCompressed(v) == ?pub);
-    let pub2 = (pub.0, C.Fp.neg(pub.1));
-    let v2 = M.serializePublicKeyCompressed(pub2);
-    assert(M.deserializePublicKeyCompressed(v2) == ?pub2);
+    check(M.deserializePublicKeyCompressed(v), pubJ);
+    let pubNeg = (pub.0, C.Fp.neg(pub.1));
+    let v2 = M.serializePublicKeyCompressed(pubNeg);
+    check(M.deserializePublicKeyCompressed(v2), C.toJacobi(#affine(pubNeg)));
   };
 };
 
