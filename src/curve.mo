@@ -74,7 +74,7 @@ module {
   };
 
   // point functions
-  public func isValid((x,y) : Affine) : Bool = Fp.sqr(y) == getYsqrFromX(x);
+  public func isValidAffine((x,y) : Affine) : Bool = Fp.sqr(y) == getYsqrFromX(x);
   public type Jacobi = (FpElt, FpElt, FpElt);
   public let zeroJ = (#fp(0), #fp(0), #fp(0));
   public let GJ_ = (params.g.0, params.g.1, #fp(1));

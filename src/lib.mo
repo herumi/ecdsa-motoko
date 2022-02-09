@@ -143,7 +143,7 @@ module {
     if (x >= Curve.params.p) return null;
     if (y >= Curve.params.p) return null;
     let pub = (#fp(x), #fp(y));
-    if (not Curve.isValid(pub)) return null;
+    if (not Curve.isValidAffine(pub)) return null;
     ?(#fp(x), #fp(y), #fp(1));
   };
   /// Deserialize a compressed public key.
