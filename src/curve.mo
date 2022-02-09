@@ -225,7 +225,7 @@ module {
     ry := Fp.sub(U1, H3);
     (rx, ry, rz)
   };
-  public func mulJacobi(a : Jacobi, #fr(x) : FrElt) : Jacobi {
+  public func mul(a : Jacobi, #fr(x) : FrElt) : Jacobi {
     let bs = Binary.fromNatReversed(x);
     let n = bs.size();
     var ret = zeroJ;
@@ -238,7 +238,7 @@ module {
     };
     ret
   };
-  public func mul_base(x : FrElt) : Jacobi = mulJacobi(GJ_, x);
+  public func mul_base(x : FrElt) : Jacobi = mul(GJ_, x);
   public func putPoint(a : Point) {
     switch (a) {
       case(#zero) {

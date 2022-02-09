@@ -172,15 +172,15 @@ func ec2Teset() {
   let P5 = C.add(P4,P);
   assert(C.isZero(C.add(P,C.neg(P))));
   assert(C.isEqual(C.dbl(P), P2));
-  assert(C.isEqual(C.mulJacobi(P,#fr(1)), P));
-  assert(C.isEqual(C.mulJacobi(P,#fr(2)), P2));
-  assert(C.isEqual(C.mulJacobi(P,#fr(3)), P3));
-  assert(C.isEqual(C.mulJacobi(P,#fr(4)), P4));
-  assert(C.isEqual(C.mulJacobi(P,#fr(5)), P5));
-  let Q = C.mulJacobi(P,C.Fr.fromNat(C.params.r - 1));
+  assert(C.isEqual(C.mul(P,#fr(1)), P));
+  assert(C.isEqual(C.mul(P,#fr(2)), P2));
+  assert(C.isEqual(C.mul(P,#fr(3)), P3));
+  assert(C.isEqual(C.mul(P,#fr(4)), P4));
+  assert(C.isEqual(C.mul(P,#fr(5)), P5));
+  let Q = C.mul(P,C.Fr.fromNat(C.params.r - 1));
   assert(C.isEqual(Q, C.neg(P)));
   assert(C.isZero(C.add(Q,P)));
-  assert(C.isZero(C.mulJacobi(P,C.Fr.fromNat(C.params.r))));
+  assert(C.isZero(C.mul(P,C.Fr.fromNat(C.params.r))));
 };
 
 func ecdsaTest() {
@@ -282,10 +282,10 @@ func jacobiTest() {
     assert(C.isEqual(Qj, C.toJacobi(Qa)));
     i += 1;
   };
-  Qj := C.mulJacobi(Pj, C.Fr.fromNat(C.params.r - 1));
+  Qj := C.mul(Pj, C.Fr.fromNat(C.params.r - 1));
   assert(C.isEqual(Qj, C.neg(Pj)));
   assert(C.isZero(C.add(Qj, Pj)));
-  assert(C.isZero(C.mulJacobi(Pj, C.Fr.fromNat(C.params.r))));
+  assert(C.isZero(C.mul(Pj, C.Fr.fromNat(C.params.r))));
 };
 
 toBigEndianPadTest();
