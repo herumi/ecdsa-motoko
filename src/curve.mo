@@ -78,7 +78,7 @@ module {
   public type Jacobi = (FpElt, FpElt, FpElt);
   public let zeroJ = (#fp(0), #fp(0), #fp(0));
   public let GJ_ = (params.g.0, params.g.1, #fp(1));
-  public func isZeroJacobi((_, _, z) : Jacobi) : Bool = z == #fp(0);
+  public func isZero((_, _, z) : Jacobi) : Bool = z == #fp(0);
   public func toJacobi(a : Point) : Jacobi = switch (a) {
     case (#zero) zeroJ;
     case (#affine(x, y)) (x, y, #fp(1));
@@ -109,8 +109,8 @@ module {
     y2 == t
   };
   public func isEqualJacobi(P1 : Jacobi, P2 : Jacobi) : Bool {
-    let zero1 = isZeroJacobi(P1);
-    let zero2 = isZeroJacobi(P2);
+    let zero1 = isZero(P1);
+    let zero2 = isZero(P2);
     if (zero1) return zero2;
     if (zero2) return false;
     let (x1, y1, z1) = P1;

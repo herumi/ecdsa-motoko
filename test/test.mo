@@ -145,15 +145,15 @@ func gcdTest(f : (Int, Int) -> (Int, Int, Int)) {
 
 func ec1Test() {
   let Z = C.zeroJ;
-  assert(C.isZeroJacobi(Z));
-  assert(C.isZeroJacobi(C.negJacobi(Z)));
-  assert(C.isZeroJacobi(C.addJacobi(Z,Z)));
+  assert(C.isZero(Z));
+  assert(C.isZero(C.negJacobi(Z)));
+  assert(C.isZero(C.addJacobi(Z,Z)));
 
   let P = C.GJ_;
-  assert(not C.isZeroJacobi(P));
+  assert(not C.isZero(P));
   let Q = C.negJacobi(P);
-  assert(not C.isZeroJacobi(Q));
-  assert(C.isZeroJacobi(C.addJacobi(P,Q)));
+  assert(not C.isZero(Q));
+  assert(C.isZero(C.addJacobi(P,Q)));
 };
 
 func ec2Teset() {
@@ -170,7 +170,7 @@ func ec2Teset() {
   assert(C.isEqualJacobi(P3, okP3));
   let P4 = C.addJacobi(P3,P);
   let P5 = C.addJacobi(P4,P);
-  assert(C.isZeroJacobi(C.addJacobi(P,C.negJacobi(P))));
+  assert(C.isZero(C.addJacobi(P,C.negJacobi(P))));
   assert(C.isEqualJacobi(C.dblJacobi(P), P2));
   assert(C.isEqualJacobi(C.mulJacobi(P,#fr(1)), P));
   assert(C.isEqualJacobi(C.mulJacobi(P,#fr(2)), P2));
@@ -179,8 +179,8 @@ func ec2Teset() {
   assert(C.isEqualJacobi(C.mulJacobi(P,#fr(5)), P5));
   let Q = C.mulJacobi(P,C.Fr.fromNat(C.params.r - 1));
   assert(C.isEqualJacobi(Q, C.negJacobi(P)));
-  assert(C.isZeroJacobi(C.addJacobi(Q,P)));
-  assert(C.isZeroJacobi(C.mulJacobi(P,C.Fr.fromNat(C.params.r))));
+  assert(C.isZero(C.addJacobi(Q,P)));
+  assert(C.isZero(C.mulJacobi(P,C.Fr.fromNat(C.params.r))));
 };
 
 func ecdsaTest() {
@@ -267,7 +267,7 @@ func jacobiTest() {
   let Pj = C.toJacobi(Pa);
   assert(Pa == C.fromJacobi(Pj));
   var Qj = C.negJacobi(Pj);
-  assert(C.isZeroJacobi(C.addJacobi(Pj, Qj)));
+  assert(C.isZero(C.addJacobi(Pj, Qj)));
   Qj := C.dblJacobi(Pj);
   var Qa : C.Point = #affine(dblP);
   assert(#affine(dblP) == C.fromJacobi(Qj));
@@ -284,8 +284,8 @@ func jacobiTest() {
   };
   Qj := C.mulJacobi(Pj, C.Fr.fromNat(C.params.r - 1));
   assert(C.isEqualJacobi(Qj, C.negJacobi(Pj)));
-  assert(C.isZeroJacobi(C.addJacobi(Qj, Pj)));
-  assert(C.isZeroJacobi(C.mulJacobi(Pj, C.Fr.fromNat(C.params.r))));
+  assert(C.isZero(C.addJacobi(Qj, Pj)));
+  assert(C.isZero(C.mulJacobi(Pj, C.Fr.fromNat(C.params.r))));
 };
 
 toBigEndianPadTest();
