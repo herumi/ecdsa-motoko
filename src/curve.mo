@@ -19,8 +19,6 @@ module {
 	  rHalf = 0x7fffffffffffffffffffffffffffffff5d576e7357a4501ddfe92f46681b20a1;
   };	
 
-  let G_ = #affine(params.g);
-
   let p_ = params.p;
   let r_ = params.r;
   let a_ = params.a;
@@ -77,7 +75,7 @@ module {
   public func isValidAffine((x,y) : Affine) : Bool = Fp.sqr(y) == getYsqrFromX(x);
   public type Jacobi = (FpElt, FpElt, FpElt);
   public let zeroJ = (#fp(0), #fp(0), #fp(0));
-  public let GJ_ = (params.g.0, params.g.1, #fp(1));
+  public let G_ = (params.g.0, params.g.1, #fp(1));
   public func isZero((_, _, z) : Jacobi) : Bool = z == #fp(0);
   public func toJacobi(a : Point) : Jacobi = switch (a) {
     case (#zero) zeroJ;
@@ -95,7 +93,7 @@ module {
     #affine(x, y)
   };
   // y^2 == x(x^2 + a z^4) + b z^6
-  public func isValidJacobi((x, y, z) : Jacobi) : Bool {
+  public func isValid((x, y, z) : Jacobi) : Bool {
     let x2 = Fp.sqr(x);
     let y2 = Fp.sqr(y);
     let z2 = Fp.sqr(z);
@@ -238,7 +236,7 @@ module {
     };
     ret
   };
-  public func mul_base(x : FrElt) : Jacobi = mul(GJ_, x);
+  public func mul_base(x : FrElt) : Jacobi = mul(G_, x);
   public func putPoint(a : Point) {
     switch (a) {
       case(#zero) {

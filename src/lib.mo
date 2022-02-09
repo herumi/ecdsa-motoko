@@ -67,7 +67,7 @@ module {
   };
   /// verify a tuple of pub, hashed, and lowerS sig
   public func verifyHashed(pub : PublicKey, hashed : Iter.Iter<Nat8>, (r,s) : Signature) : Bool {
-    if (not Curve.isValidJacobi(pub)) return false;
+    if (not Curve.isValid(pub)) return false;
     if (r == #fr(0)) return false;
     if (s == #fr(0)) return false;
     if (Fr.toNat(s) >= Curve.params.rHalf) return false;
