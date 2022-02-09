@@ -144,21 +144,16 @@ func gcdTest(f : (Int, Int) -> (Int, Int, Int)) {
 };
 
 func ec1Test() {
-  let Z = #zero;
-  assert(C.isZero(Z));
-  assert(C.isZero(C.neg(Z)));
-  assert(C.isZero(C.add(Z,Z)));
-//  C.putPoint(Z);
+  let Z = C.zeroJ;
+  assert(C.isZeroJacobi(Z));
+  assert(C.isZeroJacobi(C.negJacobi(Z)));
+  assert(C.isZeroJacobi(C.addJacobi(Z,Z)));
 
-  let P = #affine(C.params.g);
-  assert(not C.isZero(P));
-  let Q = C.neg(P);
-  assert(not C.isZero(Q));
-  assert(C.isNegOf(P,Q));
-  assert(C.isNegOf(Q,P));
-  assert(C.isZero(C.add(P,Q)));
-//  C.putPoint(P);
-//  C.putPoint(Q);
+  let P = C.GJ_;
+  assert(not C.isZeroJacobi(P));
+  let Q = C.negJacobi(P);
+  assert(not C.isZeroJacobi(Q));
+  assert(C.isZeroJacobi(C.addJacobi(P,Q)));
 };
 
 func ec2Teset() {
