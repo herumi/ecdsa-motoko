@@ -235,7 +235,7 @@ module {
       r := Fp.mul(r, qy);
     };
     r := Fp.sub(r, S1);
-    if (H == #fp(1)) {
+    if (H == #fp(0)) {
       if (r == #fp(0)) {
         return dblJacobi((px, py, pz));
       } else {
