@@ -39,13 +39,10 @@ module {
     if (s == #fr(0)) null else ?#non_zero(s)
   };
   /// Get public key from sec.
-  /// public key (x, y) is an affine point of elliptic curve
+  /// public key is a point of elliptic curve
   public func getPublicKey(#non_zero(s) : SecretKey) : PublicKey {
     if (s == #fr(0)) Prelude.unreachable(); // type error
-    switch (Curve.mul_base(s)) {
-      case (#zero) Prelude.unreachable(); // because s is non-zero
-      case (#affine(c)) Curve.toJacobi(#affine(c));
-    }
+    Curve.mul_base(s)
   };
   /// Sign hashed by sec and rand return lower S signature (r, s) such that s < rHalf
   /// hashed : 32-byte SHA-256 value of a message.
@@ -53,7 +50,7 @@ module {
   public func signHashed(#non_zero(sec) : SecretKey, hashed : Iter.Iter<Nat8>, rand : Iter.Iter<Nat8>) : ?Signature {
     if (sec == #fr(0)) Prelude.unreachable(); // type error
     let k = getExponent(rand);
-    let x = switch (Curve.mul_base(k)) {
+    let x = switch (Curve.fromJacobi(Curve.mul_base(k))) {
       case (#zero) return null; // k was 0, bad luck with rand
       case (#affine(x, _)) x;
     };
@@ -78,18 +75,11 @@ module {
     let w = Fr.inv(s);
     let u1 = Fr.mul(z, w);
     let u2 = Fr.mul(r, w);
-    let R = Curve.addJacobi(Curve.mul_baseJ(u1),Curve.mulJacobi(pub, u2));
+    let R = Curve.addJacobi(Curve.mul_base(u1),Curve.mulJacobi(pub, u2));
     switch (Curve.fromJacobi(R)) {
       case (#zero) false;
       case (#affine(x,_)) Fr.fromNat(Fp.toNat(x)) == r
     };
-/*
-    let R = Curve.add(Curve.mul_base(u1),Curve.mul(#affine(pub),u2));
-    return switch (R) {
-      case (#zero) false;
-      case (#affine(x,_)) Fr.fromNat(Fp.toNat(x)) == r
-    };
-*/
   };
   /// Sign a message by sec and rand with SHA-256
   public func sign(sec : SecretKey, msg : Iter.Iter<Nat8>, rand : Iter.Iter<Nat8>) : ?Signature {

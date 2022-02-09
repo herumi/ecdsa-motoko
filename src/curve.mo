@@ -126,8 +126,6 @@ module {
     ret
 */
   };
-  public func mul_base(e : FrElt) : Point = mul(G_, e);
-
   public type Jacobi = (FpElt, FpElt, FpElt);
   public let zeroJ = (#fp(0), #fp(0), #fp(0));
   public let GJ_ = (params.g.0, params.g.1, #fp(1));
@@ -287,7 +285,7 @@ module {
     };
     ret
   };
-  public func mul_baseJ(x : FrElt) : Jacobi = mulJacobi(GJ_, x);
+  public func mul_base(x : FrElt) : Jacobi = mulJacobi(GJ_, x);
   public func putPoint(a : Point) {
     switch (a) {
       case(#zero) {
