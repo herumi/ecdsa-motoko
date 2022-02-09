@@ -202,8 +202,7 @@ module {
     if (qz == #fp(0)) return (px, py, pz);
     let isPzOne = pz == #fp(1);
     let isQzOne = qz == #fp(1);
-    var r = #fp(1);
-    if (not isPzOne) r := Fp.sqr(pz);
+    var r = if (isPzOne) #fp(1) else Fp.sqr(pz);
     var U1 = #fp(0);
     var S1 = #fp(0);
     var H = #fp(0);
