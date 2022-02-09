@@ -127,7 +127,7 @@ module {
     t1 == t2
   };
   public func negJacobi((x, y, z) : Jacobi) : Jacobi = (x, Fp.neg(y), z);
-  public func dblJacobi((x, y, z) : Jacobi) : Jacobi {
+  public func dbl((x, y, z) : Jacobi) : Jacobi {
     if (z == #fp(0)) return zeroJ;
     var x2 = Fp.sqr(x);
     var y2 = Fp.sqr(y);
@@ -190,7 +190,7 @@ module {
     r := Fp.sub(r, S1);
     if (H == #fp(0)) {
       if (r == #fp(0)) {
-        return dblJacobi((px, py, pz));
+        return dbl((px, py, pz));
       } else {
         return zeroJ;
       };
@@ -232,7 +232,7 @@ module {
     var i = 0;
     while (i < n) {
       let b = bs[n - 1 - i];
-      ret := dblJacobi(ret);
+      ret := dbl(ret);
       if (b) ret := addJacobi(ret, a);
       i += 1;
     };

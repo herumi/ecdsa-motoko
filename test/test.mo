@@ -163,15 +163,15 @@ func ec2Teset() {
 
   let P = C.GJ_;
   assert(C.isEqual(P, okP));
-  let P2 = C.dblJacobi(P);
-  assert(C.isEqual(C.dblJacobi(P), okP2));
+  let P2 = C.dbl(P);
+  assert(C.isEqual(C.dbl(P), okP2));
   assert(C.isEqual(C.addJacobi(P,P), okP2));
   let P3 = C.addJacobi(P2,P);
   assert(C.isEqual(P3, okP3));
   let P4 = C.addJacobi(P3,P);
   let P5 = C.addJacobi(P4,P);
   assert(C.isZero(C.addJacobi(P,C.negJacobi(P))));
-  assert(C.isEqual(C.dblJacobi(P), P2));
+  assert(C.isEqual(C.dbl(P), P2));
   assert(C.isEqual(C.mulJacobi(P,#fr(1)), P));
   assert(C.isEqual(C.mulJacobi(P,#fr(2)), P2));
   assert(C.isEqual(C.mulJacobi(P,#fr(3)), P3));
@@ -268,7 +268,7 @@ func jacobiTest() {
   assert(Pa == C.fromJacobi(Pj));
   var Qj = C.negJacobi(Pj);
   assert(C.isZero(C.addJacobi(Pj, Qj)));
-  Qj := C.dblJacobi(Pj);
+  Qj := C.dbl(Pj);
   var Qa : C.Point = #affine(dblP);
   assert(#affine(dblP) == C.fromJacobi(Qj));
   assert(C.isEqual(Qj, C.toJacobi(Qa)));
