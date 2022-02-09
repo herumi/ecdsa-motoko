@@ -262,29 +262,24 @@ func derTest() {
 };
 
 func jacobiTest() {
+  let dblP = (#fp(0xc6047f9441ed7d6d3045406e95c07cd85c778e4b8cef3ca7abac09b95c709ee5), #fp(0x1ae168fea63dc339a3c58419466ceaeef7f632653266d0e1236431a950cfe52a));
   let Pa = #affine(C.params.g);
   let Pj = C.toJacobi(Pa);
+  assert(Pa == C.fromJacobi(Pj));
   var Qj = C.negJacobi(Pj);
-//  C.putJacobi(Pj);
-//  C.putJacobi(Qj);
   assert(C.isZeroJacobi(C.addJacobi(Pj, Qj)));
   Qj := C.dblJacobi(Pj);
-  var Qa = C.dbl(Pa);
-  assert(Qa == C.fromJacobi(Qj));
+  var Qa : C.Point = #affine(dblP);
+  assert(#affine(dblP) == C.fromJacobi(Qj));
   assert(C.isEqualJacobi(Qj, C.toJacobi(Qa)));
   var i = 0;
   while (i < 10) {
-    Qa := C.add(Qa, Pa);
+    Qa := C.fromJacobi(C.addJacobi(C.toJacobi(Qa), C.toJacobi(Pa)));
     let R = C.addJacobi(Pj, Qj);
     Qj := C.addJacobi(Qj, Pj);
     assert(Qa == C.fromJacobi(Qj));
     assert(C.isEqualJacobi(Qj, R));
     assert(C.isEqualJacobi(Qj, C.toJacobi(Qa)));
-
-    let n = #fr(i * 123456789123456789123456789);
-    Qa := C.mul(Qa, n);
-    Qj := C.mulJacobi(Qj, n);
-    assert(Qa == C.fromJacobi(Qj));
     i += 1;
   };
   Qj := C.mulJacobi(Pj, C.Fr.fromNat(C.params.r - 1));
