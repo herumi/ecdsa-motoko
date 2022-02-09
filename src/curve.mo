@@ -108,7 +108,7 @@ module {
     t := Fp.add(t, z4);
     y2 == t
   };
-  public func isEqualJacobi(P1 : Jacobi, P2 : Jacobi) : Bool {
+  public func isEqual(P1 : Jacobi, P2 : Jacobi) : Bool {
     let zero1 = isZero(P1);
     let zero2 = isZero(P2);
     if (zero1) return zero2;

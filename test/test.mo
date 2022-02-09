@@ -162,23 +162,23 @@ func ec2Teset() {
   let okP3 = (#fp(0xf9308a019258c31049344f85f89d5229b531c845836f99b08601f113bce036f9), #fp(0x388f7b0f632de8140fe337e62a37f3566500a99934c2231b6cb9fd7584b8e672), #fp(1));
 
   let P = C.GJ_;
-  assert(C.isEqualJacobi(P, okP));
+  assert(C.isEqual(P, okP));
   let P2 = C.dblJacobi(P);
-  assert(C.isEqualJacobi(C.dblJacobi(P), okP2));
-  assert(C.isEqualJacobi(C.addJacobi(P,P), okP2));
+  assert(C.isEqual(C.dblJacobi(P), okP2));
+  assert(C.isEqual(C.addJacobi(P,P), okP2));
   let P3 = C.addJacobi(P2,P);
-  assert(C.isEqualJacobi(P3, okP3));
+  assert(C.isEqual(P3, okP3));
   let P4 = C.addJacobi(P3,P);
   let P5 = C.addJacobi(P4,P);
   assert(C.isZero(C.addJacobi(P,C.negJacobi(P))));
-  assert(C.isEqualJacobi(C.dblJacobi(P), P2));
-  assert(C.isEqualJacobi(C.mulJacobi(P,#fr(1)), P));
-  assert(C.isEqualJacobi(C.mulJacobi(P,#fr(2)), P2));
-  assert(C.isEqualJacobi(C.mulJacobi(P,#fr(3)), P3));
-  assert(C.isEqualJacobi(C.mulJacobi(P,#fr(4)), P4));
-  assert(C.isEqualJacobi(C.mulJacobi(P,#fr(5)), P5));
+  assert(C.isEqual(C.dblJacobi(P), P2));
+  assert(C.isEqual(C.mulJacobi(P,#fr(1)), P));
+  assert(C.isEqual(C.mulJacobi(P,#fr(2)), P2));
+  assert(C.isEqual(C.mulJacobi(P,#fr(3)), P3));
+  assert(C.isEqual(C.mulJacobi(P,#fr(4)), P4));
+  assert(C.isEqual(C.mulJacobi(P,#fr(5)), P5));
   let Q = C.mulJacobi(P,C.Fr.fromNat(C.params.r - 1));
-  assert(C.isEqualJacobi(Q, C.negJacobi(P)));
+  assert(C.isEqual(Q, C.negJacobi(P)));
   assert(C.isZero(C.addJacobi(Q,P)));
   assert(C.isZero(C.mulJacobi(P,C.Fr.fromNat(C.params.r))));
 };
@@ -197,7 +197,7 @@ func ecdsaTest() {
     };
     assert(sec == #non_zero(#fr(0x83ecb3984a4f9ff03e84d5f9c0d7f888a81833643047acc58eb6431e01d9bac8)));
     let pub = M.getPublicKey(sec);
-    assert(C.isEqualJacobi(pub, (#fp(0x653bd02ba1367e5d4cd695b6f857d1cd90d4d8d42bc155d85377b7d2d0ed2e71), #fp(0x04e8f5da403ab78decec1f19e2396739ea544e2b14159beb5091b30b418b813a), #fp(1))));
+    assert(C.isEqual(pub, (#fp(0x653bd02ba1367e5d4cd695b6f857d1cd90d4d8d42bc155d85377b7d2d0ed2e71), #fp(0x04e8f5da403ab78decec1f19e2396739ea544e2b14159beb5091b30b418b813a), #fp(1))));
 
     let rand : [Nat8] = [ 0x8a, 0xfa, 0x4a, 0x16, 0x2b, 0x7b, 0xad, 0x6c, 0x92, 0xff, 0x14, 0xf3, 0xa8, 0xbf, 0x4d, 0xb0, 0xf3, 0xc3, 0x9e, 0x90, 0xc0, 0x6f, 0x93, 0x78, 0x61, 0xf8, 0x23, 0xd2, 0x99, 0x5c, 0x74, 0xf0 ];
     let sig = switch (M.signHashed(sec, hashed.vals(), rand.vals())) {
@@ -218,7 +218,7 @@ func ecdsaTest() {
   do {
     let sec = #non_zero(#fr(0xb1aa6282b14e5ffbf6d12f783612f804e6a20d1a9734ffbb6c9923c670ee8da2));
     let pub = M.getPublicKey(sec);
-    assert(C.isEqualJacobi(pub, (#fp(0x0a09ff142d94bc3f56c5c81b75ea3b06b082c5263fbb5bd88c619fc6393dda3d), #fp(0xa53e0e930892cdb7799eea8fd45b9fff377d838f4106454289ae8a080b111f8d), #fp(1))));
+    assert(C.isEqual(pub, (#fp(0x0a09ff142d94bc3f56c5c81b75ea3b06b082c5263fbb5bd88c619fc6393dda3d), #fp(0xa53e0e930892cdb7799eea8fd45b9fff377d838f4106454289ae8a080b111f8d), #fp(1))));
     let sig = M.normalizeSignature(#fr(0x50839a97404c24ec39455b996e4888477fd61bcf0ffb960c7ffa3bef10450191), #fr(0x9671b8315bb5c1611d422d49cbbe7e80c6b463215bfad1c16ca73172155bf31a));
     assert(M.verifyHashed(pub, hashed.vals(), sig));
   };
@@ -233,7 +233,7 @@ func serializeTest() {
     switch (ret) {
       case (null) { assert(false); };
       case (?pub) {
-        assert(C.isEqualJacobi(pub, expected));
+        assert(C.isEqual(pub, expected));
       };
     };
   };
@@ -271,19 +271,19 @@ func jacobiTest() {
   Qj := C.dblJacobi(Pj);
   var Qa : C.Point = #affine(dblP);
   assert(#affine(dblP) == C.fromJacobi(Qj));
-  assert(C.isEqualJacobi(Qj, C.toJacobi(Qa)));
+  assert(C.isEqual(Qj, C.toJacobi(Qa)));
   var i = 0;
   while (i < 10) {
     Qa := C.fromJacobi(C.addJacobi(C.toJacobi(Qa), C.toJacobi(Pa)));
     let R = C.addJacobi(Pj, Qj);
     Qj := C.addJacobi(Qj, Pj);
     assert(Qa == C.fromJacobi(Qj));
-    assert(C.isEqualJacobi(Qj, R));
-    assert(C.isEqualJacobi(Qj, C.toJacobi(Qa)));
+    assert(C.isEqual(Qj, R));
+    assert(C.isEqual(Qj, C.toJacobi(Qa)));
     i += 1;
   };
   Qj := C.mulJacobi(Pj, C.Fr.fromNat(C.params.r - 1));
-  assert(C.isEqualJacobi(Qj, C.negJacobi(Pj)));
+  assert(C.isEqual(Qj, C.negJacobi(Pj)));
   assert(C.isZero(C.addJacobi(Qj, Pj)));
   assert(C.isZero(C.mulJacobi(Pj, C.Fr.fromNat(C.params.r))));
 };
