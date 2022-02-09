@@ -157,29 +157,30 @@ func ec1Test() {
 };
 
 func ec2Teset() {
-  let okP = (#fp(0x79be667ef9dcbbac55a06295ce870b07029bfcdb2dce28d959f2815b16f81798), #fp(0x483ada7726a3c4655da4fbfc0e1108a8fd17b448a68554199c47d08ffb10d4b8));
-  let okP2 = (#fp(0xc6047f9441ed7d6d3045406e95c07cd85c778e4b8cef3ca7abac09b95c709ee5), #fp(0x1ae168fea63dc339a3c58419466ceaeef7f632653266d0e1236431a950cfe52a));
-  let okP3 = (#fp(0xf9308a019258c31049344f85f89d5229b531c845836f99b08601f113bce036f9), #fp(0x388f7b0f632de8140fe337e62a37f3566500a99934c2231b6cb9fd7584b8e672));
+  let okP = (#fp(0x79be667ef9dcbbac55a06295ce870b07029bfcdb2dce28d959f2815b16f81798), #fp(0x483ada7726a3c4655da4fbfc0e1108a8fd17b448a68554199c47d08ffb10d4b8), #fp(1));
+  let okP2 = (#fp(0xc6047f9441ed7d6d3045406e95c07cd85c778e4b8cef3ca7abac09b95c709ee5), #fp(0x1ae168fea63dc339a3c58419466ceaeef7f632653266d0e1236431a950cfe52a), #fp(1));
+  let okP3 = (#fp(0xf9308a019258c31049344f85f89d5229b531c845836f99b08601f113bce036f9), #fp(0x388f7b0f632de8140fe337e62a37f3566500a99934c2231b6cb9fd7584b8e672), #fp(1));
 
-  let P = #affine(C.params.g);
-  assert(P == #affine(okP));
-  let P2 = C.add(P,P);
-  assert(P2 == #affine(okP2));
-  let P3 = C.add(P2,P);
-  assert(P3 == #affine(okP3));
-  let P4 = C.add(P3,P);
-  let P5 = C.add(P4,P);
-  assert(C.isZero(C.add(P,C.neg(P))));
-  assert(C.dbl(P) == P2);
-  assert(C.mul(P,#fr(1)) == P);
-  assert(C.mul(P,#fr(2)) == P2);
-  assert(C.mul(P,#fr(3)) == P3);
-  assert(C.mul(P,#fr(4)) == P4);
-  assert(C.mul(P,#fr(5)) == P5);
-  let Q = C.mul(P,C.Fr.fromNat(C.params.r - 1));
-  assert(Q == C.neg(P));
-  assert(C.isZero(C.add(Q,P)));
-  assert(C.isZero(C.mul(P,C.Fr.fromNat(C.params.r))));
+  let P = C.GJ_;
+  assert(C.isEqualJacobi(P, okP));
+  let P2 = C.dblJacobi(P);
+  assert(C.isEqualJacobi(C.dblJacobi(P), okP2));
+  assert(C.isEqualJacobi(C.addJacobi(P,P), okP2));
+  let P3 = C.addJacobi(P2,P);
+  assert(C.isEqualJacobi(P3, okP3));
+  let P4 = C.addJacobi(P3,P);
+  let P5 = C.addJacobi(P4,P);
+  assert(C.isZeroJacobi(C.addJacobi(P,C.negJacobi(P))));
+  assert(C.isEqualJacobi(C.dblJacobi(P), P2));
+  assert(C.isEqualJacobi(C.mulJacobi(P,#fr(1)), P));
+  assert(C.isEqualJacobi(C.mulJacobi(P,#fr(2)), P2));
+  assert(C.isEqualJacobi(C.mulJacobi(P,#fr(3)), P3));
+  assert(C.isEqualJacobi(C.mulJacobi(P,#fr(4)), P4));
+  assert(C.isEqualJacobi(C.mulJacobi(P,#fr(5)), P5));
+  let Q = C.mulJacobi(P,C.Fr.fromNat(C.params.r - 1));
+  assert(C.isEqualJacobi(Q, C.negJacobi(P)));
+  assert(C.isZeroJacobi(C.addJacobi(Q,P)));
+  assert(C.isZeroJacobi(C.mulJacobi(P,C.Fr.fromNat(C.params.r))));
 };
 
 func ecdsaTest() {
