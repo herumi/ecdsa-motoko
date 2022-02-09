@@ -19,8 +19,6 @@ module {
 	  rHalf = 0x7fffffffffffffffffffffffffffffff5d576e7357a4501ddfe92f46681b20a1;
   };	
 
-  let G_ = #affine(params.g);
-
   let p_ = params.p;
   let r_ = params.r;
   let a_ = params.a;
@@ -74,75 +72,28 @@ module {
   };
 
   // point functions
-  public func isValid((x,y) : Affine) : Bool = Fp.sqr(y) == getYsqrFromX(x);
-  public func isZero(a : Point) : Bool = a == #zero;
-  public func isNegOf(a : Point, b : Point) : Bool = a == neg(b);
-  public func neg(p : Point) : Point = switch (p) {
-    case (#zero) #zero;
-    case (#affine(c)) #affine(c.0, Fp.neg(c.1));
-  };
-  func dbl_affine((x,y) : Affine) : Affine {
-    let xx = Fp.mul(x,x);
-    let xx3 = Fp.add(Fp.add(xx, xx), xx);
-    let nume = Fp.add(xx3, a_);
-    let deno = Fp.add(y,y);
-    let L = Fp.div(nume, deno);
-    let x3 = Fp.sub(Fp.mul(L, L), Fp.add(x,x));
-    let y3 = Fp.sub(Fp.mul(L, Fp.sub(x, x3)), y);
-    (x3, y3)
-  };
-  public func dbl(a : Point) : Point = switch (a) {
-    case (#zero) #zero;
-    case (#affine(c)) #affine(dbl_affine(c));
-  };
-  public func add(a : Point, b : Point) : Point = switch (a, b) {
-    case (#zero, b) return b;
-    case (a, #zero) return a;
-    case (#affine(ax,ay), #affine(bx,by)) {
-      if (ax == bx) {
-        // P + (-P) or P + P 
-        return if (ay == Fp.neg(by)) #zero else dbl(a);
-      } else {
-        let L = Fp.div(Fp.sub(ay, by), Fp.sub(ax, bx));
-        let x3 = Fp.sub(Fp.mul(L, L), Fp.add(ax, bx));
-        let y3 = Fp.sub(Fp.mul(L, Fp.sub(ax, x3)), ay);
-        return #affine(x3, y3);
-      };
-    };
-  };
-  public func mul(a : Point, #fr(x) : FrElt) : Point {
-    fromJacobi(mulJacobi(toJacobi(a), #fr(x)))
-/*
-    let bs = Binary.fromNatReversed(x);
-    let n = bs.size();
-    var ret : Point = #zero;
-    var i = 0;
-    while (i < n) {
-      let b = bs[n - 1 - i];
-      ret := dbl(ret);
-      if (b) ret := add(ret, a);
-      i += 1;
-    };
-    ret
-*/
-  };
-  public func mul_base(e : FrElt) : Point = mul(G_, e);
-
+  public func isValidAffine((x,y) : Affine) : Bool = Fp.sqr(y) == getYsqrFromX(x);
   public type Jacobi = (FpElt, FpElt, FpElt);
   public let zeroJ = (#fp(0), #fp(0), #fp(0));
-  public func isZeroJacobi((_, _, z) : Jacobi) : Bool = z == #fp(0);
+  public let G_ = (params.g.0, params.g.1, #fp(1));
+  public func isZero((_, _, z) : Jacobi) : Bool = z == #fp(0);
   public func toJacobi(a : Point) : Jacobi = switch (a) {
     case (#zero) zeroJ;
     case (#affine(x, y)) (x, y, #fp(1));
   };
-  public func fromJacobi((x, y, z) : Jacobi) : Point {
-    if (z == #fp(0)) return #zero;
+  public func normalize((x, y, z) : Jacobi) : Jacobi {
+    if (z == #fp(0)) return (x, y, z);
     let rz = Fp.inv(z);
     let rz2 = Fp.sqr(rz);
-    #affine((Fp.mul(x, rz2), Fp.mul(Fp.mul(y, rz2), rz)))
+    (Fp.mul(x, rz2), Fp.mul(Fp.mul(y, rz2), rz), #fp(1))
+  };
+  public func fromJacobi(a : Jacobi) : Point {
+    let (x, y, z) = normalize(a);
+    if (z == #fp(0)) return #zero;
+    #affine(x, y)
   };
   // y^2 == x(x^2 + a z^4) + b z^6
-  public func isValidJacobi((x, y, z) : Jacobi) : Bool {
+  public func isValid((x, y, z) : Jacobi) : Bool {
     let x2 = Fp.sqr(x);
     let y2 = Fp.sqr(y);
     let z2 = Fp.sqr(z);
@@ -155,9 +106,9 @@ module {
     t := Fp.add(t, z4);
     y2 == t
   };
-  public func isEqualJacobi(P1 : Jacobi, P2 : Jacobi) : Bool {
-    let zero1 = isZeroJacobi(P1);
-    let zero2 = isZeroJacobi(P2);
+  public func isEqual(P1 : Jacobi, P2 : Jacobi) : Bool {
+    let zero1 = isZero(P1);
+    let zero2 = isZero(P2);
     if (zero1) return zero2;
     if (zero2) return false;
     let (x1, y1, z1) = P1;
@@ -173,8 +124,8 @@ module {
     t2 := Fp.mul(t2, z1);
     t1 == t2
   };
-  public func negJacobi((x, y, z) : Jacobi) : Jacobi = (x, Fp.neg(y), z);
-  public func dblJacobi((x, y, z) : Jacobi) : Jacobi {
+  public func neg((x, y, z) : Jacobi) : Jacobi = (x, Fp.neg(y), z);
+  public func dbl((x, y, z) : Jacobi) : Jacobi {
     if (z == #fp(0)) return zeroJ;
     var x2 = Fp.sqr(x);
     var y2 = Fp.sqr(y);
@@ -198,13 +149,12 @@ module {
     ry := Fp.sub(ry, y2);
     (rx, ry, rz)
   };
-  public func addJacobi((px, py, pz) : Jacobi, (qx,qy, qz) : Jacobi) : Jacobi {
+  public func add((px, py, pz) : Jacobi, (qx,qy, qz) : Jacobi) : Jacobi {
     if (pz == #fp(0)) return (qx, qy, qz);
     if (qz == #fp(0)) return (px, py, pz);
     let isPzOne = pz == #fp(1);
     let isQzOne = qz == #fp(1);
-    var r = #fp(1);
-    if (not isPzOne) r := Fp.sqr(pz);
+    var r = if (isPzOne) #fp(1) else Fp.sqr(pz);
     var U1 = #fp(0);
     var S1 = #fp(0);
     var H = #fp(0);
@@ -236,9 +186,9 @@ module {
       r := Fp.mul(r, qy);
     };
     r := Fp.sub(r, S1);
-    if (H == #fp(1)) {
+    if (H == #fp(0)) {
       if (r == #fp(0)) {
-        return dblJacobi((px, py, pz));
+        return dbl((px, py, pz));
       } else {
         return zeroJ;
       };
@@ -273,19 +223,20 @@ module {
     ry := Fp.sub(U1, H3);
     (rx, ry, rz)
   };
-  public func mulJacobi(a : Jacobi, #fr(x) : FrElt) : Jacobi {
+  public func mul(a : Jacobi, #fr(x) : FrElt) : Jacobi {
     let bs = Binary.fromNatReversed(x);
     let n = bs.size();
     var ret = zeroJ;
     var i = 0;
     while (i < n) {
       let b = bs[n - 1 - i];
-      ret := dblJacobi(ret);
-      if (b) ret := addJacobi(ret, a);
+      ret := dbl(ret);
+      if (b) ret := add(ret, a);
       i += 1;
     };
     ret
   };
+  public func mul_base(x : FrElt) : Jacobi = mul(G_, x);
   public func putPoint(a : Point) {
     switch (a) {
       case(#zero) {

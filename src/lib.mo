@@ -23,7 +23,7 @@ module {
     SHA2.fromIter(#sha256, iter)
   };
 
-  public type PublicKey = Curve.Affine;
+  public type PublicKey = Curve.Jacobi;
   public type SecretKey = { #non_zero : Curve.FrElt; };
   public type Signature = (Curve.FrElt, Curve.FrElt);
 
@@ -39,13 +39,10 @@ module {
     if (s == #fr(0)) null else ?#non_zero(s)
   };
   /// Get public key from sec.
-  /// public key (x, y) is an affine point of elliptic curve
+  /// public key is a point of elliptic curve
   public func getPublicKey(#non_zero(s) : SecretKey) : PublicKey {
     if (s == #fr(0)) Prelude.unreachable(); // type error
-    switch (Curve.mul_base(s)) {
-      case (#zero) Prelude.unreachable(); // because s is non-zero
-      case (#affine(c)) c;
-    }
+    Curve.mul_base(s)
   };
   /// Sign hashed by sec and rand return lower S signature (r, s) such that s < rHalf
   /// hashed : 32-byte SHA-256 value of a message.
@@ -53,7 +50,7 @@ module {
   public func signHashed(#non_zero(sec) : SecretKey, hashed : Iter.Iter<Nat8>, rand : Iter.Iter<Nat8>) : ?Signature {
     if (sec == #fr(0)) Prelude.unreachable(); // type error
     let k = getExponent(rand);
-    let x = switch (Curve.mul_base(k)) {
+    let x = switch (Curve.fromJacobi(Curve.mul_base(k))) {
       case (#zero) return null; // k was 0, bad luck with rand
       case (#affine(x, _)) x;
     };
@@ -78,8 +75,8 @@ module {
     let w = Fr.inv(s);
     let u1 = Fr.mul(z, w);
     let u2 = Fr.mul(r, w);
-    let R = Curve.add(Curve.mul_base(u1),Curve.mul(#affine(pub),u2));
-    return switch (R) {
+    let R = Curve.add(Curve.mul_base(u1),Curve.mul(pub, u2));
+    switch (Curve.fromJacobi(R)) {
       case (#zero) false;
       case (#affine(x,_)) Fr.fromNat(Fp.toNat(x)) == r
     };
@@ -93,7 +90,7 @@ module {
     verifyHashed(pub, sha2(msg).vals(), sig)
   };
   /// return 0x04 + bigEndian(x) + bigEndian(y)
-  public func serializePublicKeyUncompressed((x,y) : PublicKey) : Blob {
+  public func serializePublicKeyUncompressed((x, y) : Curve.Affine) : Blob {
     let prefix = 0x04 : Nat8;
     let n = 32;
     let x_bytes = Util.toBigEndianPad(n, Fp.toNat(x));
@@ -112,7 +109,7 @@ module {
   };
   /// return 0x02 + bigEndian(x) if y is even
   /// return 0x03 + bigEndian(x) if y is odd
-  public func serializePublicKeyCompressed((x,y) : PublicKey) : Blob {
+  public func serializePublicKeyCompressed((x, y) : Curve.Affine) : Blob {
     let prefix : Nat8 = if ((Fp.toNat(y) % 2) == 0) 0x02 else 0x03;
     let n = 32;
     let x_bytes = Util.toBigEndianPad(n, Fp.toNat(x));
@@ -146,8 +143,8 @@ module {
     if (x >= Curve.params.p) return null;
     if (y >= Curve.params.p) return null;
     let pub = (#fp(x), #fp(y));
-    if (not Curve.isValid(pub)) return null;
-    return ?pub;
+    if (not Curve.isValidAffine(pub)) return null;
+    ?(#fp(x), #fp(y), #fp(1));
   };
   /// Deserialize a compressed public key.
   public func deserializePublicKeyCompressed(b : Blob) : ?PublicKey {
@@ -164,7 +161,7 @@ module {
     let x = #fp(x_);
     return switch (Curve.getYfromX(x, even)) {
       case (null) null;
-      case (?y) ?(x, y);
+      case (?y) ?(x, y, #fp(1));
     };
   };
   /// serialize to DER format
