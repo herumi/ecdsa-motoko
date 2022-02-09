@@ -151,7 +151,7 @@ module {
     ry := Fp.sub(ry, y2);
     (rx, ry, rz)
   };
-  public func addJacobi((px, py, pz) : Jacobi, (qx,qy, qz) : Jacobi) : Jacobi {
+  public func add((px, py, pz) : Jacobi, (qx,qy, qz) : Jacobi) : Jacobi {
     if (pz == #fp(0)) return (qx, qy, qz);
     if (qz == #fp(0)) return (px, py, pz);
     let isPzOne = pz == #fp(1);
@@ -233,7 +233,7 @@ module {
     while (i < n) {
       let b = bs[n - 1 - i];
       ret := dbl(ret);
-      if (b) ret := addJacobi(ret, a);
+      if (b) ret := add(ret, a);
       i += 1;
     };
     ret

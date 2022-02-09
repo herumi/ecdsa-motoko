@@ -75,7 +75,7 @@ module {
     let w = Fr.inv(s);
     let u1 = Fr.mul(z, w);
     let u2 = Fr.mul(r, w);
-    let R = Curve.addJacobi(Curve.mul_base(u1),Curve.mulJacobi(pub, u2));
+    let R = Curve.add(Curve.mul_base(u1),Curve.mulJacobi(pub, u2));
     switch (Curve.fromJacobi(R)) {
       case (#zero) false;
       case (#affine(x,_)) Fr.fromNat(Fp.toNat(x)) == r

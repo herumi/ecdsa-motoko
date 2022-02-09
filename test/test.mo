@@ -147,13 +147,13 @@ func ec1Test() {
   let Z = C.zeroJ;
   assert(C.isZero(Z));
   assert(C.isZero(C.negJacobi(Z)));
-  assert(C.isZero(C.addJacobi(Z,Z)));
+  assert(C.isZero(C.add(Z,Z)));
 
   let P = C.GJ_;
   assert(not C.isZero(P));
   let Q = C.negJacobi(P);
   assert(not C.isZero(Q));
-  assert(C.isZero(C.addJacobi(P,Q)));
+  assert(C.isZero(C.add(P,Q)));
 };
 
 func ec2Teset() {
@@ -165,12 +165,12 @@ func ec2Teset() {
   assert(C.isEqual(P, okP));
   let P2 = C.dbl(P);
   assert(C.isEqual(C.dbl(P), okP2));
-  assert(C.isEqual(C.addJacobi(P,P), okP2));
-  let P3 = C.addJacobi(P2,P);
+  assert(C.isEqual(C.add(P,P), okP2));
+  let P3 = C.add(P2,P);
   assert(C.isEqual(P3, okP3));
-  let P4 = C.addJacobi(P3,P);
-  let P5 = C.addJacobi(P4,P);
-  assert(C.isZero(C.addJacobi(P,C.negJacobi(P))));
+  let P4 = C.add(P3,P);
+  let P5 = C.add(P4,P);
+  assert(C.isZero(C.add(P,C.negJacobi(P))));
   assert(C.isEqual(C.dbl(P), P2));
   assert(C.isEqual(C.mulJacobi(P,#fr(1)), P));
   assert(C.isEqual(C.mulJacobi(P,#fr(2)), P2));
@@ -179,7 +179,7 @@ func ec2Teset() {
   assert(C.isEqual(C.mulJacobi(P,#fr(5)), P5));
   let Q = C.mulJacobi(P,C.Fr.fromNat(C.params.r - 1));
   assert(C.isEqual(Q, C.negJacobi(P)));
-  assert(C.isZero(C.addJacobi(Q,P)));
+  assert(C.isZero(C.add(Q,P)));
   assert(C.isZero(C.mulJacobi(P,C.Fr.fromNat(C.params.r))));
 };
 
@@ -267,16 +267,16 @@ func jacobiTest() {
   let Pj = C.toJacobi(Pa);
   assert(Pa == C.fromJacobi(Pj));
   var Qj = C.negJacobi(Pj);
-  assert(C.isZero(C.addJacobi(Pj, Qj)));
+  assert(C.isZero(C.add(Pj, Qj)));
   Qj := C.dbl(Pj);
   var Qa : C.Point = #affine(dblP);
   assert(#affine(dblP) == C.fromJacobi(Qj));
   assert(C.isEqual(Qj, C.toJacobi(Qa)));
   var i = 0;
   while (i < 10) {
-    Qa := C.fromJacobi(C.addJacobi(C.toJacobi(Qa), C.toJacobi(Pa)));
-    let R = C.addJacobi(Pj, Qj);
-    Qj := C.addJacobi(Qj, Pj);
+    Qa := C.fromJacobi(C.add(C.toJacobi(Qa), C.toJacobi(Pa)));
+    let R = C.add(Pj, Qj);
+    Qj := C.add(Qj, Pj);
     assert(Qa == C.fromJacobi(Qj));
     assert(C.isEqual(Qj, R));
     assert(C.isEqual(Qj, C.toJacobi(Qa)));
@@ -284,7 +284,7 @@ func jacobiTest() {
   };
   Qj := C.mulJacobi(Pj, C.Fr.fromNat(C.params.r - 1));
   assert(C.isEqual(Qj, C.negJacobi(Pj)));
-  assert(C.isZero(C.addJacobi(Qj, Pj)));
+  assert(C.isZero(C.add(Qj, Pj)));
   assert(C.isZero(C.mulJacobi(Pj, C.Fr.fromNat(C.params.r))));
 };
 
