@@ -126,7 +126,7 @@ module {
     t2 := Fp.mul(t2, z1);
     t1 == t2
   };
-  public func negJacobi((x, y, z) : Jacobi) : Jacobi = (x, Fp.neg(y), z);
+  public func neg((x, y, z) : Jacobi) : Jacobi = (x, Fp.neg(y), z);
   public func dbl((x, y, z) : Jacobi) : Jacobi {
     if (z == #fp(0)) return zeroJ;
     var x2 = Fp.sqr(x);

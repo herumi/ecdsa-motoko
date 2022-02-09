@@ -146,12 +146,12 @@ func gcdTest(f : (Int, Int) -> (Int, Int, Int)) {
 func ec1Test() {
   let Z = C.zeroJ;
   assert(C.isZero(Z));
-  assert(C.isZero(C.negJacobi(Z)));
+  assert(C.isZero(C.neg(Z)));
   assert(C.isZero(C.add(Z,Z)));
 
   let P = C.GJ_;
   assert(not C.isZero(P));
-  let Q = C.negJacobi(P);
+  let Q = C.neg(P);
   assert(not C.isZero(Q));
   assert(C.isZero(C.add(P,Q)));
 };
@@ -170,7 +170,7 @@ func ec2Teset() {
   assert(C.isEqual(P3, okP3));
   let P4 = C.add(P3,P);
   let P5 = C.add(P4,P);
-  assert(C.isZero(C.add(P,C.negJacobi(P))));
+  assert(C.isZero(C.add(P,C.neg(P))));
   assert(C.isEqual(C.dbl(P), P2));
   assert(C.isEqual(C.mulJacobi(P,#fr(1)), P));
   assert(C.isEqual(C.mulJacobi(P,#fr(2)), P2));
@@ -178,7 +178,7 @@ func ec2Teset() {
   assert(C.isEqual(C.mulJacobi(P,#fr(4)), P4));
   assert(C.isEqual(C.mulJacobi(P,#fr(5)), P5));
   let Q = C.mulJacobi(P,C.Fr.fromNat(C.params.r - 1));
-  assert(C.isEqual(Q, C.negJacobi(P)));
+  assert(C.isEqual(Q, C.neg(P)));
   assert(C.isZero(C.add(Q,P)));
   assert(C.isZero(C.mulJacobi(P,C.Fr.fromNat(C.params.r))));
 };
@@ -266,7 +266,7 @@ func jacobiTest() {
   let Pa = #affine(C.params.g);
   let Pj = C.toJacobi(Pa);
   assert(Pa == C.fromJacobi(Pj));
-  var Qj = C.negJacobi(Pj);
+  var Qj = C.neg(Pj);
   assert(C.isZero(C.add(Pj, Qj)));
   Qj := C.dbl(Pj);
   var Qa : C.Point = #affine(dblP);
@@ -283,7 +283,7 @@ func jacobiTest() {
     i += 1;
   };
   Qj := C.mulJacobi(Pj, C.Fr.fromNat(C.params.r - 1));
-  assert(C.isEqual(Qj, C.negJacobi(Pj)));
+  assert(C.isEqual(Qj, C.neg(Pj)));
   assert(C.isZero(C.add(Qj, Pj)));
   assert(C.isZero(C.mulJacobi(Pj, C.Fr.fromNat(C.params.r))));
 };
