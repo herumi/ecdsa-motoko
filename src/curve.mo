@@ -17,7 +17,17 @@ module {
     g = (#fp(0x79be667ef9dcbbac55a06295ce870b07029bfcdb2dce28d959f2815b16f81798), #fp(0x483ada7726a3c4655da4fbfc0e1108a8fd17b448a68554199c47d08ffb10d4b8));
 	  // rHalf_ = (r_ + 1) / 2;
 	  rHalf = 0x7fffffffffffffffffffffffffffffff5d576e7357a4501ddfe92f46681b20a1;
-  };	
+
+      // for GLV
+      B00 : Int = 0x3086d221a7d46bcde86c90e49284eb15;
+      B01 : Int = -0xe4437ed6010e88286f547fa90abfe4c3;
+      B10 : Int = 0x114ca50f7a8e2f3f657c1108d9d44cfd8;
+      rw = #fp(55594575648329892869085402983802832744385952214688224221778511981742606582254);
+      SHIFT256 : Int = 0x10000000000000000000000000000000000000000000000000000000000000000;
+      v0 : Int = 64502973549206556628585045361533709077;
+      v1 : Int = 303414439467246543595250775667605759172;
+
+  };
 
   let p_ = params.p;
   let r_ = params.r;
@@ -236,6 +246,19 @@ module {
     };
     ret
   };
+
+  func mulLambda((x, y, z) : Jacobi) : Jacobi = (Fp.mul(x, params.rw), y, z);
+  func split(x_ : Nat) : (Int, Int) {
+    let x = x_ : Int;
+    let t = (x * params.v0) / params.SHIFT256;
+    var b = (x * params.v1) / params.SHIFT256;
+    let a = x - (t * params.B00 + b * params.B10);
+    b := -(t * params.B01 + b * params.B00);
+    (a, b)
+  };
+//  public mulGLV(x : Jacobi, #fr(y) : FrElt) : Jacobi {
+//  };
+
   public func mul_base(x : FrElt) : Jacobi = mul(G_, x);
   public func putPoint(a : Point) {
     switch (a) {
