@@ -162,7 +162,7 @@ module {
     ry := Fp.sub(ry, y2);
     (rx, ry, rz)
   };
-  public func add((px, py, pz) : Jacobi, (qx,qy, qz) : Jacobi) : Jacobi {
+  public func add((px, py, pz) : Jacobi, (qx, qy, qz) : Jacobi) : Jacobi {
     if (pz == #fp(0)) return (qx, qy, qz);
     if (qz == #fp(0)) return (px, py, pz);
     let isPzOne = pz == #fp(1);
@@ -236,7 +236,8 @@ module {
     ry := Fp.sub(U1, H3);
     (rx, ry, rz)
   };
-  public func mul(a : Jacobi, #fr(x) : FrElt) : Jacobi {
+  public func sub((px, py, pz) : Jacobi, (qx, qy, qz) : Jacobi) : Jacobi = add((px, py, pz), (qx, Fp.neg(qy), qz));
+  public func mul_old(a : Jacobi, #fr(x) : FrElt) : Jacobi {
     let bs = Binary.fromNatReversed(x);
     let n = bs.size();
     var ret = zeroJ;
@@ -260,7 +261,7 @@ module {
     (a, b)
   };
   // splitN = 2, w = 5
-  public func mulGlv(x : Jacobi, #fr(y) : FrElt) : Jacobi {
+  public func mul(x : Jacobi, #fr(y) : FrElt) : Jacobi {
     let w = 5;
     let tblSize : Nat = 2 ** (w - 2);
     let u = split(y);
@@ -269,37 +270,38 @@ module {
     let maxBit = Nat.max(naf0.size(), naf1.size());
     var tbl0 = Buffer.Buffer<Jacobi>(tblSize);
     var tbl1 = Buffer.Buffer<Jacobi>(tblSize);
-    tbl0.put(0, x);
-    tbl1.put(0, mulLambda(x));
+    tbl0.add(x);
+    tbl1.add(mulLambda(x));
     do {
       let P2 = dbl(x);
       var j = 1;
       while (j < tblSize) {
-        tbl0.put(j, add(tbl0.get(j - 1), P2));
-        tbl1.put(j, mulLambda(tbl0.get(j)));
+        tbl0.add(add(tbl0.get(j - 1), P2));
+        tbl1.add(mulLambda(tbl0.get(j)));
         j += 1;
       };
     };
     var z = zeroJ;
-    let addTbl = func(tbl : Buffer.Buffer<Jacobi>, naf : [Int], i : Nat) {
-      if (i >= naf.size()) return;
+    let addTbl = func(z : Jacobi, tbl : Buffer.Buffer<Jacobi>, naf : [Int], i : Nat) : Jacobi {
+      if (i >= naf.size()) return z;
       let n = naf[i];
       if (n > 0) {
         let idx = Int.abs(n - 1) / 2;
-        z := add(z, tbl.get(idx));
+        return add(z, tbl.get(idx));
       } else if (n < 0) {
         let idx = Int.abs(-n - 1) / 2;
-        z := add(z, neg(tbl.get(idx)));
+        return add(z, neg(tbl.get(idx)));
       };
+      return z;
     };
     do {
       var i = 0;
       while (i < maxBit) {
         let bit = maxBit - 1 - i : Nat;
         z := dbl(z);
-        addTbl(tbl0, naf0, bit);
-        addTbl(tbl1, naf1, bit);
-        i += i;
+        z := addTbl(z, tbl0, naf0, bit);
+        z := addTbl(z, tbl1, naf1, bit);
+        i += 1;
       };
     };
     z;
