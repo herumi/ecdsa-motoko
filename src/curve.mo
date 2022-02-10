@@ -256,6 +256,7 @@ module {
     b := -(t * params.B01 + b * params.B00);
     (a, b)
   };
+  // splitN = 2, w = 5
 //  public mulGLV(x : Jacobi, #fr(y) : FrElt) : Jacobi {
 //  };
 
