@@ -2,6 +2,9 @@ import Field "field";
 import Hex "hex";
 import Binary "binary";
 import Debug "mo:base/Debug";
+import Nat "mo:base/Nat";
+import Buffer "mo:base/Buffer";
+import Int "mo:base/Int";
 
 module {
   public type FpElt = { #fp : Nat; };
@@ -248,7 +251,7 @@ module {
   };
 
   func mulLambda((x, y, z) : Jacobi) : Jacobi = (Fp.mul(x, params.rw), y, z);
-  func split(x_ : Nat) : (Int, Int) {
+  func split(x_ : Nat) : (Int,Int) {
     let x = x_ : Int;
     let t = (x * params.v0) / params.SHIFT256;
     var b = (x * params.v1) / params.SHIFT256;
@@ -257,8 +260,50 @@ module {
     (a, b)
   };
   // splitN = 2, w = 5
-//  public mulGLV(x : Jacobi, #fr(y) : FrElt) : Jacobi {
-//  };
+  public func mulGlv(x : Jacobi, #fr(y) : FrElt) : Jacobi {
+    let w = 5;
+    let tblSize : Nat = 2 ** (w - 2);
+    let u = split(y);
+    let naf0 = Binary.toNafWidth(u.0, w);
+    let naf1 = Binary.toNafWidth(u.1, w);
+    let maxBit = Nat.max(naf0.size(), naf1.size());
+    var tbl0 = Buffer.Buffer<Jacobi>(tblSize);
+    var tbl1 = Buffer.Buffer<Jacobi>(tblSize);
+    tbl0.put(0, x);
+    tbl1.put(0, mulLambda(x));
+    do {
+      let P2 = dbl(x);
+      var j = 1;
+      while (j < tblSize) {
+        tbl0.put(j, add(tbl0.get(j - 1), P2));
+        tbl1.put(j, mulLambda(tbl0.get(j)));
+        j += 1;
+      };
+    };
+    var z = zeroJ;
+    let addTbl = func(tbl : Buffer.Buffer<Jacobi>, naf : [Int], i : Nat) {
+      if (i >= naf.size()) return;
+      let n = naf[i];
+      if (n > 0) {
+        let idx = Int.abs(n - 1) / 2;
+        z := add(z, tbl.get(idx));
+      } else if (n < 0) {
+        let idx = Int.abs(-n - 1) / 2;
+        z := add(z, neg(tbl.get(idx)));
+      };
+    };
+    do {
+      var i = 0;
+      while (i < maxBit) {
+        let bit = maxBit - 1 - i : Nat;
+        z := dbl(z);
+        addTbl(tbl0, naf0, bit);
+        addTbl(tbl1, naf1, bit);
+        i += i;
+      };
+    };
+    z;
+  };
 
   public func mul_base(x : FrElt) : Jacobi = mul(G_, x);
   public func putPoint(a : Point) {
