@@ -3,3 +3,4 @@ Xeon Platinum 8280 CPU 2.70GHz(turbo-off)
 2021/01/23 gen 1.7 sec / sign 1.75 sec
 2022/02/01 gen 0.19 sec / sign 0.20 sec (use mulJacobi)
 2022/02/10 gen 0.19 sec / sign 0.20 sec / verify 0.47 sec
+2022/02/11 gen 0.11 sec / sign 0.12 sec / verify 0.25 sec (use GLV)
