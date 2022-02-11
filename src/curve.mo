@@ -282,25 +282,24 @@ module {
       };
     };
     var z = zeroJ;
-    let addTbl = func(z : Jacobi, tbl : Buffer.Buffer<Jacobi>, naf : [Int], i : Nat) : Jacobi {
-      if (i >= naf.size()) return z;
+    let addTbl = func(tbl : Buffer.Buffer<Jacobi>, naf : [Int], i : Nat) {
+      if (i >= naf.size()) return;
       let n = naf[i];
       if (n > 0) {
         let idx = Int.abs(n - 1) / 2;
-        return add(z, tbl.get(idx));
+        z := add(z, tbl.get(idx));
       } else if (n < 0) {
         let idx = Int.abs(-n - 1) / 2;
-        return add(z, neg(tbl.get(idx)));
+        z := add(z, neg(tbl.get(idx)));
       };
-      return z;
     };
     do {
       var i = 0;
       while (i < maxBit) {
         let bit = maxBit - 1 - i : Nat;
         z := dbl(z);
-        z := addTbl(z, tbl0, naf0, bit);
-        z := addTbl(z, tbl1, naf1, bit);
+        addTbl(tbl0, naf0, bit);
+        addTbl(tbl1, naf1, bit);
         i += 1;
       };
     };
