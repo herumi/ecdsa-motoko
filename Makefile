@@ -18,9 +18,13 @@ bench-gen:
 bench-sign:
 	$(MAKE) -C test bench-sign
 
+bench-verify:
+	$(MAKE) -C test bench-verify
+
 bench:
 	$(MAKE) bench-gen
 	$(MAKE) bench-sign
+	$(MAKE) bench-verify
 
 test-hmac:
 	$(MAKE) -C test test-hmac

@@ -45,6 +45,21 @@ bench-sign:
 	$(MAKE) bench-sign10
 	$(MAKE) bench-sign20
 
+bench-verify10.mo: bench-verify.tmpl
+	sed 's/@@@/10/' < bench-verify.tmpl > bench-verify10.mo
+
+bench-verify20.mo: bench-verify.tmpl
+	sed 's/@@@/20/' < bench-verify.tmpl > bench-verify20.mo
+
+bench-verify10: bench-verify10.wasm
+	$(TIME) wasmtime $<
+bench-verify20: bench-verify20.wasm
+	$(TIME) wasmtime $<
+
+bench-verify:
+	$(MAKE) bench-verify10
+	$(MAKE) bench-verify20
+
 clean:
 	rm -rf *.wasm
 
