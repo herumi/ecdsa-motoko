@@ -190,18 +190,23 @@ module {
   /// deserialize DER to signature
   public func deserializeSignatureDer(b : Blob) : ?Signature {
     let a = Blob.toArray(b);
-    if (a[0] != 0x30) return null;
+    if (a.size() <= 2 or a[0] != 0x30) return null;
     if (a.size() != Nat8.toNat(a[1]) + 2) return null;
     let read = func(a : [Nat8], begin : Nat) : ?(Nat, Nat) {
+      if (a.size() < 2) return null;
       if (a[begin] != 0x02) return null;
       let n = Nat8.toNat(a[begin + 1]);
       if (a.size() < begin + 1 + n) return null;
+      let top = a[begin + 2];
+      if (top >= 0x80) return null;
+      if (top == 0 and n > 1 and (a[begin + 2 + 1] & 0x80) == 0) return null;
       var v = 0;
       var i = 0;
       while (i < n) {
         v := v * 256 + Nat8.toNat(a[begin + 2 + i]);
         i += 1;
       };
+      if (v >= Curve.params.r) return null;
       ?(n + 2, v)
     };
     return switch (read(a, 2)) {
