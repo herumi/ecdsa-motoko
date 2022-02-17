@@ -45,4 +45,9 @@ module {
     };
     Array.tabulate<Nat8>(len, ith)
   };
+  /// return subarray a[begin:end)
+  public func subArray(a : [Nat8], begin : Nat, size : Nat) : [Nat8] {
+    let ith = func(i : Nat) : Nat8 = a[begin + i];
+    Array.tabulate<Nat8>(size, ith)
+  };
 }
