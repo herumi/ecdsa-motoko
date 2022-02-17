@@ -437,6 +437,16 @@ func ngEdgeTest() {
   for (b in badTbl.vals()) {
     assert(M.deserializeSignatureDer(Blob.fromArray(b)) == null);
   };
+  do {
+    let correct : [Nat8] = [ 0x30, 0x06, 0x02, 0x01, 0x00, 0x02, 0x01, 0x00 ];
+    let n = correct.size();
+    var i = 0;
+    while (i < n) {
+      let b = Blob.fromArray(Util.subArray(correct, 0, i));
+      assert(M.deserializeSignatureDer(b) == null);
+      i += 1;
+    };
+  };
 };
 
 toBigEndianPadTest();

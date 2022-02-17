@@ -193,7 +193,7 @@ module {
     if (a.size() <= 2 or a[0] != 0x30) return null;
     if (a.size() != Nat8.toNat(a[1]) + 2) return null;
     let read = func(a : [Nat8], begin : Nat) : ?(Nat, Nat) {
-      if (a.size() < 2) return null;
+      if (a.size() < begin + 2) return null;
       if (a[begin] != 0x02) return null;
       let n = Nat8.toNat(a[begin + 1]);
       if (a.size() < begin + 1 + n) return null;
