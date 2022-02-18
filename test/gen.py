@@ -59,25 +59,28 @@ def addPre():
 # return x-y
 # assume x>=y
 def subPre():
-	print('func subPre(x : F, y : F) : F {')
+	print('func subPre(x : F, y : F) : (F, Nat64) {')
 	for i in range(N):
 		s = '' if i == 0 else f' -% c{i-1}'
-		if i < N-1:
-			print(f'  let t{i} = x.{i} -% y.{i}{s};')
-			print(f'  let z{i} = t{i} & 0xffffffff;')
-			print(f'  let c{i} = (t{i} >> 32)&1;')
-		else:
-			print(f'  let z{i} = x.{i} -% y.{i}{s};')
-	print(f'  {pack("z")}')
+		print(f'  let t{i} = x.{i} -% y.{i}{s};')
+		print(f'  let z{i} = t{i} & 0xffffffff;')
+		print(f'  let c{i} = (t{i} >> 32)&1;')
+	print(f'  ({pack("z")}, c{N-1})')
 	print('};')
 
 # return (x+y)%p
 def add():
-	code="""func add(x : F, y : F) : F {
+	print("""func add(x : F, y : F) : F {
   let z = addPre(x,y);
-  if (cmp(z, p) != #less) subPre(z, p) else z
-};"""
-	print(code)
+  if (cmp(z, p) != #less) subPre(z, p).0 else z
+};""")
+
+# return (x-y)%p
+def sub():
+	print("""func sub(x : F, y : F) : F {
+  let (z, CF) = subPre(x,y);
+  if (CF == 0) z else addPre(z, p)
+};""")
 
 header="""import Debug "mo:base/Debug";
 import Nat "mo:base/Nat";
@@ -118,13 +121,14 @@ cmp()
 subPre()
 addPre()
 add()
+sub()
 
 
 print("""
 let a : F = (5,2,3);
 let b : F = (4,5,6);
-let c = subPre(a, b);
-let d = addPre(c, b);
+let c = sub(a, b);
+let d = add(c, b);
 Debug.print("c=" # toStr(c));
 Debug.print("d=" # toStr(d));
 Debug.print("d=" # Nat.toText(toNat(d)));
