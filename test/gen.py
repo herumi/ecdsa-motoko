@@ -1,8 +1,8 @@
 N = 3
 
-def pack(v):
+def pack(v, n = N):
 	s = ''
-	for i in range(N):
+	for i in range(n):
 		if i == 0:
 			s = f'({v}0'
 		else:
@@ -17,11 +17,11 @@ def toStr():
 	print('  s#")"')
 	print('};')
 
-def toNat():
-	print('func toNat(x : F) : Nat {')
-	print(f'  var v = Nat64.toNat(x.{N-1});')
-	for i in range(1, N):
-		print(f'  v := v * 0x100000000 + Nat64.toNat(x.{N-1-i});')
+def toNat(name,n=N):
+	print(f'func {name}(x : {"F" if n==N else "FD"}) : Nat {{')
+	print(f'  var v = Nat64.toNat(x.{n-1});')
+	for i in range(1, n):
+		print(f'  v := v * 0x100000000 + Nat64.toNat(x.{n-1-i});')
 	print('  v')
 	print('};')
 
@@ -44,13 +44,14 @@ def cmp():
 
 # return x+y
 def addPre():
+	print(f'// ret.{N-1} may has (1<<32) as CF')
 	print('func addPre(x : F, y : F) : F {')
 	for i in range(N):
 		s = '' if i == 0 else f' +% c{i-1}'
 		if i < N-1:
 			print(f'  let t{i} = x.{i} +% y.{i}{s};')
 			print(f'  let z{i} = t{i} & 0xffffffff;')
-			print(f'  let c{i} = (t{i} >> 32)&1;')
+			print(f'  let c{i} = t{i} >> 32;')
 		else:
 			print(f'  let z{i} = x.{i} +% y.{i}{s};')
 	print(f'  {pack("z")}')
@@ -64,8 +65,26 @@ def subPre():
 		s = '' if i == 0 else f' -% c{i-1}'
 		print(f'  let t{i} = x.{i} -% y.{i}{s};')
 		print(f'  let z{i} = t{i} & 0xffffffff;')
-		print(f'  let c{i} = (t{i} >> 32)&1;')
+		print(f'  let c{i} = t{i} >> 63;')
 	print(f'  ({pack("z")}, c{N-1})')
+	print('};')
+
+# return x*y
+def mulPre():
+	print('func mulPre(x : F, y : F) : FD {')
+	print('  var t : Nat64 = 0;')
+	print('  var L : Nat64 = 0;')
+	print('  var H : Nat64 = 0;')
+	for i in range(N*2-1):
+		for j in range(N+1):
+			if j < N and 0 <= i-j < N:
+				print(f'  t := x.{j} *% y.{i-j};')
+				print(f'  L := L +% (t & 0xffffffff);')
+				print(f'  H := H +% (t >> 32);')
+		print(f'  let z{i} = L;')
+		print(f'  L := H; H := 0;')
+	print(f'  let z{N*2-1} = L;')
+	print(f'  {pack("z", N*2)}')
 	print('};')
 
 # return (x+y)%p
@@ -102,9 +121,9 @@ def printPrime():
 	s += ');'
 	print(s)
 
-def printType():
-	s = 'type F = ('
-	for i in range(N):
+def printType(name, n):
+	s = f'type {name} = ('
+	for i in range(n):
 		if i > 0:
 			s += ', '
 		s += 'Nat64'
@@ -113,9 +132,11 @@ def printType():
 
 
 print(header)
-printType()
+printType("F", N)
+printType('FD', N*2)
 printPrime()
-toNat()
+toNat('toNat', N)
+toNat('DtoNat', N*2)
 fromNat()
 toStr()
 cmp()
@@ -123,6 +144,7 @@ subPre()
 addPre()
 add()
 sub()
+mulPre()
 
 
 print("""
@@ -134,4 +156,6 @@ Debug.print("c=" # toStr(c));
 Debug.print("d=" # toStr(d));
 Debug.print("d=" # Nat.toText(toNat(d)));
 Debug.print("e=" # toStr(fromNat(toNat(d))));
+let x = mulPre((0x12345678, 0x88888888, 0xffffffff), (0xff001122, 0x33334444, 0x55557777));
+Debug.print("x=" # Nat.toText(DtoNat(x)));
 """)
