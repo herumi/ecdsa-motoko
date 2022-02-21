@@ -145,4 +145,14 @@ public func normalizeFpDbl(x : Fdbl) : Fdbl {
   t := t >> 32;
   (z0,z1,z2,z3,z4,z5)
 };
+public func mulUnit(x : F, y : Nat64) : (F, Nat64) {
+  var t : Nat64 = x.0 *% y;
+  let z0 = t & 0xffffffff;
+  t := x.1 *% y +% (t >> 32);
+  let z1 = t & 0xffffffff;
+  t := x.2 *% y +% (t >> 32);
+  let z2 = t & 0xffffffff;
+  t >>= 32;
+  ((z0,z1,z2),t)
+};
 };

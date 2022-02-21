@@ -87,6 +87,19 @@ def mulPre():
 	print(f'  {pack("z", N*2)}')
 	print('};')
 
+# return normalized x*y
+def mulUnit():
+	print('public func mulUnit(x : F, y : Nat64) : (F, Nat64) {')
+	print('  var t : Nat64 = x.0 *% y;')
+	print('  let z0 = t & 0xffffffff;')
+	for i in range(1,N):
+		print(f'  t := x.{i} *% y +% (t >> 32);')
+		print(f'  let z{i} = t & 0xffffffff;')
+	print('  t >>= 32;')
+	print(f'  ({pack("z",N)},t)')
+	print('};')
+
+
 def normalizeFpDbl():
 	print('public func normalizeFpDbl(x : Fdbl) : Fdbl {')
 	print(f'  let z0 = x.0 & 0xffffffff;')
@@ -159,6 +172,6 @@ add()
 sub()
 mulPre()
 normalizeFpDbl()
-
+mulUnit()
 
 print('};')
