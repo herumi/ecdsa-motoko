@@ -111,6 +111,8 @@ import Nat "mo:base/Nat";
 import Nat64 "mo:base/Nat64";
 import Hex "../src/hex";
 import Order "mo:base/Order";
+
+module {
 """
 
 def printPrime():
@@ -136,7 +138,7 @@ def printType(name, n):
 
 
 print(header)
-printType("F", N)
+printType('F', N)
 printType('FD', N*2)
 printPrime()
 toNat('toNat', N)
@@ -151,15 +153,4 @@ sub()
 mulPre()
 
 
-print("""
-let a : F = (5,2,3);
-let b : F = (4,5,6);
-let c = sub(a, b);
-let d = add(c, b);
-Debug.print("c=" # toStr(c));
-Debug.print("d=" # toStr(d));
-Debug.print("d=" # Nat.toText(toNat(d)));
-Debug.print("e=" # toStr(fromNat(toNat(d))));
-let x = mulPre((0x12345678, 0x88888888, 0xffffffff), (0xff001122, 0x33334444, 0x55557777));
-Debug.print("x=" # Nat.toText(DtoNat(x)));
-""")
+print('};')
