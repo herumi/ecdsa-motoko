@@ -3,13 +3,13 @@
 check:
 	find src -type f -name '*.mo' -print0 | xargs -0 $(shell vessel bin)/moc $(shell vessel sources) --check
 
-all: check-strict docs test
+all: check-strict docs test src/fp.mo
 
 check-strict:
 	find src -type f -name '*.mo' -print0 | xargs -0 $(shell vessel bin)/moc $(shell vessel sources) -Werror --check
 docs:
 	$(shell vessel bin)/mo-doc
-test:
+test: src/fp.mo
 	$(MAKE) -C test test
 
 bench-gen:
@@ -28,6 +28,11 @@ bench:
 
 test-hmac:
 	$(MAKE) -C test test-hmac
+
+src/fp.mo: src/gen.py
+	python3 src/gen.py > $@
+test-fp: src/fp.mo
+	$(MAKE) -C test test-fp
 
 clean:
 	$(MAKE) -C test clean

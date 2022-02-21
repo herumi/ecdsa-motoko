@@ -128,7 +128,7 @@ def printPrime():
 	print(s)
 
 def printType(name, n):
-	s = f'type {name} = ('
+	s = f'public type {name} = ('
 	for i in range(n):
 		if i > 0:
 			s += ', '

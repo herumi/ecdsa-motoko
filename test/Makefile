@@ -60,10 +60,7 @@ bench-verify:
 	$(MAKE) bench-verify10
 	$(MAKE) bench-verify20
 
-fp-test.mo: gen.py
-	python3 gen.py > $@
-
-fp-test: fp-test.wasm
+test-fp: fp-test.wasm
 	$(TIME) wasmtime $<
 
 clean:
