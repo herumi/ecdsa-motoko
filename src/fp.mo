@@ -8,7 +8,7 @@ import Order "mo:base/Order";
 module {
 
 public type F = (Nat64, Nat64, Nat64);
-public type FD = (Nat64, Nat64, Nat64, Nat64, Nat64, Nat64);
+public type Fdbl = (Nat64, Nat64, Nat64, Nat64, Nat64, Nat64);
 let p : F = (0xfffffc2f, 0xfffffffe, 0xffffffff);
 public func toNat(x : F) : Nat {
   var v = Nat64.toNat(x.2);
@@ -16,7 +16,7 @@ public func toNat(x : F) : Nat {
   v := v * 0x100000000 + Nat64.toNat(x.0);
   v
 };
-public func DtoNat(x : FD) : Nat {
+public func DtoNat(x : Fdbl) : Nat {
   var v = Nat64.toNat(x.5);
   v := v * 0x100000000 + Nat64.toNat(x.4);
   v := v * 0x100000000 + Nat64.toNat(x.3);
@@ -81,7 +81,7 @@ public func sub(x : F, y : F) : F {
   let (z, CF) = subPre(x,y);
   if (CF == 0) z else addPre(z, p)
 };
-public func mulPre(x : F, y : F) : FD {
+public func mulPre(x : F, y : F) : Fdbl {
   var t : Nat64 = 0;
   var L : Nat64 = 0;
   var H : Nat64 = 0;
@@ -123,6 +123,26 @@ public func mulPre(x : F, y : F) : FD {
   let z4 = L;
   L := H; H := 0;
   let z5 = L;
+  (z0,z1,z2,z3,z4,z5)
+};
+public func normalizeFpDbl(x : Fdbl) : Fdbl {
+  let z0 = x.0 & 0xffffffff;
+  var t = z0 >> 32;
+  t := t +% x.1;
+  let z1 = t & 0xffffffff;
+  t := t >> 32;
+  t := t +% x.2;
+  let z2 = t & 0xffffffff;
+  t := t >> 32;
+  t := t +% x.3;
+  let z3 = t & 0xffffffff;
+  t := t >> 32;
+  t := t +% x.4;
+  let z4 = t & 0xffffffff;
+  t := t >> 32;
+  t := t +% x.5;
+  let z5 = t & 0xffffffff;
+  t := t >> 32;
   (z0,z1,z2,z3,z4,z5)
 };
 };

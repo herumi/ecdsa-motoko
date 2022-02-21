@@ -16,4 +16,8 @@ Debug.print("d=" # Nat.toText(Fp.toNat(d)));
 Debug.print("e=" # Fp.toStr(Fp.fromNat(Fp.toNat(d))));
 let x = Fp.mulPre((0x12345678, 0x88888888, 0xffffffff), (0xff001122, 0x33334444, 0x55557777));
 Debug.print("x=" # Nat.toText(Fp.DtoNat(x)));
+let x0 = Fp.normalizeFpDbl(x);
+Debug.print("x=" # Nat.toText(Fp.DtoNat(x0)));
+Debug.print("x0=" # Nat.toText(Nat64.toNat(x.1)));
+Debug.print("x0=" # Nat.toText(Nat64.toNat(x0.1)));
 

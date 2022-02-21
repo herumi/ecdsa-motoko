@@ -18,7 +18,7 @@ def toStr():
 	print('};')
 
 def toNat(name,n=N):
-	print(f'public func {name}(x : {"F" if n==N else "FD"}) : Nat {{')
+	print(f'public func {name}(x : {"F" if n==N else "Fdbl"}) : Nat {{')
 	print(f'  var v = Nat64.toNat(x.{n-1});')
 	for i in range(1, n):
 		print(f'  v := v * 0x100000000 + Nat64.toNat(x.{n-1-i});')
@@ -71,7 +71,7 @@ def subPre():
 
 # return x*y
 def mulPre():
-	print('public func mulPre(x : F, y : F) : FD {')
+	print('public func mulPre(x : F, y : F) : Fdbl {')
 	print('  var t : Nat64 = 0;')
 	print('  var L : Nat64 = 0;')
 	print('  var H : Nat64 = 0;')
@@ -87,8 +87,15 @@ def mulPre():
 	print(f'  {pack("z", N*2)}')
 	print('};')
 
-def normalizeDF():
-	print('public func normalize(d : FD) : FD {')
+def normalizeFpDbl():
+	print('public func normalizeFpDbl(x : Fdbl) : Fdbl {')
+	print(f'  let z0 = x.0 & 0xffffffff;')
+	print(f'  var t = z0 >> 32;')
+	for i in range(1,N*2):
+		print(f'  t := t +% x.{i};')
+		print(f'  let z{i} = t & 0xffffffff;')
+		print(f'  t := t >> 32;')
+	print(f'  {pack("z",N*2)}')
 	print('};')
 
 # return (x+y)%p
@@ -139,7 +146,7 @@ def printType(name, n):
 
 print(header)
 printType('F', N)
-printType('FD', N*2)
+printType('Fdbl', N*2)
 printPrime()
 toNat('toNat', N)
 toNat('DtoNat', N*2)
@@ -151,6 +158,7 @@ addPre()
 add()
 sub()
 mulPre()
+normalizeFpDbl()
 
 
 print('};')
