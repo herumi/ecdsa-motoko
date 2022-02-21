@@ -10,7 +10,7 @@ def pack(v, n = N):
 	return s + ")"
 
 def toStr():
-	print('func toStr(x : F) : Text {')
+	print('public func toStr(x : F) : Text {')
 	for i in range(N):
 		head = 's := s #"," #' if i > 0 else 'var s ="("#'
 		print(f'  {head} Hex.fromNat(Nat64.toNat(x.{i}));') 
@@ -18,7 +18,7 @@ def toStr():
 	print('};')
 
 def toNat(name,n=N):
-	print(f'func {name}(x : {"F" if n==N else "FD"}) : Nat {{')
+	print(f'public func {name}(x : {"F" if n==N else "FD"}) : Nat {{')
 	print(f'  var v = Nat64.toNat(x.{n-1});')
 	for i in range(1, n):
 		print(f'  v := v * 0x100000000 + Nat64.toNat(x.{n-1-i});')
@@ -26,7 +26,7 @@ def toNat(name,n=N):
 	print('};')
 
 def fromNat():
-	print('func fromNat(x : Nat) : F {')
+	print('public func fromNat(x : Nat) : F {')
 	print(f'  var v = x;')
 	for i in range(0, N):
 		print(f'  let v{i} = Nat64.fromNat(v % 0x100000000);')
@@ -35,7 +35,7 @@ def fromNat():
 	print('};')
 
 def cmp():
-	print('func cmp(x : F, y : F) : Order.Order {')
+	print('public func cmp(x : F, y : F) : Order.Order {')
 	for i in range(N):
 		print(f'  if (x.{N-1-i} < y.{N-1-i}) return #less;')
 		print(f'  if (x.{N-1-i} > y.{N-1-i}) return #greater;')
@@ -45,7 +45,7 @@ def cmp():
 # return x+y
 def addPre():
 	print(f'// ret.{N-1} may has (1<<32) as CF')
-	print('func addPre(x : F, y : F) : F {')
+	print('public func addPre(x : F, y : F) : F {')
 	for i in range(N):
 		s = '' if i == 0 else f' +% c{i-1}'
 		if i < N-1:
@@ -60,7 +60,7 @@ def addPre():
 # return x-y
 # assume x>=y
 def subPre():
-	print('func subPre(x : F, y : F) : (F, Nat64) {')
+	print('public func subPre(x : F, y : F) : (F, Nat64) {')
 	for i in range(N):
 		s = '' if i == 0 else f' -% c{i-1}'
 		print(f'  let t{i} = x.{i} -% y.{i}{s};')
@@ -71,7 +71,7 @@ def subPre():
 
 # return x*y
 def mulPre():
-	print('func mulPre(x : F, y : F) : FD {')
+	print('public func mulPre(x : F, y : F) : FD {')
 	print('  var t : Nat64 = 0;')
 	print('  var L : Nat64 = 0;')
 	print('  var H : Nat64 = 0;')
@@ -87,16 +87,20 @@ def mulPre():
 	print(f'  {pack("z", N*2)}')
 	print('};')
 
+def normalizeDF():
+	print('public func normalize(d : FD) : FD {')
+	print('};')
+
 # return (x+y)%p
 def add():
-	print("""func add(x : F, y : F) : F {
+	print("""public func add(x : F, y : F) : F {
   let z = addPre(x,y);
   if (cmp(z, p) != #less) subPre(z, p).0 else z
 };""")
 
 # return (x-y)%p
 def sub():
-	print("""func sub(x : F, y : F) : F {
+	print("""public func sub(x : F, y : F) : F {
   let (z, CF) = subPre(x,y);
   if (CF == 0) z else addPre(z, p)
 };""")
