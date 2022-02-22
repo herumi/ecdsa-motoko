@@ -430,7 +430,8 @@ public func normalizeFpDbl(x : Fdbl) : Fdbl {
   t := t >> 32;
   (z0,z1,z2,z3,z4,z5,z6,z7,z8,z9,z10,z11,z12,z13,z14,z15)
 };
-public func mulUnit(x : F, y : Nat64) : (F, Nat64) {
+// z7 may be >= 2^32
+public func mulUnit(x : F, y : Nat64) : F {
   var t : Nat64 = x.0 *% y;
   let z0 = t & 0xffffffff;
   t := x.1 *% y +% (t >> 32);
@@ -446,8 +447,26 @@ public func mulUnit(x : F, y : Nat64) : (F, Nat64) {
   t := x.6 *% y +% (t >> 32);
   let z6 = t & 0xffffffff;
   t := x.7 *% y +% (t >> 32);
-  let z7 = t & 0xffffffff;
-  t >>= 32;
-  ((z0,z1,z2,z3,z4,z5,z6,z7),t)
+  let z7 = t;
+  (z0,z1,z2,z3,z4,z5,z6,z7)
+};
+public func addUnit(x : F, y : Nat64) : F {
+  var t : Nat64 = x.0 +% y;
+  let z0 = t & 0xffffffff;
+  t := x.1 +% (t >> 32);
+  let z1 = t & 0xffffffff;
+  t := x.2 +% (t >> 32);
+  let z2 = t & 0xffffffff;
+  t := x.3 +% (t >> 32);
+  let z3 = t & 0xffffffff;
+  t := x.4 +% (t >> 32);
+  let z4 = t & 0xffffffff;
+  t := x.5 +% (t >> 32);
+  let z5 = t & 0xffffffff;
+  t := x.6 +% (t >> 32);
+  let z6 = t & 0xffffffff;
+  t := x.7 +% (t >> 32);
+  let z7 = t;
+  (z0,z1,z2,z3,z4,z5,z6,z7)
 };
 };

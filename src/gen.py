@@ -87,16 +87,33 @@ def mulPre():
 	print(f'  {pack("z", N*2)}')
 	print('};')
 
-# return normalized x*y
+# return x*y
 def mulUnit():
-	print('public func mulUnit(x : F, y : Nat64) : (F, Nat64) {')
+	print(f'// z{N-1} may be >= 2^32')
+	print('public func mulUnit(x : F, y : Nat64) : F {')
 	print('  var t : Nat64 = x.0 *% y;')
 	print('  let z0 = t & 0xffffffff;')
 	for i in range(1,N):
 		print(f'  t := x.{i} *% y +% (t >> 32);')
-		print(f'  let z{i} = t & 0xffffffff;')
-	print('  t >>= 32;')
-	print(f'  ({pack("z",N)},t)')
+		if i < N-1:
+			print(f'  let z{i} = t & 0xffffffff;')
+		else:
+			print(f'  let z{i} = t;')
+	print(f'  {pack("z")}')
+	print('};')
+
+# return x+y
+def addUnit():
+	print('public func addUnit(x : F, y : Nat64) : F {')
+	print('  var t : Nat64 = x.0 +% y;')
+	print('  let z0 = t & 0xffffffff;')
+	for i in range(1,N):
+		print(f'  t := x.{i} +% (t >> 32);')
+		if i < N-1:
+			print(f'  let z{i} = t & 0xffffffff;')
+		else:
+			print(f'  let z{i} = t;')
+	print(f'  {pack("z")}')
 	print('};')
 
 def normalizeFpDbl():
@@ -125,13 +142,28 @@ def sub():
 };""")
 
 # return mod p 
+"""
+p =0xffffffff_ffffffff_ffffffff_ffffffff_ffffffff_ffffffff_fffffffe_fffffc2f
+a =0x1_000003d1
+maxX = (p-1)^2=[H:L]
+H =0xffffffff_ffffffff_ffffffff_ffffffff_ffffffff_ffffffff_fffffffd_fffff85c
+L =0x1_000007a4_000e9844
+t =H*a+L
+  =0x1_000003d0_ffffffff_ffffffff_ffffffff_ffffffff_ffffffff_fffffffe_fffff85d_fff16f60
+Ht=0x1_000003d0
+Lt=0xffffffff_ffffffff_ffffffff_ffffffff_ffffffff_fffffffe_fffff85d_fff16f60
+Ht*a+Lt
+  =0xffffffff_ffffffff_ffffffff_ffffffff_ffffffff_ffffffff_fffffffe_fffffc30
+"""
 def modp():
 	print("""public func modp(x : Fdbl) : F {
-  let a : Nat64 = 0x1000003d1;
+  let a : Nat64 = 0x3d1;
   let L = (x.0, x.1, x.2, x.3, x.4, x.5, x.6, x.7);
   let H = (x.8, x.9, x.10, x.11, x.12, x.13, x.14, x.15);
-  let (t0, t1) = mulUnit(H, a);
-  let t = addPre(t0, L);
+  let t0 = addPre(mulUnit(H, a), L);
+  let t1 = (t0.0, t0.1, t0.2, t0.3, t0.4, t0.5, t0.6, t0.7 & 0xffffffff);
+  let t2 = (t0.7 >> 32) *% a;
+  let t3 = addUnit(t1, t2);
   
 };""")
 
@@ -183,5 +215,6 @@ sub()
 mulPre()
 normalizeFpDbl()
 mulUnit()
+addUnit()
 
 print('};')
