@@ -46,9 +46,32 @@ module {
 //    add = func(#fp(x) : FpElt, #fp(y) : FpElt) : FpElt = #fp(Field.add_(x, y, p_));
 //    sub = func(#fp(x) : FpElt, #fp(y) : FpElt) : FpElt = #fp(Field.sub_(x, y, p_));
 //    mul = func(#fp(x) : FpElt, #fp(y) : FpElt) : FpElt = #fp(Field.mul_(x, y, p_));
+//    sqr = func(#fp(x) : FpElt) : FpElt = #fp(Field.sqr_(x, p_));
+//    neg = func(#fp(x) : FpElt) : FpElt = #fp(Field.neg_(x, p_));
+//    pow = func(#fp(x) : FpElt, n : Nat) : FpElt = #fp(Field.pow_(x, n, p_));
     add = func(#fp(x) : FpElt, #fp(y) : FpElt) : FpElt = #fp(F.toNat(F.add(F.fromNat(x), F.fromNat(y))));
     sub = func(#fp(x) : FpElt, #fp(y) : FpElt) : FpElt = #fp(F.toNat(F.sub(F.fromNat(x), F.fromNat(y))));
     mul = func(#fp(x) : FpElt, #fp(y) : FpElt) : FpElt = #fp(F.toNat(F.mul(F.fromNat(x), F.fromNat(y))));
+    sqr = func(#fp(x_) : FpElt) : FpElt {
+      let x = F.fromNat(x_);
+      #fp(F.toNat(F.mul(x, x)))
+    };
+    neg = func(#fp(x) : FpElt) : FpElt = #fp(F.toNat(F.neg(F.fromNat(x))));
+    pow = func(#fp(x_) : FpElt, y : Nat) : FpElt {
+      let x = F.fromNat(x_);
+      if (y == 0) return #fp(1);
+      let bs = Binary.fromNatReversed(y);
+      let len = bs.size();
+      var ret = F.one;
+      var i = 0;
+      while (i < len) {
+        let b = bs[len - 1 - i];
+        ret := F.mul(ret, ret);
+        if (b) ret := F.mul(ret, x);
+        i += 1;
+      };
+      #fp(F.toNat(ret))
+    };
 /*
     mul = func(#fp(x) : FpElt, #fp(y) : FpElt) : FpElt {
       let xx = F.toNat(F.mul(F.fromNat(x), F.fromNat(y)));
@@ -62,11 +85,8 @@ module {
       #fp(xx)
     };
 */
-    div = func(#fp(x) : FpElt, #fp(y) : FpElt) : FpElt = #fp(Field.div_(x, y, p_));
-    pow = func(#fp(x) : FpElt, n : Nat) : FpElt = #fp(Field.pow_(x, n, p_));
-    neg = func(#fp(x) : FpElt) : FpElt = #fp(Field.neg_(x, p_));
     inv = func(#fp(x) : FpElt) : FpElt = #fp(Field.inv_(x, p_));
-    sqr = func(#fp(x) : FpElt) : FpElt = #fp(Field.sqr_(x, p_));
+    div = func(#fp(x) : FpElt, #fp(y) : FpElt) : FpElt = #fp(Field.div_(x, y, p_));
   };
   public let Fr = {
     fromNat = func (n : Nat) : FrElt = #fr(n % r_);

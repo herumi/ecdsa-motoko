@@ -66,6 +66,15 @@ def subPre():
 	print(f'  ({pack("z")}, c{N-1})')
 	print('};')
 
+def neg():
+	print('public func neg(x : F) : F {')
+	print('  var t = x.0;')
+	for i in range(1, N):
+		print(f'  t |= x.{i};')
+	print('  if (t == 0) zero else subPre(p, x).0')
+	print('};')
+
+
 # return x*y
 def mulPre():
 	print('public func mulPre(x : F, y : F) : Fdbl {')
@@ -194,6 +203,20 @@ def printPrime():
 	s += ');'
 	print(s)
 
+def printZero():
+	s = 'public let zero : F = (0'
+	for i in range(1,N):
+		s += ',0'
+	s += ');'
+	print(s)
+
+def printOne():
+	s = 'public let one : F = (1'
+	for i in range(1,N):
+		s += ',0'
+	s += ');'
+	print(s)
+
 def printType(name, n):
 	s = f'public type {name} = ('
 	for i in range(n):
@@ -222,6 +245,8 @@ print(header)
 printType('F', N)
 printType('Fdbl', N*2)
 printPrime()
+printZero()
+printOne()
 toNat('toNat', N)
 toNat('DtoNat', N*2)
 fromNat()
@@ -229,6 +254,7 @@ toStr()
 cmp()
 subPre()
 addPre()
+neg()
 mulPre()
 normalizeFpDbl()
 mulUnit()

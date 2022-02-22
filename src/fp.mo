@@ -10,6 +10,8 @@ module {
 public type F = (Nat64, Nat64, Nat64, Nat64, Nat64, Nat64, Nat64, Nat64);
 public type Fdbl = (Nat64, Nat64, Nat64, Nat64, Nat64, Nat64, Nat64, Nat64, Nat64, Nat64, Nat64, Nat64, Nat64, Nat64, Nat64, Nat64);
 let p : F = (0xfffffc2f, 0xfffffffe, 0xffffffff, 0xffffffff, 0xffffffff, 0xffffffff, 0xffffffff, 0xffffffff);
+public let zero : F = (0,0,0,0,0,0,0,0);
+public let one : F = (1,0,0,0,0,0,0,0);
 public func toNat(x : F) : Nat {
   var v = Nat64.toNat(x.7);
   v := v * 0x100000000 + Nat64.toNat(x.6);
@@ -145,6 +147,17 @@ public func addPre(x : F, y : F) : (F, Nat64) {
   let z7 = t & 0xffffffff;
   CF := t >> 32;
   ((z0,z1,z2,z3,z4,z5,z6,z7), CF)
+};
+public func neg(x : F) : F {
+  var t = x.0;
+  t |= x.1;
+  t |= x.2;
+  t |= x.3;
+  t |= x.4;
+  t |= x.5;
+  t |= x.6;
+  t |= x.7;
+  if (t == 0) zero else subPre(p, x).0
 };
 public func mulPre(x : F, y : F) : Fdbl {
   var t : Nat64 = 0;
