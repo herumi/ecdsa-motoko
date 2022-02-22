@@ -143,14 +143,6 @@ public func addPre(x : F, y : F) : F {
   let z7 = x.7 +% y.7 +% c6;
   (z0,z1,z2,z3,z4,z5,z6,z7)
 };
-public func add(x : F, y : F) : F {
-  let z = addPre(x,y);
-  if (cmp(z, p) != #less) subPre(z, p).0 else z
-};
-public func sub(x : F, y : F) : F {
-  let (z, CF) = subPre(x,y);
-  if (CF == 0) z else addPre(z, p)
-};
 public func mulPre(x : F, y : F) : Fdbl {
   var t : Nat64 = 0;
   var L : Nat64 = 0;
@@ -453,21 +445,67 @@ public func mulUnit(x : F, y : Nat64) : F {
 public func addMulUnit((x, xH) : (F, Nat64), y : F, z : Nat64) : (F, Nat64) {
   var a = y.0 *% z;
   var b : Nat64 = 0;
-  let w0 = x.0 +% (a & 0xffffffff);
+  var t = x.0 +% (a & 0xffffffff);
+  let w0 = t & 0xffffffff;
   b := y.1 *% z;
-  let w1 = x.1 +% (b & 0xffffffff) +% (a >> 32);
+  t := (t >> 32) +% x.1 +% (b & 0xffffffff) +% (a >> 32);
+  let w1 = t & 0xffffffff;
   a := y.2 *% z;
-  let w2 = x.2 +% (a & 0xffffffff) +% (b >> 32);
+  t := (t >> 32) +% x.2 +% (a & 0xffffffff) +% (b >> 32);
+  let w2 = t & 0xffffffff;
   b := y.3 *% z;
-  let w3 = x.3 +% (b & 0xffffffff) +% (a >> 32);
+  t := (t >> 32) +% x.3 +% (b & 0xffffffff) +% (a >> 32);
+  let w3 = t & 0xffffffff;
   a := y.4 *% z;
-  let w4 = x.4 +% (a & 0xffffffff) +% (b >> 32);
+  t := (t >> 32) +% x.4 +% (a & 0xffffffff) +% (b >> 32);
+  let w4 = t & 0xffffffff;
   b := y.5 *% z;
-  let w5 = x.5 +% (b & 0xffffffff) +% (a >> 32);
+  t := (t >> 32) +% x.5 +% (b & 0xffffffff) +% (a >> 32);
+  let w5 = t & 0xffffffff;
   a := y.6 *% z;
-  let w6 = x.6 +% (a & 0xffffffff) +% (b >> 32);
+  t := (t >> 32) +% x.6 +% (a & 0xffffffff) +% (b >> 32);
+  let w6 = t & 0xffffffff;
   b := y.7 *% z;
-  let w7 = x.7 +% (b & 0xffffffff) +% (a >> 32);
-  ((w0,w1,w2,w3,w4,w5,w6,w7), xH +% (b >> 32))
+  t := (t >> 32) +% x.7 +% (b & 0xffffffff) +% (a >> 32);
+  let w7 = t & 0xffffffff;
+  ((w0,w1,w2,w3,w4,w5,w6,w7), xH +% (t >> 32) +% (b >> 32))
 };
+public func modp(x : Fdbl) : F {
+  let a : Nat64 = 0x3d1;
+  let H = (x.8, x.9, x.10, x.11, x.12, x.13, x.14, x.15);
+  // ((H << 32) + L) + H * a
+  let (Lt, Ht) = addMulUnit(((x.0, x.1+%x.8, x.2+%x.9, x.3+%x.10, x.4+%x.11, x.5+%x.12, x.6+%x.13, x.7+%x.14), x.15), H, a);
+  let HtL = Ht & 0xffffffff;
+  let HtH = Ht >> 32;
+  let HtLa = HtL *% a;
+  let HtHa = HtH *% a;
+  var t = Lt.0 +% HtLa;
+  let z0 = t & 0xffffffff;
+  t := HtL +% Lt.1 +% HtHa +% (t >> 32);
+  let z1 = t & 0xffffffff;
+  t := HtH +% Lt.2 +% (t >> 32);
+  let z2 = t & 0xffffffff;
+  t := Lt.3 +% (t >> 32);
+  let z3 = t & 0xffffffff;
+  t := Lt.4 +% (t >> 32);
+  let z4 = t & 0xffffffff;
+  t := Lt.5 +% (t >> 32);
+  let z5 = t & 0xffffffff;
+  t := Lt.6 +% (t >> 32);
+  let z6 = t & 0xffffffff;
+  let z7 = Lt.7 +% (t >> 32);
+  (z0,z1,z2,z3,z4,z5,z6,z7)
+};
+public func add(x : F, y : F) : F {
+  let z = addPre(x,y);
+  if (cmp(z, p) != #less) subPre(z, p).0 else z
+};
+  public func sub(x : F, y : F) : F {
+  let (z, CF) = subPre(x,y);
+  if (CF == 0) z else addPre(z, p)
+};
+  public func mul(x : F, y : F) : F {
+    modp(mulPre(x, y))
+};
+
 };
