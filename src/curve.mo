@@ -45,13 +45,14 @@ module {
     toNat = func (#fp(x) : FpElt) : Nat = x;
 //    add = func(#fp(x) : FpElt, #fp(y) : FpElt) : FpElt = #fp(Field.add_(x, y, p_));
 //    sub = func(#fp(x) : FpElt, #fp(y) : FpElt) : FpElt = #fp(Field.sub_(x, y, p_));
-    mul = func(#fp(x) : FpElt, #fp(y) : FpElt) : FpElt = #fp(Field.mul_(x, y, p_));
+//    mul = func(#fp(x) : FpElt, #fp(y) : FpElt) : FpElt = #fp(Field.mul_(x, y, p_));
     add = func(#fp(x) : FpElt, #fp(y) : FpElt) : FpElt = #fp(F.toNat(F.add(F.fromNat(x), F.fromNat(y))));
     sub = func(#fp(x) : FpElt, #fp(y) : FpElt) : FpElt = #fp(F.toNat(F.sub(F.fromNat(x), F.fromNat(y))));
+    mul = func(#fp(x) : FpElt, #fp(y) : FpElt) : FpElt = #fp(F.toNat(F.mul(F.fromNat(x), F.fromNat(y))));
 /*
-    sub = func(#fp(x) : FpElt, #fp(y) : FpElt) : FpElt {
-      let xx = F.toNat(F.sub(F.fromNat(x), F.fromNat(y)));
-      let yy = Field.sub_(x, y, p_);
+    mul = func(#fp(x) : FpElt, #fp(y) : FpElt) : FpElt {
+      let xx = F.toNat(F.mul(F.fromNat(x), F.fromNat(y)));
+      let yy = Field.mul_(x, y, p_);
       if (xx != yy) {
         Debug.print("x=" # Nat.toText(x));
         Debug.print("y=" # Nat.toText(y));
@@ -61,7 +62,6 @@ module {
       #fp(xx)
     };
 */
-//    mul = func(#fp(x) : FpElt, #fp(y) : FpElt) : FpElt = #fp(F.toNat(F.mul(F.fromNat(x), F.fromNat(y))));
     div = func(#fp(x) : FpElt, #fp(y) : FpElt) : FpElt = #fp(Field.div_(x, y, p_));
     pow = func(#fp(x) : FpElt, n : Nat) : FpElt = #fp(Field.pow_(x, n, p_));
     neg = func(#fp(x) : FpElt) : FpElt = #fp(Field.neg_(x, p_));

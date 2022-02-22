@@ -497,7 +497,8 @@ public func modp(x : Fdbl) : F {
   t := Lt.6 +% (t >> 32);
   let z6 = t & 0xffffffff;
   let z7 = Lt.7 +% (t >> 32);
-  (z0,z1,z2,z3,z4,z5,z6,z7)
+  let z = (z0,z1,z2,z3,z4,z5,z6,z7);
+  if (cmp(z, p) != #less) subPre(z, p).0 else z
 };
 public func add(x : F, y : F) : F {
   let (z, CF) = addPre(x,y);
