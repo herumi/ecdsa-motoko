@@ -44,17 +44,14 @@ def cmp():
 
 # return x+y
 def addPre():
-	print(f'// ret.{N-1} may has (1<<32) as CF')
-	print('public func addPre(x : F, y : F) : F {')
+	print('public func addPre(x : F, y : F) : (F, Nat64) {')
+	print('  var t : Nat64 = 0;')
+	print('  var CF : Nat64 = 0;')
 	for i in range(N):
-		s = '' if i == 0 else f' +% c{i-1}'
-		if i < N-1:
-			print(f'  let t{i} = x.{i} +% y.{i}{s};')
-			print(f'  let z{i} = t{i} & 0xffffffff;')
-			print(f'  let c{i} = t{i} >> 32;')
-		else:
-			print(f'  let z{i} = x.{i} +% y.{i}{s};')
-	print(f'  {pack("z")}')
+		print(f'  t := x.{i} +% y.{i} +% CF;')
+		print(f'  let z{i} = t & 0xffffffff;')
+		print(f'  CF := t >> 32;')
+	print(f'  ({pack("z")}, CF)')
 	print('};')
 
 # return x-y
@@ -207,12 +204,12 @@ def printType(name, n):
 
 def misc():
 	print("""public func add(x : F, y : F) : F {
-  let z = addPre(x,y);
-  if (cmp(z, p) != #less) subPre(z, p).0 else z
+  let (z, CF) = addPre(x,y);
+  if (CF != 0 or cmp(z, p) != #less) subPre(z, p).0 else z
 };
   public func sub(x : F, y : F) : F {
   let (z, CF) = subPre(x,y);
-  if (CF == 0) z else addPre(z, p)
+  if (CF == 0) z else addPre(z, p).0
 };
   public func mul(x : F, y : F) : F {
     modp(mulPre(x, y))

@@ -117,31 +117,34 @@ public func subPre(x : F, y : F) : (F, Nat64) {
   let c7 = t7 >> 63;
   ((z0,z1,z2,z3,z4,z5,z6,z7), c7)
 };
-// ret.7 may has (1<<32) as CF
-public func addPre(x : F, y : F) : F {
-  let t0 = x.0 +% y.0;
-  let z0 = t0 & 0xffffffff;
-  let c0 = t0 >> 32;
-  let t1 = x.1 +% y.1 +% c0;
-  let z1 = t1 & 0xffffffff;
-  let c1 = t1 >> 32;
-  let t2 = x.2 +% y.2 +% c1;
-  let z2 = t2 & 0xffffffff;
-  let c2 = t2 >> 32;
-  let t3 = x.3 +% y.3 +% c2;
-  let z3 = t3 & 0xffffffff;
-  let c3 = t3 >> 32;
-  let t4 = x.4 +% y.4 +% c3;
-  let z4 = t4 & 0xffffffff;
-  let c4 = t4 >> 32;
-  let t5 = x.5 +% y.5 +% c4;
-  let z5 = t5 & 0xffffffff;
-  let c5 = t5 >> 32;
-  let t6 = x.6 +% y.6 +% c5;
-  let z6 = t6 & 0xffffffff;
-  let c6 = t6 >> 32;
-  let z7 = x.7 +% y.7 +% c6;
-  (z0,z1,z2,z3,z4,z5,z6,z7)
+public func addPre(x : F, y : F) : (F, Nat64) {
+  var t : Nat64 = 0;
+  var CF : Nat64 = 0;
+  t := x.0 +% y.0 +% CF;
+  let z0 = t & 0xffffffff;
+  CF := t >> 32;
+  t := x.1 +% y.1 +% CF;
+  let z1 = t & 0xffffffff;
+  CF := t >> 32;
+  t := x.2 +% y.2 +% CF;
+  let z2 = t & 0xffffffff;
+  CF := t >> 32;
+  t := x.3 +% y.3 +% CF;
+  let z3 = t & 0xffffffff;
+  CF := t >> 32;
+  t := x.4 +% y.4 +% CF;
+  let z4 = t & 0xffffffff;
+  CF := t >> 32;
+  t := x.5 +% y.5 +% CF;
+  let z5 = t & 0xffffffff;
+  CF := t >> 32;
+  t := x.6 +% y.6 +% CF;
+  let z6 = t & 0xffffffff;
+  CF := t >> 32;
+  t := x.7 +% y.7 +% CF;
+  let z7 = t & 0xffffffff;
+  CF := t >> 32;
+  ((z0,z1,z2,z3,z4,z5,z6,z7), CF)
 };
 public func mulPre(x : F, y : F) : Fdbl {
   var t : Nat64 = 0;
@@ -497,12 +500,12 @@ public func modp(x : Fdbl) : F {
   (z0,z1,z2,z3,z4,z5,z6,z7)
 };
 public func add(x : F, y : F) : F {
-  let z = addPre(x,y);
-  if (cmp(z, p) != #less) subPre(z, p).0 else z
+  let (z, CF) = addPre(x,y);
+  if (CF != 0 or cmp(z, p) != #less) subPre(z, p).0 else z
 };
   public func sub(x : F, y : F) : F {
   let (z, CF) = subPre(x,y);
-  if (CF == 0) z else addPre(z, p)
+  if (CF == 0) z else addPre(z, p).0
 };
   public func mul(x : F, y : F) : F {
     modp(mulPre(x, y))
