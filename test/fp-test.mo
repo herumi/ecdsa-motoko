@@ -22,4 +22,5 @@ let x0 = Fp.normalizeFpDbl(x);
 Debug.print("x=" # Nat.toText(Fp.DtoNat(x0)));
 Debug.print("x0=" # Nat.toText(Nat64.toNat(x.1)));
 Debug.print("x0=" # Nat.toText(Nat64.toNat(x0.1)));
+Debug.print("a*b=" # Nat.toText(Fp.toNat(Fp.mul(a,b))));
 

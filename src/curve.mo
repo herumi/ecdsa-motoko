@@ -5,6 +5,7 @@ import Debug "mo:base/Debug";
 import Nat "mo:base/Nat";
 import Buffer "mo:base/Buffer";
 import Int "mo:base/Int";
+import F "fp";
 
 module {
   public type FpElt = { #fp : Nat; };
@@ -42,9 +43,12 @@ module {
   public let Fp = {
     fromNat = func (n : Nat) : FpElt = #fp(n % p_);
     toNat = func (#fp(x) : FpElt) : Nat = x;
-    add = func(#fp(x) : FpElt, #fp(y) : FpElt) : FpElt = #fp(Field.add_(x, y, p_));
-    mul = func(#fp(x) : FpElt, #fp(y) : FpElt) : FpElt = #fp(Field.mul_(x, y, p_));
+//    add = func(#fp(x) : FpElt, #fp(y) : FpElt) : FpElt = #fp(Field.add_(x, y, p_));
     sub = func(#fp(x) : FpElt, #fp(y) : FpElt) : FpElt = #fp(Field.sub_(x, y, p_));
+    mul = func(#fp(x) : FpElt, #fp(y) : FpElt) : FpElt = #fp(Field.mul_(x, y, p_));
+    add = func(#fp(x) : FpElt, #fp(y) : FpElt) : FpElt = #fp(F.toNat(F.add(F.fromNat(x), F.fromNat(y))));
+//    sub = func(#fp(x) : FpElt, #fp(y) : FpElt) : FpElt = #fp(F.toNat(F.sub(F.fromNat(x), F.fromNat(y))));
+//    mul = func(#fp(x) : FpElt, #fp(y) : FpElt) : FpElt = #fp(F.toNat(F.mul(F.fromNat(x), F.fromNat(y))));
     div = func(#fp(x) : FpElt, #fp(y) : FpElt) : FpElt = #fp(Field.div_(x, y, p_));
     pow = func(#fp(x) : FpElt, n : Nat) : FpElt = #fp(Field.pow_(x, n, p_));
     neg = func(#fp(x) : FpElt) : FpElt = #fp(Field.neg_(x, p_));
