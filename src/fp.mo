@@ -450,23 +450,24 @@ public func mulUnit(x : F, y : Nat64) : F {
   let z7 = t;
   (z0,z1,z2,z3,z4,z5,z6,z7)
 };
-public func addUnit(x : F, y : Nat64) : F {
-  var t : Nat64 = x.0 +% y;
-  let z0 = t & 0xffffffff;
-  t := x.1 +% (t >> 32);
-  let z1 = t & 0xffffffff;
-  t := x.2 +% (t >> 32);
-  let z2 = t & 0xffffffff;
-  t := x.3 +% (t >> 32);
-  let z3 = t & 0xffffffff;
-  t := x.4 +% (t >> 32);
-  let z4 = t & 0xffffffff;
-  t := x.5 +% (t >> 32);
-  let z5 = t & 0xffffffff;
-  t := x.6 +% (t >> 32);
-  let z6 = t & 0xffffffff;
-  t := x.7 +% (t >> 32);
-  let z7 = t;
-  (z0,z1,z2,z3,z4,z5,z6,z7)
+public func addMulUnit((x, xH) : (F, Nat64), y : F, z : Nat64) : (F, Nat64) {
+  var a = y.0 *% z;
+  var b : Nat64 = 0;
+  let w0 = x.0 +% (a & 0xffffffff);
+  b := y.1 *% z;
+  let w1 = x.1 +% (b & 0xffffffff) +% (a >> 32);
+  a := y.2 *% z;
+  let w2 = x.2 +% (a & 0xffffffff) +% (b >> 32);
+  b := y.3 *% z;
+  let w3 = x.3 +% (b & 0xffffffff) +% (a >> 32);
+  a := y.4 *% z;
+  let w4 = x.4 +% (a & 0xffffffff) +% (b >> 32);
+  b := y.5 *% z;
+  let w5 = x.5 +% (b & 0xffffffff) +% (a >> 32);
+  a := y.6 *% z;
+  let w6 = x.6 +% (a & 0xffffffff) +% (b >> 32);
+  b := y.7 *% z;
+  let w7 = x.7 +% (b & 0xffffffff) +% (a >> 32);
+  ((w0,w1,w2,w3,w4,w5,w6,w7), xH +% (b >> 32))
 };
 };
