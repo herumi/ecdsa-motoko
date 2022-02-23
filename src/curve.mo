@@ -8,7 +8,6 @@ import Int "mo:base/Int";
 import F "fp";
 
 module {
-//  public type FpElt = { #fp : F.F; };
   public type FpElt = F.F;
   public type FrElt = { #fr : Nat; };
   public type Affine = (FpElt, FpElt);
@@ -73,19 +72,6 @@ module {
       };
       ret
     };
-/*
-    mul = func(#fp(x) : FpElt, #fp(y) : FpElt) : FpElt {
-      let xx = F.toNat(F.mul(F.fromNat(x), F.fromNat(y)));
-      let yy = Field.mul_(x, y, p_);
-      if (xx != yy) {
-        Debug.print("x=" # Nat.toText(x));
-        Debug.print("y=" # Nat.toText(y));
-        Debug.print("ok=" # Nat.toText(yy));
-        Debug.print("ng=" # Nat.toText(xx));
-      };
-      #fp(xx)
-    };
-*/
     inv = func(x : FpElt) : FpElt = F.fromNat(Field.inv_(F.toNat(x), p_));
     div = func(x : FpElt, y : FpElt) : FpElt = F.fromNat(Field.div_(F.toNat(x), F.toNat(y), p_));
   };
