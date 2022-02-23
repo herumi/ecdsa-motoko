@@ -1,6 +1,7 @@
 // check the speed of mulMod
 import Debug "mo:base/Debug";
 import Nat "mo:base/Nat";
+import F "../src/fp";
 
 let p = 0xfffffffffffffffffffffffffffffffffffffffffffffffffffffffefffffc2f;
 
@@ -24,18 +25,28 @@ func mulMod2(x : Nat, y : Nat) : Nat {
   if (t > M) t - M + 1 else t
 };
 
-var i : Nat = 0;
-var x = 12345;
-while (i < 100000) {
-//  let x1 = mulMod(x, x);
-  let x1 = mulMod2(x, x);
-/*
-  let x2 = mulMod2(x, x);
-  if (x1 != x2) {
-    Debug.print("x1=" # Nat.toText(x1));
-    Debug.print("x2=" # Nat.toText(x2));
+func test1() {
+  var i : Nat = 0;
+  var x = 12345;
+  while (i < 100000) {
+    let x1 = mulMod(x, x);
+    x := x1;
+    i += 1;
   };
-*/
-  x := x1;
-  i += 1;
+  Debug.print("test1 x=" # Nat.toText(x));
 };
+
+func test2() {
+  var i : Nat = 0;
+  var x = F.fromNat(12345);
+  while (i < 100000) {
+    let x1 = F.mul(x, x);
+    x := x1;
+    i += 1;
+  };
+  Debug.print("test1 x=" # Nat.toText(F.toNat(x)));
+};
+
+//test1();
+test2();
+

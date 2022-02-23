@@ -17,6 +17,7 @@ import SHA2 "mo:sha2";
 import Curve "curve";
 import Util "util";
 import Prelude "mo:base/Prelude";
+import F "fp";
 
 module {
   public func sha2(iter : Iter.Iter<Nat8>) : Blob {
@@ -63,7 +64,7 @@ module {
   };
   /// convert a signature to lower S signature
   public func normalizeSignature((r, s) : Signature) : Signature {
-    if (Fr.toNat(s) < Curve.params.rHalf) (r, s) else (r, Fr.neg(s))
+     if (Fr.toNat(s) < Curve.params.rHalf) (r, s) else (r, Fr.neg(s))
   };
   /// verify a tuple of pub, hashed, and lowerS sig
   public func verifyHashed(pub : PublicKey, hashed : Iter.Iter<Nat8>, (r,s) : Signature) : Bool {
@@ -142,9 +143,9 @@ module {
     let y = Util.toNatAsBigEndian(range(a, 1+n, n));
     if (x >= Curve.params.p) return null;
     if (y >= Curve.params.p) return null;
-    let pub = (#fp(x), #fp(y));
+    let pub = (F.fromNat(x), F.fromNat(y));
     if (not Curve.isValidAffine(pub)) return null;
-    ?(#fp(x), #fp(y), #fp(1));
+    ?(pub.0, pub.1, F.one);
   };
   /// Deserialize a compressed public key.
   public func deserializePublicKeyCompressed(b : Blob) : ?PublicKey {
@@ -158,10 +159,10 @@ module {
     };
     let x_ = Util.toNatAsBigEndian(iter);
     if (x_ >= Curve.params.p) return null;
-    let x = #fp(x_);
+    let x = F.fromNat(x_);
     return switch (Curve.getYfromX(x, even)) {
       case (null) null;
-      case (?y) ?(x, y, #fp(1));
+      case (?y) ?(x, y, F.one);
     };
   };
   /// serialize to DER format
