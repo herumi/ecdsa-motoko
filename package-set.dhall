@@ -3,9 +3,13 @@ let upstream = https://github.com/dfinity/vessel-package-set/releases/download/m
 let Package =
     { name : Text, version : Text, repo : Text, dependencies : List Text }
 
-let
-  -- This is where you can add your own packages to the package-set
-  additions = [] : List Package
+let additions = [
+  { name = "sha2"
+  , repo = "https://github.com/timohanke/motoko-sha2"
+  , version = "v2.0.0"
+  , dependencies = [ "base", "iterext" ]
+  }
+]
 
 let
   -- This is where you can override existing packages in the package-set
