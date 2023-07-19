@@ -44,22 +44,30 @@ module {
     if (s == #fr(0)) Prelude.unreachable(); // type error
     Curve.mul_base(s)
   };
-  /// Sign hashed by sec and rand return lower S signature (r, s) such that s < rHalf
-  /// hashed : 32-byte SHA-256 value of a message.
-  /// rand : 32-byte random value.
-  public func signHashed(#non_zero(sec) : SecretKey, hashed : Iter.Iter<Nat8>, rand : Iter.Iter<Nat8>) : ?Signature {
+  // return a raw signature (v, r, s)
+  public func rawSignHashed(#non_zero(sec) : SecretKey, hashed : Iter.Iter<Nat8>, rand : Iter.Iter<Nat8>) : ?(Nat, Signature) {
     if (sec == #fr(0)) Prelude.unreachable(); // type error
     let k = getExponent(rand);
-    let x = switch (Curve.fromJacobi(Curve.mul_base(k))) {
+    let (x, y) = switch (Curve.fromJacobi(Curve.mul_base(k))) {
       case (#zero) return null; // k was 0, bad luck with rand
-      case (#affine(x, _)) x;
+      case (#affine(x, y)) (x, y);
     };
     let r = Fr.fromNat(Fp.toNat(x));
     if (r == #fr(0)) return null; // x was 0 mod r, bad luck with rand
     let z = getExponent(hashed);
     // s = (r * sec + z) / k
     let s = Fr.div(Fr.add(Fr.mul(r, sec), z), k);
-    ?normalizeSignature(r,s)
+    let v = if ((Fp.toNat(y) % 2) == 0) 27 else 28;
+    ?(v, normalizeSignature(r, s))
+  };
+  /// Sign hashed by sec and rand return lower S signature (r, s) such that s < rHalf
+  /// hashed : 32-byte SHA-256 value of a message.
+  /// rand : 32-byte random value.
+  public func signHashed(#non_zero(sec) : SecretKey, hashed : Iter.Iter<Nat8>, rand : Iter.Iter<Nat8>) : ?Signature {
+    switch (rawSignHashed(#non_zero(sec), hashed, rand)) {
+      case (null) null;
+      case (?(_, sig)) ?sig;
+    }
   };
   /// convert a signature to lower S signature
   public func normalizeSignature((r, s) : Signature) : Signature {
